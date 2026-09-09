@@ -80,14 +80,20 @@ for k in range(1000):
             print("\n")
             break
 
-hist20 = np.histogram(H20)
-hist100 = np.histogram(H100)
-hist1000 = np.histogram(H1000)
-plt.hist(hist20)
+plt.hist(H20, bins = 10, density=True)
+plt.title("histogram k = 20")
+xs = np.linspace(0, 15, 500)
+plt.plot(xs, [calcpxi(x) for x in xs])
 plt.show()
-plt.hist(hist100)
+plt.hist(H100, bins = 10, density=True)
+xs = np.linspace(0, 15, 500)
+plt.plot(xs, [calcpxi(x) for x in xs])
+plt.title("histogram k = 100")
 plt.show()
-plt.hist(hist1000)
+plt.hist(H1000, bins = 10, density=True)
+xs = np.linspace(0, 15, 500)
+plt.plot(xs, [calcpxi(x) for x in xs])
+plt.title("histogram k = 1000")
 plt.show()
 
 
