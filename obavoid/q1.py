@@ -5,13 +5,11 @@ import matplotlib.pyplot as plt
 
 # Sample i.i.d samples M = z1...z(m)
 def runprogram(x):
-    q_mu = 5.0
-    q_sigma = 2.0
     def generateSamples():
         M = []
         i = 0
-        while i < 2000:
-            sample = random.gauss(q_mu, q_sigma)
+        while i < x:
+            sample = random.uniform(0,15)
             M.append(sample)
             i += 1
         return M
@@ -83,7 +81,7 @@ def runprogram(x):
 #            print("\n")
 #            break
 #
-    plt.hist(H20, bins = 10, range=(-3,20), density=True)
+    plt.hist(H20, bins = 10, density=True, range=(-3,20))
     title = ("histogram k = " + str(x))
     plt.title(title)
     xs = np.linspace(0, 15, 500)
