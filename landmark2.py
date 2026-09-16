@@ -1,3 +1,21 @@
+# ======= TODO list =======
+#
+# Vi skal kalibere kameraet så vi får Camera matrix (som jeg tror skal bruge focal length som vi udregnede før) og distortion matrix som jeg ikke ved noget om
+#
+#
+# === IGNORE === 
+# if len(corners) > 0:
+#       for i in range(0, len(ids)):
+#           # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
+#           rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], 0.02, matrix_coefficients,
+#                                                                       distortion_coefficients)
+#           # Draw a square around the markers
+#           cv2.aruco.drawDetectedMarkers(frame, corners) 
+#
+#           # Draw Axis
+#           cv2.aruco.drawAxis(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)
+
+
 from time import sleep
 
 import robot
@@ -48,38 +66,51 @@ os.makedirs(folder, exist_ok=True)
 
 print("Saving images to:", folder)
 
-counter=0
 image_number = 0
 
-# Search for landmark
-while (counter < 10):
-    # Capture frame
-    image = cam.capture_array("main")
 
-    arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
-    sleep(0.2)
-    arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
-    print(arlo.stop())
-    sleep(1)
+def searchLandmark(image_number):
+    detected = False
+    # Search for landmark
 
-    # Save frame
-    filename = os.path.join(
-        folder,
-        f"image_{image_number:04d}.jpg"
-    )
+    while (detected == False):
+        # Capture frame
+        image = cam.capture_array("main")
 
-    arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
-    arucoParams = cv2.aruco.DetectorParameters_create()
-    (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
+        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
+        arucoParams = cv2.aruco.DetectorParameters_create()
+        (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams, 
+                                cameraMatrix = matrixCoefficients, distCoeff = distortionCoefficients)
 
-    print(corners)
+        # Save frame
+        filename = os.path.join(
+            folder,
+            f"image_{image_number:04d}.jpg"
+        )
 
-    cv2.imwrite(filename, image)
+        cv2.imwrite(filename, image)
+        print("Saved:", filename)
 
-    print("Saved:", filename)
+        if not id != None:
+            detected = True
+     
+        # printing the captured result
+        print(ids)
 
-    image_number += 1
 
-    # Wait 1 second
-    time.sleep(1)
-    counter += 1
+        image_number += 1
+
+        # Wait 1 second
+        time.sleep(1)
+
+
+        arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
+        sleep(0.2)
+        arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
+        print(arlo.stop())
+        sleep(1)
+
+
+
+searchLandmark(image_number)
+print("Found landmark")
