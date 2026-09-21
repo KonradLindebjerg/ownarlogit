@@ -68,22 +68,21 @@ def travelLandmark(tvec):
 
     if x > tolerance:
         print("Moving right!")
-        arlo.go_diff(leftSpeed*0.5, rightSpeed*0.5, 1, 0)
+        arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
         sleep(0.2)
-        arlo.stop()
+        print(arlo.stop())
         
     elif x < -tolerance:
         print("Moving left!")
-        arlo.go_diff(leftSpeed*0.5, rightSpeed*0.5, 0, 1)
+        arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
         sleep(0.2)
-        arlo.stop()
+        print(arlo.stop())
        
     else: 
         print("Centered!!")
         arlo.go_diff(leftSpeed, rightSpeed, 1, 1) 
         sleep(0.2)
-        arlo.stop()
-
+        print(arlo.stop())
 # Estimate the distance from robot to observed landmark
 def estimateLandmark(corners):
     cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
