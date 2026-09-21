@@ -72,10 +72,10 @@ def travelLandmark(tvec):
         print("Moving left!")
         arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
         sleep(0.2)
-        arlo.go_diff(leftSpeed, rightSpeed)
+        arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
     else: 
         print("Centered!!")
-        arlo.go_diff(leftSpeed, rightSpeed) 
+        arlo.go_diff(leftSpeed, rightSpeed, 1, 1) 
 
 # Estimate the distance from robot to observed landmark
 def estimateLandmark(corners):
