@@ -56,7 +56,8 @@ print("Saving images to:", folder)
 
 image_number = 0
 
-def landmarkTravel(corners):
+# Estimate the distance from robot to observed landmark
+def estimateTravel(corners):
     cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
                              [0, 1414,imageSize[1]/2],
                              [0,   0,   1]], dtype=np.float32)
@@ -67,7 +68,8 @@ def landmarkTravel(corners):
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
     )
     
-    print(tvecs)
+    print("tvecs: {tvecs}")
+    print("rvecs: {rvecs}")
 
 
 def searchLandmark(image_number):
@@ -111,10 +113,16 @@ def searchLandmark(image_number):
         sleep(1)
 
     print("Found landmark")
-    landmarkTravel(corners)
+    estimateTravel(corners)
+
+
+
+searchLandmark(image_number)
 
 
 # Moving towards the found lander 
+# def landmarkTravel()
 
-searchLandmark(image_number)
+
+
 
