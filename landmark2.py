@@ -92,7 +92,7 @@ def estimateLandmark(corners):
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
     )
 
-    while !atlandmark:
+    while not atlandmark:
         travelLandmark(tvecs[0][0])
 
 
