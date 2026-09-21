@@ -79,8 +79,7 @@ def searchLandmark(image_number):
 
         arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
         arucoParams = cv2.aruco.DetectorParameters_create()
-        (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams, 
-                                cameraMatrix = matrixCoefficients, distCoeff = distortionCoefficients)
+        (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
 
         # Save frame
         filename = os.path.join(
@@ -90,9 +89,6 @@ def searchLandmark(image_number):
 
         cv2.imwrite(filename, image)
         print("Saved:", filename)
-
-        if not id != None:
-            detected = True
      
         # printing the captured result
         print(ids)
@@ -103,6 +99,9 @@ def searchLandmark(image_number):
         # Wait 1 second
         time.sleep(1)
 
+        if id != None:
+            detected = True
+            break
 
         arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
         sleep(0.2)
@@ -110,7 +109,8 @@ def searchLandmark(image_number):
         print(arlo.stop())
         sleep(1)
 
+    print("Found landmark")
+
 
 
 searchLandmark(image_number)
-print("Found landmark")
