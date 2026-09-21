@@ -83,6 +83,9 @@ def runprogram(x):
 #            print("\n")
 #            break
 #
+    for sample in H20:
+        if (sample < 0 or sample > 15):
+            print(sample)
     plt.hist(H20, bins = 10, range=(-3,20), density=True)
     title = ("histogram k = " + str(x))
     plt.title(title)
@@ -93,6 +96,7 @@ def runprogram(x):
 runprogram(20)
 runprogram(100)
 runprogram(1000)
+#runprogram(100000)
 #plt.hist(H100, bins = 10, density=True)
 #xs = np.linspace(0, 15, 500)
 #plt.plot(xs, [calcpxi(x) for x in xs])
