@@ -68,8 +68,8 @@ def estimateTravel(corners):
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
     )
     
-    print("tvecs: {tvecs}")
-    print("rvecs: {rvecs}")
+    print("tvecs:", {tvecs})
+    print("rvecs:", {rvecs})
 
 
 def searchLandmark(image_number):
