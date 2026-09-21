@@ -120,12 +120,15 @@ def searchLandmark(image_number):
         sleep(1)
 
     print("Found landmark")
-    id, tvecs = estimateLandmark(corners, ids)
-    plotlandmarks(tvecs, id)
+    idss, tvecs = estimateLandmark(corners, ids)
+    list = []
+    for tvec, id in tvecs, idss:
+       list.append((tvec, id)) 
+    plotlandmarks(list)
 
 
-def plotlandmarks(tvecs, id):
-    print(tvecs, id)
+def plotlandmarks(list):
+    print(list)
 
 
 
