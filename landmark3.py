@@ -10,6 +10,7 @@ import numpy as np
 import picamera2
 import time
 import os
+import matplotlib as plt
 import cv2 # Import the OpenCV library
 
 # Create a robot object and initialize
@@ -72,6 +73,7 @@ def estimateLandmark(corners):
     rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
     )
+    return rvecs, tvecs
 
 
 
@@ -119,7 +121,13 @@ def searchLandmark(image_number):
         sleep(1)
 
     print("Found landmark")
-    estimateLandmark(corners)
+    rvecs, tvecs = estimateLandmark(corners)
+
+
+def plotlandmarks(tvecs):
+    print(tvecs)
+
+
 
 
 searchLandmark(image_number)
