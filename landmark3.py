@@ -10,7 +10,6 @@ import numpy as np
 import picamera2
 import time
 import os
-import matplotlib.pyplot as plt
 import cv2 # Import the OpenCV library
 
 # Create a robot object and initialize
