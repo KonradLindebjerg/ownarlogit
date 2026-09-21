@@ -56,6 +56,27 @@ print("Saving images to:", folder)
 
 image_number = 0
 
+# Moving towards the found lander 
+
+def travelLandmark(tvec):
+    x = tvec[0]
+    distance = tvec[2]
+    tolerance = 0.05 * distance
+
+    if x > tolerance:
+        print("Moving right!")
+        arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
+        sleep(0.2)
+        arlo.go_diff(leftSpeed, rightSpeed)
+    elif x < -tolerance:
+        print("Moving left!")
+        arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
+        sleep(0.2)
+        arlo.go_diff(leftSpeed, rightSpeed)
+    else: 
+        print("Centered!!")
+        arlo.go_diff(leftSpeed, rightSpeed) 
+
 # Estimate the distance from robot to observed landmark
 def estimateLandmark(corners):
     cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
@@ -67,11 +88,8 @@ def estimateLandmark(corners):
     rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
     )
-    
-    print(tvecs)
-    print("rvecs\n")
-    print(rvecs)
-    return rvecs[0][0], tvecs[0][0]
+
+    travelLandmark(tvecs[0][0])
 
 
 
@@ -121,28 +139,4 @@ def searchLandmark(image_number):
     estimateLandmark(corners)
 
 
-
-
 searchLandmark(image_number)
-
-
-# Moving towards the found lander 
-
-def travelLandmak(tvec):
-    x = tvec[0]
-    distance = tvec[2]
-    tolerance = 0.05 * distance
-
-    if x > tolerance:
-        print("Moving right!")
-        arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
-        sleep(0.2)
-        arlo.go_diff(leftSpeed, rightSpeed)
-    elif x < -tolerance:
-        print("Moving left!")
-        arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
-        sleep(0.2)
-        arlo.go_diff(leftSpeed, rightSpeed)
-    else: 
-        print("Centered!!")
-        arlo.go_diff(leftSpeed, rightSpeed)
