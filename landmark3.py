@@ -62,7 +62,7 @@ image_number = 0
 # Moving towards the found lander 
 
 # Estimate the distance from robot to observed landmark
-def estimateLandmark(corners):
+def estimateLandmark(corners, id):
     cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
                              [0, 1414,imageSize[1]/2],
                              [0,   0,   1]], dtype=np.float32)
@@ -72,7 +72,7 @@ def estimateLandmark(corners):
     rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
     )
-    return rvecs, tvecs
+    return id, tvecs
 
 
 
@@ -120,12 +120,12 @@ def searchLandmark(image_number):
         sleep(1)
 
     print("Found landmark")
-    rvecs, tvecs = estimateLandmark(corners)
-    plotlandmarks(tvecs)
+    id, tvecs = estimateLandmark(corners, ids)
+    plotlandmarks(tvecs, id)
 
 
-def plotlandmarks(tvecs):
-    print(tvecs)
+def plotlandmarks(tvecs, id):
+    print(tvecs, id)
 
 
 
