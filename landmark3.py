@@ -121,6 +121,7 @@ def searchLandmark(image_number):
 
     print("Found landmark")
     rvecs, tvecs = estimateLandmark(corners)
+    plotlandmarks(tvecs)
 
 
 def plotlandmarks(tvecs):
