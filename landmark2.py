@@ -57,7 +57,7 @@ print("Saving images to:", folder)
 image_number = 0
 
 # Estimate the distance from robot to observed landmark
-def estimateTravel(corners):
+def estimateLandmark(corners):
     cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
                              [0, 1414,imageSize[1]/2],
                              [0,   0,   1]], dtype=np.float32)
@@ -68,8 +68,13 @@ def estimateTravel(corners):
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
     )
     
-    print("tvecs:", {tvecs})
-    print("rvecs:", {rvecs})
+    print(tvecs)
+    print("rvecs\n")
+    print(rvecs)
+    return rvecs[0][0], tvecs[0][0]
+
+
+
 
 
 def searchLandmark(image_number):
@@ -104,7 +109,7 @@ def searchLandmark(image_number):
 
         if ids is not None:
             detected = True
-            break
+            break    
 
         arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
         sleep(0.2)
@@ -113,7 +118,8 @@ def searchLandmark(image_number):
         sleep(1)
 
     print("Found landmark")
-    estimateTravel(corners)
+    estimateLandmark(corners)
+
 
 
 
@@ -121,8 +127,22 @@ searchLandmark(image_number)
 
 
 # Moving towards the found lander 
-# def landmarkTravel()
 
+def travelLandmak(tvec):
+    x = tvec[0]
+    distance = tvec[2]
+    tolerance = 0.05 * distance
 
-
-
+    if x > tolerance:
+        print("Moving right!")
+        arlo.go_diff(leftSpeed, rightSpeed, 1, 0)
+        sleep(0.2)
+        arlo.go_diff(leftSpeed, rightSpeed)
+    elif x < -tolerance:
+        print("Moving left!")
+        arlo.go_diff(leftSpeed, rightSpeed, 0, 1)
+        sleep(0.2)
+        arlo.go_diff(leftSpeed, rightSpeed)
+    else: 
+        print("Centered!!")
+        arlo.go_diff(leftSpeed, rightSpeed)
