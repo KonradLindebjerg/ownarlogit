@@ -23,6 +23,9 @@ rightSpeed = 65
 imageSize = (1640, 1232)
 FPS = 30
 
+atlandmark = False
+
+
 cam = picamera2.Picamera2()
 
 frame_duration_limit = int(1/FPS * 1000000)
@@ -89,7 +92,8 @@ def estimateLandmark(corners):
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
     )
 
-    travelLandmark(tvecs[0][0])
+    while !atlandmark:
+        travelLandmark(tvecs[0][0])
 
 
 
