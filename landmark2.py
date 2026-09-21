@@ -18,7 +18,7 @@
 
 from time import sleep
 
-import python.robot
+import robot
 import numpy as np
 import picamera2
 import time
@@ -70,6 +70,8 @@ print("Saving images to:", folder)
 image_number = 0
 
 
+
+
 def searchLandmark(image_number):
     detected = False
     # Search for landmark
@@ -115,19 +117,6 @@ def searchLandmark(image_number):
 
 
 # Moving towards the found lander 
-
-def landmarkTravel(corners):
-    cameraMatrix = np.array([[900, 0,imageSize[0]/2],
-                             [0, 900,imageSize[1]/2],
-                             [0,   0,   1]], dtype=np.float32)
-    dist_coeffs = np.zeros((1, 5), dtype=np.float32)
-    MARKER_SIZE = 0.145  
-
-    rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
-        corners, MARKER_SIZE, cameraMatrix, dist_coeffs
-    )
-    
-    print(tvecs)
 
 searchLandmark(image_number)
 
