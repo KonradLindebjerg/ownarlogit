@@ -93,7 +93,7 @@ def estimateLandmark(corners):
     )
 
     while not atlandmark:
-        searchLandmark(image_number):
+        searchLandmark(image_number)
         travelLandmark(tvecs[0][0])
 
 
