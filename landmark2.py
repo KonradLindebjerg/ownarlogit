@@ -102,7 +102,7 @@ def searchLandmark(image_number):
         # Wait 1 second
         time.sleep(1)
 
-        if ids != None:
+        if ids is not None:
             detected = True
             break
 
