@@ -68,7 +68,7 @@ def travelLandmark(tvec):
 
     if x > tolerance:
         print("Moving right!")
-        arlo.go_diff(leftSpeed*0.5, rightSpeed0.5, 1, 0)
+        arlo.go_diff(leftSpeed*0.5, rightSpeed*0.5, 1, 0)
         sleep(0.2)
         arlo.stop()
         
