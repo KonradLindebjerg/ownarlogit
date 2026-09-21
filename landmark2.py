@@ -57,8 +57,8 @@ print("Saving images to:", folder)
 image_number = 0
 
 def landmarkTravel(corners):
-    cameraMatrix = np.array([[900, 0,imageSize[0]/2],
-                             [0, 900,imageSize[1]/2],
+    cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
+                             [0, 1414,imageSize[1]/2],
                              [0,   0,   1]], dtype=np.float32)
     dist_coeffs = np.zeros((1, 5), dtype=np.float32)
     MARKER_SIZE = 0.145  
