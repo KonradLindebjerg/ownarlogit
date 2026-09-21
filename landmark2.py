@@ -1,19 +1,6 @@
 # ======= TODO list =======
 #
 # Vi skal kalibere kameraet så vi får Camera matrix (som jeg tror skal bruge focal length som vi udregnede før) og distortion matrix som jeg ikke ved noget om
-#
-#
-# === IGNORE === 
-# if len(corners) > 0:
-#       for i in range(0, len(ids)):
-#           # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
-#           rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], 0.02, matrix_coefficients,
-#                                                                       distortion_coefficients)
-#           # Draw a square around the markers
-#           cv2.aruco.drawDetectedMarkers(frame, corners) 
-#
-#           # Draw Axis
-#           cv2.aruco.drawAxis(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)
 
 
 from time import sleep
@@ -69,7 +56,18 @@ print("Saving images to:", folder)
 
 image_number = 0
 
+def landmarkTravel(corners):
+    cameraMatrix = np.array([[900, 0,imageSize[0]/2],
+                             [0, 900,imageSize[1]/2],
+                             [0,   0,   1]], dtype=np.float32)
+    dist_coeffs = np.zeros((1, 5), dtype=np.float32)
+    MARKER_SIZE = 0.145  
 
+    rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
+        corners, MARKER_SIZE, cameraMatrix, dist_coeffs
+    )
+    
+    print(tvecs)
 
 
 def searchLandmark(image_number):
@@ -113,7 +111,7 @@ def searchLandmark(image_number):
         sleep(1)
 
     print("Found landmark")
-
+    landmarkTravel(corners)
 
 
 # Moving towards the found lander 
