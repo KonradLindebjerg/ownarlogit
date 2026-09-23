@@ -11,6 +11,7 @@ import picamera2
 import time
 import os
 import csv
+import subprocess
 import cv2 # Import the OpenCV library
 
 # Create a robot object and initialize
@@ -26,6 +27,8 @@ FPS = 30
 
 atlandmark = False
 
+# Set LAPTOP_SCP_DEST to e.g. "konrad@192.168.1.50:/home/konrad/landmarks/"
+scp_dest = 'konrad@172.20.10.3:/home/konrad/Desktop/rex/REX-students/Arlo/ex4'
 
 cam = picamera2.Picamera2()
 
@@ -137,6 +140,13 @@ def searchLandmark(image_number):
             writer.writerow([x, z, marker_id])
 
     print("Saved landmark detections to:", csv_path)
+
+    # Copy the CSV from the Pi to the laptop via scp.
+    if scp_dest:
+        subprocess.run(["scp", csv_path, scp_dest], check=True)
+        print("Copied landmark detections to:", scp_dest)
+    else:
+        print("LAPTOP_SCP_DEST not set; skipping scp to laptop.")
 
 
 def plotlandmarks(list):
