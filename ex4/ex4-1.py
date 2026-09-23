@@ -55,7 +55,7 @@ print("Saving images to:", folder)
 image_number = 0
 
 
-def detectlandmarks():
+def detectLandmark():
     image = cam.capture_array("main")
     global image_number
     
@@ -64,22 +64,17 @@ def detectlandmarks():
     (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
     
     
-    
-    
-    
     # Save frame
     filename = os.path.join(
         folder,
         f"image_{image_number:04d}.jpg"
     )
     image_number += 1
-    '''
     cv2.imwrite(filename, image)
     print("Saved:", filename)
-    '''
 
     idss, tvecs = estimateLandmark(corners, ids)
-    '''
+    
     detection_folder = "landmarkdetections"
     os.makedirs(detection_folder, exist_ok=True)
     csv_path = os.path.join(detection_folder, "landmarks.csv")
@@ -94,7 +89,7 @@ def detectlandmarks():
             writer.writerow([x, z, marker_id])
 
     print("Saved landmark detections to:", csv_path)
-
+    '''
     # Copy the CSV from the Pi to the laptop via scp.
     if scp_dest:
         subprocess.run(["scp", csv_path, scp_dest], check=True)
@@ -102,7 +97,6 @@ def detectlandmarks():
     else:
         print("LAPTOP_SCP_DEST not set; skipping scp to laptop.")
     '''
-
 def estimateLandmark(corners, id):
     cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
                              [0, 1414,imageSize[1]/2],
@@ -120,12 +114,9 @@ def estimateLandmark(corners, id):
     return id, tvecs
 
 
-detectlandmarks()
+detectLandmark()
 
 
-
-
-def maplocation():
 
 
 
