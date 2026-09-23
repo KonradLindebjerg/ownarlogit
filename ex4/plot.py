@@ -30,7 +30,7 @@ center_circle = plt.Circle((0, 0), center_radius, color='red', alpha=0.4)
 ax.add_patch(center_circle)
 
 # Data points: 15 cm diameter (0.075 m radius)
-marker_radius = 0.075  
+marker_radius = 0.15 
 
 # Add points and layer the text over them
 for x, y, label in zip(x_coords, y_coords, labels):
