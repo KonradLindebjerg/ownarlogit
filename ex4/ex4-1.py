@@ -4,8 +4,8 @@ import picamera2
 import time
 import os
 import csv
+import subprocess
 import cv2 # Import the OpenCV library
-
 # Create a robot object and initialize
 arlo = robot.Robot()
 
