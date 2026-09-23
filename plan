@@ -1,0 +1,27 @@
+
+Make an array with coords + size.
+
+
+How large should each point on a grid be?
+Arlo is 45 cm wide / has 22.5 radius. Or radius of 0.225 meters
+Boxes has a radius of 15 or 0.15 meters
+
+Gridsize is 25 cm pr. square right now. or 0.25 meters
+
+How large should the entire grid be?
+Grid should be 10 x 10 meters. 5 Meters in each direction of the Arlo.
+
+
+Initialise map as a 10 by 10 array and put Arlo in the middle of it.
+
+Calculate robot position compared to grid space, ie radius
+
+Scan for landmarks and estimate their location based on location + radius
+
+
+
+
+
+
+
+

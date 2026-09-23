@@ -13,13 +13,18 @@ arlo = robot.Robot()
 cam = cv2.VideoCapture(0)
 scp_dest = 'konrad@172.20.10.3:/home/konrad/Desktop/rex/REX-students/Arlo/ex4'
 
-leftSpeed = 68  
+leftSpeed  = 68
 rightSpeed = 65
-imageSize = (1640, 1232)
-FPS = 30
+imageSize  = (1640, 1232)
+FPS        = 30
 
 cam = picamera2.Picamera2()
 frame_duration_limit = int(1/FPS * 1000000)
+
+
+# Define radius' in m
+arloR     = 0.225
+landmarkR = 0.15
 
 
 
@@ -115,3 +120,11 @@ def estimateLandmark(corners, id):
 
 
 detectlandmarks()
+
+
+
+
+def maplocation():
+
+
+
