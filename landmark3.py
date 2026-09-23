@@ -10,6 +10,7 @@ import numpy as np
 import picamera2
 import time
 import os
+import csv
 import cv2 # Import the OpenCV library
 
 # Create a robot object and initialize
@@ -121,12 +122,21 @@ def searchLandmark(image_number):
 
     print("Found landmark")
     idss, tvecs = estimateLandmark(corners, ids)
-    landmarks = []
-    for i in range(len(idss)):
-        tvec = tvecs[i][0]
-        marker_id = int(idss[i][0])
-        landmarks.append((tvec, marker_id))
-    plotlandmarks(landmarks)
+
+    detection_folder = "landmarkdetections"
+    os.makedirs(detection_folder, exist_ok=True)
+    csv_path = os.path.join(detection_folder, "landmarks.csv")
+
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        for i in range(len(idss)):
+            tvec = tvecs[i][0]
+            x = float(tvec[0])
+            z = float(tvec[2])
+            marker_id = int(idss[i][0])
+            writer.writerow([x, z, marker_id])
+
+    print("Saved landmark detections to:", csv_path)
 
 
 def plotlandmarks(list):
