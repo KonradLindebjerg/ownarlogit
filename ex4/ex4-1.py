@@ -109,3 +109,4 @@ def estimateLandmark(corners, id):
     )
 
 
+detectlandmarks()
