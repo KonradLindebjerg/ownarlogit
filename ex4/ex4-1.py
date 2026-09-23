@@ -11,7 +11,7 @@ arlo = robot.Robot()
 
 # Open a camera device for capturing
 cam = cv2.VideoCapture(0)
-
+scp_dest = 'konrad@172.20.10.3:/home/konrad/Desktop/rex/REX-students/Arlo/ex4'
 
 leftSpeed = 68  
 rightSpeed = 65
