@@ -73,12 +73,13 @@ def detectlandmarks():
         f"image_{image_number:04d}.jpg"
     )
     image_number += 1
-
+    '''
     cv2.imwrite(filename, image)
     print("Saved:", filename)
+    '''
 
     idss, tvecs = estimateLandmark(corners, ids)
-
+    '''
     detection_folder = "landmarkdetections"
     os.makedirs(detection_folder, exist_ok=True)
     csv_path = os.path.join(detection_folder, "landmarks.csv")
@@ -100,7 +101,7 @@ def detectlandmarks():
         print("Copied landmark detections to:", scp_dest)
     else:
         print("LAPTOP_SCP_DEST not set; skipping scp to laptop.")
-
+    '''
 
 def estimateLandmark(corners, id):
     cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
