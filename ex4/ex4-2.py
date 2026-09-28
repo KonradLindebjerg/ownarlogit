@@ -17,11 +17,14 @@ def driveToGoal(robotrrt, path):
     while (i >= 0):
         # Signed turn from the robot's current heading toward the next point
         angle = angle_to_target(robotrrt.position, robotrrt.robot_orientation, path[i])
+        print("Driving to angle: ", angle)
+
         # Rotate angle on robot
         drive.turn(angle)
         robotrrt.robot_orientation += angle
         # Drive distance on robot
         distance = calculate_drive_distance(robotrrt.position, path[i])
+        print("Driving distance: ", distance)
         # Update robots position
         drive.drive(distance)
         robotrrt.position = path[i]
