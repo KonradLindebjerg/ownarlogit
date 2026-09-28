@@ -7,7 +7,7 @@ import landmarkmapping as lm
 from netplot import PlotSender
 
 # IP of the laptop running plot_client.py. Override with:  PLOT_HOST=<ip> python ex4-2.py
-PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.3")
+PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.3") # Hardcoded konrads ip
 PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
 
 def driveToGoal(robotrrt, path):
@@ -73,6 +73,7 @@ def main(gx=0.0, gy=2.0):
     print(path)
     print("orientation is")
     print(robotrrt.robot_orientation)
+    drive.drive(1)
 
     driveToGoal(robotrrt, path)
 
