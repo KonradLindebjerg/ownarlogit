@@ -1,5 +1,6 @@
 import os
 
+import drive
 import rrt_pi as rrt
 import landmarkmapping as lm
 from netplot import PlotSender
@@ -36,6 +37,7 @@ def main(gx=0.0, gy=2.0):
         rrttest.draw_graph(path=path)
 
     sender.close()
+    drive.turn(10)
     return path
 
 
