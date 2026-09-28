@@ -11,6 +11,7 @@ PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.3")
 PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
 
 def driveToGoal(robotrrt, path):
+    print("Started driving to goal")
     i = len(path) - 2
     while (i <= 0):
         # Calculate angle to next point
