@@ -19,7 +19,7 @@ def main(gx=0.0, gy=2.0):
     rrttest = rrt.RRT(
         start=[0, 0],
         goal=[gx, gy],
-        rand_area=[-2, 15],
+        rand_area=[-1.14, 1.36],
         obstacle_list=obstacleList,
         # play_area=[0, 10, 0, 14]
         robot_radius=0.225,
