@@ -42,6 +42,7 @@ class RRT:
                  max_iter=500,
                  play_area=None,
                  robot_radius=0.0,
+                 robot_orientation=0.0,
                  plot_sender=None,
                  ):
         """

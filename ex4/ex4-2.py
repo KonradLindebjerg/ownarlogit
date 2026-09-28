@@ -17,7 +17,7 @@ def main(gx=0.0, gy=2.0):
     obstacleList = lm.detectLandmark()
 
     # Set Initial parameters
-    rrttest = rrt.RRT(
+    robotrrt = rrt.RRT(
         start=[0, 0],
         goal=[gx, gy],
         rand_area=[-1.14, 1.36],
@@ -27,15 +27,16 @@ def main(gx=0.0, gy=2.0):
         plot_sender=sender,
     )
 
-    path = rrttest.planning(animation=True)
+    path = robotrrt.planning(animation=True)
 
     if path is None:
         print("Cannot find path")
     else:
         print("found path!!")
         # Push the final graph with the solution path to the laptop plot.
-        rrttest.draw_graph(path=path)
+        robotrrt.draw_graph(path=path)
 
+    print(robotrrt.orientation)
     sender.close()
     drive.turn(10)
     return path
