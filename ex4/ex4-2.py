@@ -14,8 +14,8 @@ def driveToGoal(robotrrt, path):
     print("Started driving to goal")
     i = len(path) - 2
     while (i >= 0):
-        # Calculate angle to next point
-        angle = angle_between_vectors(robotrrt.position, path[i])
+        # Signed turn from the robot's current heading toward the next point
+        angle = angle_to_target(robotrrt.position, robotrrt.robot_orientation, path[i])
         # Rotate angle on robot
         drive.turn(angle)
         robotrrt.robot_orientation += angle
@@ -27,14 +27,19 @@ def driveToGoal(robotrrt, path):
         i -= 1
 
 
-def angle_between_vectors(u, v):
-    dot_product = sum(i*j for i, j in zip(u, v))
-    norm_u = math.sqrt(sum(i**2 for i in u))
-    norm_v = math.sqrt(sum(i**2 for i in v))
-    cos_theta = dot_product / (norm_u * norm_v)
-    angle_rad = math.acos(cos_theta)
-    angle_deg = math.degrees(angle_rad)
-    return angle_deg
+def angle_to_target(position, orientation_deg, target):
+    """Smallest signed rotation (degrees) to face `target` from `position`.
+
+    Frame: the robot's forward axis is +y (the goal [0, 2] is straight ahead),
+    orientation is measured in degrees, and a positive turn is counter-clockwise
+    (heading measured from +y toward -x). If your robot turns the other way for a
+    positive drive.turn(), negate the return value here.
+    """
+    dx = target[0] - position[0]
+    dy = target[1] - position[1]
+    desired_deg = math.degrees(math.atan2(-dx, dy))
+    # Normalize to (-180, 180] so the robot always turns the short way.
+    return (desired_deg - orientation_deg + 180) % 360 - 180
 
 def calculate_drive_distance(u, v):
     lefthand  = (v[0] - u[0])**2
