@@ -9,6 +9,7 @@ leftSpeed  = 68
 rightSpeed = 62
 circleTime = 2.75
 driveTime  = 2.2
+eps        = 0.041
 
 def turn(angle):
     left = 1
@@ -19,10 +20,12 @@ def turn(angle):
     print(arlo.go_diff(leftSpeed, rightSpeed,left, right))
     sleep((abs(angle)/360)*circleTime)
     print(arlo.stop())
+    sleep(eps)
 
 def drive(length):
     print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
     sleep(driveTime*length)
     print(arlo.stop())
+    sleep(eps)
 
 

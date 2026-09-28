@@ -73,7 +73,6 @@ def main(gx=0.0, gy=2.0):
     print(path)
     print("orientation is")
     print(robotrrt.robot_orientation)
-    drive.drive(1)
 
     driveToGoal(robotrrt, path)
 
