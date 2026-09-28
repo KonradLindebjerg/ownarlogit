@@ -11,8 +11,13 @@ circleTime = 2.75
 driveTime  = 2.2
 
 def turn(angle):
-    print(arlo.go_diff(leftSpeed, rightSpeed, 1, 0))
-    sleep((angle/360)*circleTime)
+    left = 1
+    right = 0
+    if (angle < 0):
+        left, right = right, left
+
+    print(arlo.go_diff(leftSpeed, rightSpeed,left, right))
+    sleep((abs(angle)/360)*circleTime)
     print(arlo.stop())
 turn(-90)
 
