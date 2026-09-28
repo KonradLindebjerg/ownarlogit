@@ -55,13 +55,22 @@ def main(gx=0.0, gy=2.0):
 
     obstacleList = lm.detectLandmark()
 
+    # Reachable region in meters: [xmin, xmax, ymin, ymax]. Must contain the
+    # goal (e.g. y up to 2.0), or the tree can never reach it.
+    play_area = [-1.3, 1.10, 0, 3.5]
+
+    # rand_area is the sampling box, and it uses ONE [min, max] for both x and y.
+    # Span the full play area so every reachable point (goal included) can be
+    # sampled; nodes outside play_area are rejected anyway.
+    rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])]
+
     # Set Initial parameters
     robotrrt = rrt.RRT(
         start=[0, 0],
         goal=[gx, gy],
-        rand_area=[-1.35, 1.10],
+        rand_area=rand_area,
         obstacle_list=obstacleList,
-        play_area=[-1.3, 1.10, 0, 3.5],
+        play_area=play_area,
         robot_radius=0.25,
         plot_sender=sender,
     )
