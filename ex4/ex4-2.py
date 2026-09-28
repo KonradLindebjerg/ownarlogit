@@ -19,8 +19,9 @@ def driveToGoal(robotrrt, path):
         angle = angle_to_target(robotrrt.position, robotrrt.robot_orientation, path[i])
         print("Driving to angle: ", angle)
 
-        # Rotate angle on robot
-        drive.turn(angle)
+        # Rotate angle on robot. `angle` is CCW-positive (math convention), but
+        # drive.turn() is CW-positive (positive -> right turn), so negate it here.
+        drive.turn(-angle)
         robotrrt.robot_orientation += angle
         # Drive distance on robot
         distance = calculate_drive_distance(robotrrt.position, path[i])
@@ -36,14 +37,15 @@ def angle_to_target(position, orientation_deg, target):
 
     Frame: the robot's forward axis is +y (the goal [0, 2] is straight ahead),
     orientation is measured in degrees, and a positive turn is counter-clockwise
-    (heading measured from +y toward -x). If your robot turns the other way for a
-    positive drive.turn(), negate the return value here.
+    (heading measured from +y toward -x). This matches robot_orientation, so the
+    caller can do `robot_orientation += angle` directly. drive.turn() uses the
+    opposite (CW-positive) convention, so the caller negates when commanding it.
     """
     dx = target[0] - position[0]
     dy = target[1] - position[1]
     desired_deg = math.degrees(math.atan2(-dx, dy))
     # Normalize to (-180, 180] so the robot always turns the short way.
-    return - ((desired_deg - orientation_deg + 180) % 360 - 180)
+    return (desired_deg - orientation_deg + 180) % 360 - 180
 
 def calculate_drive_distance(u, v):
     lefthand  = (v[0] - u[0])**2
