@@ -71,6 +71,7 @@ class RRT:
         self.obstacle_list = obstacle_list
         self.node_list = []
         self.robot_radius = robot_radius
+        self.robot_orientation = robot_orientation 
         self.plot_sender = plot_sender
 
     def planning(self, animation=True):
