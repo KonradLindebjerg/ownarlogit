@@ -9,7 +9,7 @@ PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.3")
 PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
 
 
-def main(gx=6.0, gy=10.0):
+def main(gx=0.0, gy=2.0):
     # Connect to the laptop's live plotter (headless-safe: runs anyway if it fails).
     sender = PlotSender(PLOT_HOST, PLOT_PORT)
 
