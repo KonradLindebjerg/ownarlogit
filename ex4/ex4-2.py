@@ -61,7 +61,7 @@ def main(gx=0.0, gy=2.0):
         goal=[gx, gy],
         rand_area=[-1.35, 1.10],
         obstacle_list=obstacleList,
-        play_area=[-1.3, 1.10, 0, 3.5]
+        play_area=[-1.3, 1.10, 0, 3.5],
         robot_radius=0.25,
         plot_sender=sender,
     )
