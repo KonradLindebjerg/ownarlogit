@@ -13,7 +13,7 @@ PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
 def driveToGoal(robotrrt, path):
     print("Started driving to goal")
     i = len(path) - 2
-    while (i <= 0):
+    while (i >= 0):
         # Calculate angle to next point
         angle = angle_between_vectors(robotrrt.position, path[i])
         # Rotate angle on robot
