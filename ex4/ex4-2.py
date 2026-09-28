@@ -36,9 +36,11 @@ def main(gx=0.0, gy=2.0):
         # Push the final graph with the solution path to the laptop plot.
         robotrrt.draw_graph(path=path)
 
+    print("Path is:")
+    print(path)
+    print("orientation is")
     print(robotrrt.robot_orientation)
     sender.close()
-    drive.turn(10)
     return path
 
 

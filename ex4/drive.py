@@ -19,12 +19,10 @@ def turn(angle):
     print(arlo.go_diff(leftSpeed, rightSpeed,left, right))
     sleep((abs(angle)/360)*circleTime)
     print(arlo.stop())
-turn(-90)
 
 def drive(length):
     print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
-    sleep(driveTime)
+    sleep(driveTime*length)
     print(arlo.stop())
 
 
-#drive(1)
