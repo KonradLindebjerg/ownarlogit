@@ -8,7 +8,7 @@ arlo = robot.Robot()
 leftSpeed  = 64
 rightSpeed = 64
 circleTime = 2.5
-driveTime  = 1.7
+driveTime  = 2.0
 
 def turn(angle):
     print(arlo.go_diff(leftSpeed, rightSpeed, 1, 0))
@@ -18,7 +18,7 @@ def turn(angle):
 
 def drive(length):
     print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
-    sleep(circleTime)
+    sleep(4)
     print(arlo.stop())
 
 
