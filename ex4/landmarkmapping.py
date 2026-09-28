@@ -79,7 +79,7 @@ def detectLandmark():
         z = float(tvec[2])
         #marker_id = int(idss[i][0])
         obstaclelist.append((x,z, radius))
-
+    return obstaclelist
 
 def estimateLandmark(corners, id):
     cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
