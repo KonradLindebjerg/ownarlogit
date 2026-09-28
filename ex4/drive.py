@@ -9,7 +9,9 @@ leftSpeed = 64
 rightSpeed = 64
 
 def turn(angle):
-    print(arlo.go_diff(leftSpeed, rightSpeed, 1, -1))
+    print(arlo.go_diff(leftSpeed, rightSpeed, 1, 0))
+    sleep(4)
+    print(arlo.stop())
 
 
 
