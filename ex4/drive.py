@@ -29,7 +29,6 @@ def drive(length):
     sleep(eps)
 
 turn(-360)
-turn(360)
 
 
 
