@@ -10,6 +10,37 @@ from netplot import PlotSender
 PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.3")
 PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
 
+def driveToGoal(robotrrt, path):
+    i = len(path) - 2
+    while (i <= 0):
+        # Calculate angle to next point
+        angle = angle_between_vectors(robotrrt.position, path[i])
+        # Rotate angle on robot
+        drive.turn(angle)
+        robotrrt.robot_orientation += angle
+        # Drive distance on robot
+        distance = calculate_drive_distance(robotrrt.position, path[i])
+        # Update robots position
+        drive.drive(distance)
+        robotrrt.position = path[i]
+        i -= 1
+
+
+def angle_between_vectors(u, v):
+    dot_product = sum(i*j for i, j in zip(u, v))
+    norm_u = math.sqrt(sum(i**2 for i in u))
+    norm_v = math.sqrt(sum(i**2 for i in v))
+    cos_theta = dot_product / (norm_u * norm_v)
+    angle_rad = math.acos(cos_theta)
+    angle_deg = math.degrees(angle_rad)
+    return angle_deg
+
+def calculate_drive_distance(u, v):
+    lefthand  = (v[0] - u[0])**2
+    righthand = (v[1] - u[1])**2
+    return math.sqrt(lefthand + righthand)
+
+
 
 def main(gx=0.0, gy=2.0):
     # Connect to the laptop's live plotter (headless-safe: runs anyway if it fails).
@@ -55,35 +86,4 @@ def main(gx=0.0, gy=2.0):
 
 if __name__ == "__main__":
     main()
-
-def driveToGoal(robotrrt, path):
-    i = len(path) - 2
-    while (i <= 0):
-        # Calculate angle to next point
-        angle = angle_between_vectors(robotrrt.position, path[i])
-        # Rotate angle on robot
-        drive.turn(angle)
-        robotrrt.robot_orientation += angle
-        # Drive distance on robot
-        distance = calculate_drive_distance(robotrrt.position, path[i])
-        # Update robots position
-        drive.drive(distance)
-        robotrrt.position = path[i]
-        i -= 1
-
-
-def angle_between_vectors(u, v):
-    dot_product = sum(i*j for i, j in zip(u, v))
-    norm_u = math.sqrt(sum(i**2 for i in u))
-    norm_v = math.sqrt(sum(i**2 for i in v))
-    cos_theta = dot_product / (norm_u * norm_v)
-    angle_rad = math.acos(cos_theta)
-    angle_deg = math.degrees(angle_rad)
-    return angle_deg
-
-def calculate_drive_distance(u, v):
-    lefthand  = (v[0] - u[0])**2
-    righthand = (v[1] - u[1])**2
-    return math.sqrt(lefthand + righthand)
-
 
