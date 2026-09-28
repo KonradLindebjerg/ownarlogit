@@ -7,7 +7,7 @@ arlo = robot.Robot()
 
 leftSpeed  = 68
 rightSpeed = 62
-circleTime = 2.85
+circleTime = 2.80
 driveTime  = 2.2
 eps        = 0.041
 
@@ -28,5 +28,3 @@ def drive(length):
     print(arlo.stop())
     sleep(eps)
 
-turn(360)
-drive(1)
