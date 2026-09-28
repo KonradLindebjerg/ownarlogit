@@ -1,6 +1,6 @@
 import os
 
-import rrt_pi
+import rrt_pi as rrt
 import landmarkmapping as lm
 from netplot import PlotSender
 
