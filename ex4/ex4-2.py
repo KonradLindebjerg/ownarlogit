@@ -22,7 +22,7 @@ def main(gx=0.0, gy=2.0):
         rand_area=[-1.14, 1.36],
         obstacle_list=obstacleList,
         # play_area=[0, 10, 0, 14]
-        robot_radius=0.225,
+        robot_radius=0.25,
         plot_sender=sender,
     )
 
