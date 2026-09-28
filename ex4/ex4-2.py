@@ -1,4 +1,5 @@
 import os
+from time import sleep
 
 import math
 import drive
@@ -78,6 +79,8 @@ def main(gx=0.0, gy=2.0):
     print(path)
     print("orientation is")
     print(robotrrt.robot_orientation)
+
+    sleep(4)
 
     driveToGoal(robotrrt, path)
 
