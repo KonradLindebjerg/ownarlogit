@@ -43,6 +43,7 @@ class RRT:
                  max_iter=500,
                  play_area=None,
                  robot_radius=0.0,
+                 plot_sender=None,
                  ):
         """
         Setting Parameter
@@ -70,6 +71,7 @@ class RRT:
         self.obstacle_list = obstacle_list
         self.node_list = []
         self.robot_radius = robot_radius
+        self.plot_sender = plot_sender
     
     def planning(self, animation=True):
         """
@@ -161,7 +163,24 @@ class RRT:
             rnd = self.Node(self.end.x, self.end.y)
         return rnd
 
-    def draw_graph(self, rnd=None):
+    def draw_graph(self, rnd=None, path=None):
+        # If a network plot sender is configured (e.g. running headless on the
+        # Pi), stream the state to the laptop client instead of drawing here.
+        if self.plot_sender is not None:
+            state = {
+                "edges": [[node.path_x, node.path_y]
+                          for node in self.node_list if node.parent],
+                "obstacles": [[ox, oy, size]
+                              for (ox, oy, size) in self.obstacle_list],
+                "start": [self.start.x, self.start.y],
+                "end": [self.end.x, self.end.y],
+                "rnd": None if rnd is None else [rnd.x, rnd.y],
+                "robot_radius": self.robot_radius,
+                "path": path,
+            }
+            self.plot_sender.send(state)
+            return
+
         plt.clf()
         # for stopping simulation with the esc key.
         plt.gcf().canvas.mpl_connect(
