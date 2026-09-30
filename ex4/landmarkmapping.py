@@ -18,7 +18,7 @@ rightSpeed = 65
 imageSize  = (1640, 1232)
 FPS        = 30
 arloR     = 0.25
-landmarkR = 0.175
+landmarkR = 0.15
 
 cam = picamera2.Picamera2()
 frame_duration_limit = int(1/FPS * 1000000)

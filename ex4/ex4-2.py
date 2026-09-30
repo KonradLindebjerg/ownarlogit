@@ -10,7 +10,7 @@ from netplot import PlotSender
 # IP of the laptop running plot_client.py. Override with:  PLOT_HOST=<ip> python ex4-2.py
 PLOT_HOST    = os.environ.get("PLOT_HOST", "172.20.10.3") # Hardcoded konrads ip
 PLOT_PORT    = int(os.environ.get("PLOT_PORT", "5005"))
-ROBOT_RADIUS = 0.250
+ROBOT_RADIUS = 0.225
 EPS          = 0.5
 
 def rotate_obstacles(obstacles, heading_deg):
