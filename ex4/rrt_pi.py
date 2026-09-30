@@ -89,10 +89,11 @@ class RRT:
             nearest_node = self.node_list[nearest_ind]
 
             new_node = self.steer(nearest_node, rnd_node, self.expand_dis)
+            _, theta = calc_distance_and_angle(self.position, new_node)
 
             if self.check_if_outside_play_area(new_node, self.play_area) and \
                self.check_collision(
-                   new_node, self.obstacle_list, self.robot_radius):
+                   new_node, self.obstacle_list, self.robot_radius) and theta > 10:
                 self.node_list.append(new_node)
 
             if animation and i % 5 == 0:
