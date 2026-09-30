@@ -10,7 +10,7 @@ from netplot import PlotSender
 # IP of the laptop running plot_client.py. Override with:  PLOT_HOST=<ip> python ex4-2.py
 PLOT_HOST    = os.environ.get("PLOT_HOST", "172.20.10.3") # Hardcoded konrads ip
 PLOT_PORT    = int(os.environ.get("PLOT_PORT", "5005"))
-ROBOT_RADIUS = 0.225
+ROBOT_RADIUS = 0.250
 
 def driveToGoal(robotrrt, path):
     print("Started driving to goal")
@@ -79,7 +79,7 @@ def main(gx=0.0, gy=2.0):
         rand_area=rand_area,
         obstacle_list=obstacleList,
         play_area=play_area,
-        robot_radius=0.25,
+        robot_radius= ROBOT_RADIUS,
         plot_sender=sender,
     )
 
