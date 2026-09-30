@@ -64,7 +64,7 @@ def main(gx=0.0, gy=2.0):
 
     # Reachable region in meters: [xmin, xmax, ymin, ymax]. Must contain the
     # goal (e.g. y up to 2.0), or the tree can never reach it.
-    play_area = [-1.3, 1.10, 0, 3.5]
+    play_area=[-1.20, 1.20, 0, 4]
 
     # rand_area is the sampling box, and it uses ONE [min, max] for both x and y.
     # Span the full play area so every reachable point (goal included) can be
