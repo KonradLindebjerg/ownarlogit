@@ -57,7 +57,7 @@ def calculate_drive_distance(u, v):
 
 
 
-def main(gx=0.0, gy=2.0):
+def main(gx=0.0, gy=3.0):
     # Connect to the laptop's live plotter (headless-safe: runs anyway if it fails).
     sender = PlotSender(PLOT_HOST, PLOT_PORT)
 
