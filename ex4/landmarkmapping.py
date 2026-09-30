@@ -82,8 +82,8 @@ def detectLandmark():
     return obstaclelist
 
 def estimateLandmark(corners, id):
-    cameraMatrix = np.array([[1414, 0,imageSize[0]/2],
-                             [0, 1414,imageSize[1]/2],
+    cameraMatrix = np.array([[1377, 0,imageSize[0]/2],
+                             [0, 1377,imageSize[1]/2],
                              [0,   0,   1]], dtype=np.float32)
     dist_coeffs = np.zeros((1, 5), dtype=np.float32)
     MARKER_SIZE = 0.145  
