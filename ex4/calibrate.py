@@ -28,6 +28,6 @@ def drive(length):
     print(arlo.stop())
     sleep(eps)
 
-turn(-360)
+turn(360)
 
 #drive(3)
