@@ -124,7 +124,7 @@ def main(gx=0.0, gy=3.0):
 
     # Reachable region in meters: [xmin, xmax, ymin, ymax]. Must contain the
     # goal (e.g. y up to 2.0), or the tree can never reach it.
-    play_area=[(-1.60 + ROBOT_RADIUS ), 1.30 - ROBOT_RADIUS , 0, 4]
+    play_area=[(-1.60 + ROBOT_RADIUS ), 1.10 - ROBOT_RADIUS , 0, 4]
 
     # rand_area is the sampling box, and it uses ONE [min, max] for both x and y.
     # Span the full play area so every reachable point (goal included) can be
