@@ -92,14 +92,14 @@ class RRT:
 
         self.node_list = [self.start]
         for i in range(self.max_iter):
-            rnd_node = self.get_random_node()
-            nearest_ind = self.get_nearest_node_index(self.node_list, rnd_node)
+            rnd_node     = self.get_random_node()
+            nearest_ind  = self.get_nearest_node_index(self.node_list, rnd_node)
             nearest_node = self.node_list[nearest_ind]
 
             new_node = self.steer(nearest_node, rnd_node, self.expand_dis)
             turn_angle = self.calc_turn_angle(nearest_node, new_node)
             turn_ok = (turn_angle <= self.straight_tol or
-                       turn_angle >= self.min_turn_angle)
+                       abs(turn_angle) >= self.min_turn_angle)
 
             if self.check_if_outside_play_area(new_node, self.play_area) and \
                self.check_collision(
