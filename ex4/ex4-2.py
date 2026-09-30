@@ -133,7 +133,7 @@ def main(gx=0.0, gy=3.0):
 
     # Set Initial parameters
     robotrrt = rrt.RRT(
-        start=[0, 0],
+        start=[0, 0 - ROBOT_RADIUS],
         goal=[gx, gy],
         rand_area=rand_area,
         obstacle_list=obstacleList,
