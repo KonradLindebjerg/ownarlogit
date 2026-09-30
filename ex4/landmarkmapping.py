@@ -89,7 +89,7 @@ def estimateLandmark(corners, id):
     MARKER_SIZE = 0.145  
 
     if id is None or len(corners) == 0:
-        return np.empty((0, 1), dtype=int), np.empty((0, 1, 3), dtype=np.float32)
+        return np.empty((0, 1), dtype=int), np.empty((0, 1, 3), dtype=np.float32), landmarkR
 
     rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
         corners, MARKER_SIZE, cameraMatrix, dist_coeffs
