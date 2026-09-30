@@ -11,7 +11,7 @@ from netplot import PlotSender
 PLOT_HOST    = os.environ.get("PLOT_HOST", "172.20.10.3") # Hardcoded konrads ip
 PLOT_PORT    = int(os.environ.get("PLOT_PORT", "5005"))
 ROBOT_RADIUS = 0.250
-EPS          = 0.05
+EPS          = 0.5
 
 def rotate_obstacles(obstacles, heading_deg):
     """Rotate camera-frame detections into the starting map frame.
