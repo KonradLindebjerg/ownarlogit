@@ -32,6 +32,7 @@ def driveToGoal(robotrrt, path):
         i -= 1
 
 
+
 def angle_to_target(position, orientation_deg, target):
     """Smallest signed rotation (degrees) to face `target` from `position`.
 
@@ -45,6 +46,7 @@ def angle_to_target(position, orientation_deg, target):
     dy = target[1] - position[1]
     desired_deg = math.degrees(math.atan2(-dx, dy))
     # Normalize to (-180, 180] so the robot always turns the short way.
+    print((desired_deg - orientation_deg + 180) % 360 - 180)
     return (desired_deg - orientation_deg + 180) % 360 - 180
 
 def calculate_drive_distance(u, v):
