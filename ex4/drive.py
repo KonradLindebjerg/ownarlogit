@@ -29,5 +29,3 @@ def drive(length):
     sleep(eps)
 
 
-drive(2)
-
