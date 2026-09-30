@@ -43,6 +43,8 @@ class RRT:
                  play_area=None,
                  robot_radius=0.0,
                  robot_orientation=0.0,
+                 min_turn_angle=10.0,
+                 straight_tol=2.0,
                  plot_sender=None,
                  ):
         """
@@ -71,7 +73,13 @@ class RRT:
         self.obstacle_list = obstacle_list
         self.node_list = []
         self.robot_radius = robot_radius
-        self.robot_orientation = robot_orientation 
+        self.robot_orientation = robot_orientation
+        # Turn filtering (degrees): a new edge is only accepted if the turn the
+        # robot makes at the branching node is either ~straight (<= straight_tol)
+        # or a "real" turn (>= min_turn_angle). Tiny in-between turns are
+        # rejected because the robot can't execute them reliably.
+        self.min_turn_angle = min_turn_angle
+        self.straight_tol = straight_tol
         self.position = [self.start.x, self.start.y]
         self.plot_sender = plot_sender
 
@@ -89,11 +97,13 @@ class RRT:
             nearest_node = self.node_list[nearest_ind]
 
             new_node = self.steer(nearest_node, rnd_node, self.expand_dis)
-            _, theta = self.calc_distance_and_angle(self.position, new_node)
+            turn_angle = self.calc_turn_angle(nearest_node, new_node)
+            turn_ok = (turn_angle <= self.straight_tol or
+                       turn_angle >= self.min_turn_angle)
 
             if self.check_if_outside_play_area(new_node, self.play_area) and \
                self.check_collision(
-                   new_node, self.obstacle_list, self.robot_radius) and theta > 10:
+                   new_node, self.obstacle_list, self.robot_radius) and turn_ok:
                 self.node_list.append(new_node)
 
             if animation and i % 5 == 0:
@@ -229,6 +239,29 @@ class RRT:
         d = math.hypot(dx, dy)
         theta = math.atan2(dy, dx)
         return d, theta
+
+    def calc_turn_angle(self, nearest_node, new_node):
+        """Heading change (degrees, in [0, 180]) the robot makes at
+        ``nearest_node`` when it continues on to ``new_node``.
+
+        Compares the heading of the edge entering ``nearest_node`` (from its
+        parent) with the heading of the new edge ``nearest_node -> new_node``.
+        For the start node, which has no parent, the robot's initial
+        orientation is used as the incoming heading.
+        """
+        _, new_heading = self.calc_distance_and_angle(nearest_node, new_node)
+
+        if nearest_node.parent is not None:
+            _, in_heading = self.calc_distance_and_angle(
+                nearest_node.parent, nearest_node)
+        else:
+            in_heading = self.robot_orientation
+
+        # Normalise the difference to (-pi, pi] so wrap-around is handled, then
+        # return its magnitude in degrees.
+        diff = math.atan2(math.sin(new_heading - in_heading),
+                          math.cos(new_heading - in_heading))
+        return abs(math.degrees(diff))
 
 
 def main(gx=6.0, gy=10.0):
