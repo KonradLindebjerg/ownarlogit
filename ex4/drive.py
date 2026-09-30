@@ -10,7 +10,7 @@ leftSpeed  = 67
 rightSpeed = 64
 circleTime = 2.7
 driveTime  = 2.3
-eps        = 0.041
+eps        = 0.051
 
 def turn(angle):
     left = 1
