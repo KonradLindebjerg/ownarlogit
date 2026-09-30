@@ -5,7 +5,7 @@ import robot
 
 arlo = robot.Robot()
 
-leftSpeed  = 67
+leftSpeed  = 66
 rightSpeed = 64
 circleTime = 2.625
 driveTime  = 2.3
