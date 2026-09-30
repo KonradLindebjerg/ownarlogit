@@ -43,7 +43,7 @@ class RRT:
                  play_area=None,
                  robot_radius=0.0,
                  robot_orientation=0.0,
-                 min_turn_angle=10.0,
+                 min_turn_angle=5.0,
                  straight_tol=2.0,
                  plot_sender=None,
                  ):
