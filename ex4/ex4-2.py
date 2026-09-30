@@ -11,6 +11,7 @@ from netplot import PlotSender
 PLOT_HOST    = os.environ.get("PLOT_HOST", "172.20.10.3") # Hardcoded konrads ip
 PLOT_PORT    = int(os.environ.get("PLOT_PORT", "5005"))
 ROBOT_RADIUS = 0.250
+EPS          = 0.05
 
 def rotate_obstacles(obstacles, heading_deg):
     """Rotate camera-frame detections into the starting map frame.
@@ -44,19 +45,25 @@ def scan_surroundings():
 
     # 1) Straight ahead.
     obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+    sleep(EPS)
 
     # 2) Turn 45 degrees left (CCW).
     drive.turn(-45)
+    sleep(EPS)
     heading += 45
     obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+    sleep(EPS)
 
     # 3) Turn 90 degrees right (CW) -> now 45 degrees right of start.
     drive.turn(90)
+    sleep(EPS)
     heading -= 90
     obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+    sleep(EPS)
 
     # 4) Turn 45 degrees left to return to the start orientation.
     drive.turn(-45)
+    sleep(EPS)
     heading += 45
 
     print("Scan complete, heading back at:", heading)
