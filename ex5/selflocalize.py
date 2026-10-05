@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 try:
-    from lib import robot
+    from lib import drive
     
     print("imported robot")
     onRobot = True
@@ -145,7 +145,7 @@ try:
     angular_velocity = 0.0 # radians/sec
 
     # Initialize the robot (XXX: You do this)
-    robot = robot.Robot()
+    # Robot gets init in lib/drive.python
     
     
 
@@ -190,6 +190,7 @@ try:
         # Use motor controls to update particles
         # XXX: Make the robot drive
         # XXX: You do this
+        drive.drive(1)
 
 
         # Fetch next frame
