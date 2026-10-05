@@ -6,10 +6,10 @@ import robot
 arlo = robot.Robot()
 
 
-leftSpeed  = 69
-rightSpeed = 64
-circleTime = 2.85
-driveTime  = 2.3
+leftSpeed  = 68
+rightSpeed = 65
+circleTime = 2.8
+driveTime  = 2.25
 eps        = 0.1
 
 def turn(angle):

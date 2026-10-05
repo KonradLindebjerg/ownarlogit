@@ -1,4 +1,5 @@
 import cv2
+import math
 import particle
 import camera
 import numpy as np
@@ -9,7 +10,9 @@ import sys
 import os
 
 # CONSTANTS
-EPS = 0.05
+EPS         = 0.05       # EPS for sleep time so arlo hsa time to catch up
+SIGMA_THETA = 0.04363323 # Sigma noise for when turning
+SIGMA       = 0.02       # Sigma for driving distance
 
 # Flags
 showGUI  = False # Whether or not to open GUI windows
@@ -218,7 +221,7 @@ try:
 
         # XXX (Half C): add motion noise so the cloud can cover real drift, e.g.
         # particle.add_uncertainty(particles, sigma, sigma_theta)
-
+        particle.add_uncertainty(particles, SIGMA, SIGMA_THETA * (delta_theta / (2 * np.pi)))
 
 
 
@@ -229,14 +232,38 @@ try:
         # Detect objects
         objectIDs, dists, angles = cam.detect_aruco_objects(colour)
         if not isinstance(objectIDs, type(None)):
-            # List detected objects
+            # List detected objects, keeping ONE observation per unique ID.
+            # The same marker may be detected several times in a single frame;
+            # objectIDs/dists/angles are numpy arrays (no .pop()), so instead of
+            # mutating them we collect into a dict keyed by ID.
+            observations = {}  # ID -> (dist, angle), first occurrence wins
             for i in range(len(objectIDs)):
                 print("Object ID = ", objectIDs[i], ", Distance = ", dists[i], ", angle = ", angles[i])
-                
-                # XXX: Do something for each detected object - remember, the same ID may appear several times
-                # Since we know where the landmarks are we need to use this information
+
+                # Since we know where the landmarks are, use only known IDs.
+                oid = int(objectIDs[i])
+                if oid not in landmarkIDs or oid in observations:
+                    continue  # unknown landmark, or a duplicate of one already kept
+                observations[oid] = (dists[i], angles[i])
 
 
+            for p in particles:
+                predictions = {}
+                for l in oid:
+                    lx, ly = landmarks[l]
+                    dx = lx - p.getX()
+                    dy = ly - p.getY()
+                    d_pred = math.sqrt((dx**2) + (dy**2))
+                    predictions[oid] = d_pred
+                # Calculate distance to L1
+                lx, ly = landmarks[1]
+                dx = lx - p.getX()
+                dy = ly - p.getY()
+                d_pred = math.sqrt((dx**2) + (dy**2))
+                    
+
+
+                # Calculate distance to L2
 
             # Compute particle weights
             # XXX: You do this
