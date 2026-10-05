@@ -159,6 +159,7 @@ try:
         cam = camera.Camera(1, robottype='macbookpro', useCaptureThread=False)
 
     while True:
+        print("In while true")
 
         # Move the robot according to user input (only for testing)
         action = cv2.waitKey(10)
