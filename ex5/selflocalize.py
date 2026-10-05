@@ -20,9 +20,8 @@ def isRunningOnArlo():
     return onRobot
 
 
-if isRunningOnArlo():
-    # XXX: You need to change this path to point to where your robot.py file is located
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+# XXX: You need to change this path to point to where your robot.py file is located
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 try:
