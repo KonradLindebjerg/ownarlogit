@@ -195,8 +195,31 @@ try:
         # Use motor controls to update particles
         # XXX: Make the robot drive
         # XXX: You do this
-        drive.drive(0.2)
+        deltadistance = 0.2
+        theta = 10
+        drive.turn(theta)
+        drive.drive(deltadistance)
         sleep(EPS)
+
+        # Convert the commanded motion into filter units (cm, radians).
+        # drive.drive(length) is in meters; the filter works in cm, so x100.
+        CM_PER_DRIVE_UNIT = 100.0  # 1.0 drive-unit (1 m) == 100 cm
+        delta_d = deltadistance * CM_PER_DRIVE_UNIT  # e.g. 0.2 m -> 20 cm
+        delta_theta = np.deg2rad(theta)
+
+        for p in particles:
+            # Rotate first (robot turned, then drove)...
+            particle.move_particle(p, 0.0, 0.0, delta_theta)
+            # ...then translate along the particle's new heading.
+            particle.move_particle(p,
+                                   delta_d * np.cos(p.getTheta()),
+                                   delta_d * np.sin(p.getTheta()),
+                                   0.0)
+
+        # XXX (Half C): add motion noise so the cloud can cover real drift, e.g.
+        # particle.add_uncertainty(particles, sigma, sigma_theta)
+
+
 
 
 
@@ -209,7 +232,10 @@ try:
             # List detected objects
             for i in range(len(objectIDs)):
                 print("Object ID = ", objectIDs[i], ", Distance = ", dists[i], ", angle = ", angles[i])
+                
                 # XXX: Do something for each detected object - remember, the same ID may appear several times
+                # Since we know where the landmarks are we need to use this information
+
 
 
             # Compute particle weights
