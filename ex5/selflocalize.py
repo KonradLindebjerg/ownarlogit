@@ -3,10 +3,13 @@ import particle
 import camera
 import numpy as np
 import time
+from time import sleep
 from timeit import default_timer as timer
 import sys
 import os
 
+# CONSTANTS
+EPS = 0.05
 
 # Flags
 showGUI = False # Whether or not to open GUI windows
@@ -190,7 +193,9 @@ try:
         # Use motor controls to update particles
         # XXX: Make the robot drive
         # XXX: You do this
-        #drive.drive(1)
+        drive.drive(0.2)
+        sleep(EPS)
+
 
 
         # Fetch next frame
