@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
     from lib import robot
+    print("imported robot")
     onRobot = True
 except ImportError:
     print("selflocalize.py: robot module not present - forcing not running on Arlo!")
