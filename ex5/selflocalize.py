@@ -12,8 +12,9 @@ import os
 EPS = 0.05
 
 # Flags
-showGUI = False # Whether or not to open GUI windows
-onRobot = True  # Whether or not we are running on the Arlo robot
+showGUI  = False # Whether or not to open GUI windows
+onRobot  = True  # Whether or not we are running on the Arlo robot
+sendPlot = True
 
 
 def isRunningOnArlo():
@@ -27,14 +28,11 @@ def isRunningOnArlo():
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
-try:
-    from lib import drive
-    
-    print("imported robot")
-    onRobot = True
-except ImportError:
-    print("selflocalize.py: robot module not present - forcing not running on Arlo!")
-    onRobot = False
+from lib import drive
+from lib.netplot import PlotSender
+
+print("imported robot")
+onRobot = True
 
 
 
@@ -141,6 +139,10 @@ try:
     num_particles = 1000
     particles = initialize_particles(num_particles)
 
+    PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.3")   # laptop IP
+    PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
+    plot_sender = PlotSender(PLOT_HOST, PLOT_PORT) if sendPlot else None
+
     est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
 
     # Driving parameters
@@ -226,6 +228,13 @@ try:
     
         est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
 
+        if plot_sender is not None:
+            plot_sender.send({
+                "particles": [[p.getX(), p.getY(), p.getTheta(), p.getWeight()]
+                              for p in particles],
+                "est_pose": [est_pose.getX(), est_pose.getY(), est_pose.getTheta()],
+                "landmarks": {str(i): list(landmarks[i]) for i in landmarkIDs},
+            })
         if showGUI:
             # Draw map
             draw_world(est_pose, particles, world)
@@ -240,6 +249,8 @@ try:
 finally: 
     # Make sure to clean up even if an exception occurred
     
+    if sendPlot and 'plot_sender' in dir() and plot_sender is not None:
+        plot_sender.close()
     # Close all windows
     cv2.destroyAllWindows()
 
