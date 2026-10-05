@@ -190,7 +190,7 @@ try:
         # Use motor controls to update particles
         # XXX: Make the robot drive
         # XXX: You do this
-        drive.drive(1)
+        #drive.drive(1)
 
 
         # Fetch next frame
@@ -203,6 +203,7 @@ try:
             for i in range(len(objectIDs)):
                 print("Object ID = ", objectIDs[i], ", Distance = ", dists[i], ", angle = ", angles[i])
                 # XXX: Do something for each detected object - remember, the same ID may appear several times
+
 
             # Compute particle weights
             # XXX: You do this
