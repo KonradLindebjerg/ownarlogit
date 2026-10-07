@@ -167,7 +167,7 @@ try:
     plot_sender = PlotSender(PLOT_HOST, PLOT_PORT) if sendPlot else None
 
     est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
-    print(est_pose)
+    
     
     # Driving parameters
     velocity = 0.0 # cm/sec
@@ -195,6 +195,7 @@ try:
 
     while True:
         print("In while true")
+        print("COORDINATE ", est_pose)
 
         # Move the robot according to user input (only for testing)
         action = cv2.waitKey(10)
