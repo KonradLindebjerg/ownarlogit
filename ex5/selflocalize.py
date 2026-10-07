@@ -16,7 +16,8 @@ SIGMA       = 0.02       # Sigma for driving distance
 # Measurement noise for the ArUco distance reading, in cm. This is the spread
 # of the sensor likelihood and must be on the scale of the distances (cm),
 # NOT the tiny motion sigma above. Too small -> all weights underflow to 0.
-SIGMA_D     = .10       # cm; tune to your camera's distance error
+SIGMA_D     = 0.10       # m; tune to your camera's distance error
+MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 
 # Flags
 showGUI  = False # Whether or not to open GUI windows
@@ -37,6 +38,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from lib import drive
 from lib.netplot import PlotSender
+from lib import rrtimpl as rrt
 
 print("imported robot")
 onRobot = True
@@ -63,6 +65,10 @@ landmarks = {
 }
 landmark_colors = [CRED, CGREEN] # Colors used when drawing the landmarks
 
+l1x,l1y = landmarks[1]
+l2x,l2y = landmarks[2]
+
+MIDDLEPOINT = (l1x + l2x) / 2, (l1y + l2y) / 2 
 
 
 
@@ -214,17 +220,25 @@ try:
         # Use motor controls to update particles
         # XXX: Make the robot drive
         # XXX: You do this
-        deltadistance = 0 #0.2
-        theta = 0 #10
-        drive.turn(theta)
-        drive.drive(deltadistance)
+
+        # Calculate the robots orientation and distance to the middle
+        angle    = rrt.angle_to_target((est_pose.getX(), est_pose.getY()), est_pose.getTheta(), MIDDLEPOINT)
+        deltadistance = math.sqrt((est_pose.getX() - MIDDLEPOINT[0])**2 + (est_pose.getY() - MIDDLEPOINT[1])**2)
+
+        # Turn if needed
+
+        drive.turn(angle)
+        sleep(EPS)
+        # Drive a small distance 
+
+        drive.drive(min(deltadistance, MAXDISTANCE))
         sleep(EPS)
 
         # Convert the commanded motion into filter units (cm, radians).
         # drive.drive(length) is in meters; the filter works in cm, so x100.
         CM_PER_DRIVE_UNIT = 100.0  # 1.0 drive-unit (1 m) == 100 cm
         delta_d = deltadistance * CM_PER_DRIVE_UNIT  # e.g. 0.2 m -> 20 cm
-        delta_theta = np.deg2rad(theta)
+        delta_theta = np.deg2rad(angle)
 
         for p in particles:
             # Rotate first (robot turned, then drove)...
@@ -289,6 +303,8 @@ try:
                     likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA_D)
 
                 p.setWeight(p.getWeight() * likelihood)
+            # Compute particle weights
+            # XXX: You do this finito tror jeg
 
             total_weight = sum(p.getWeight() for p in particles)
             if total_weight > 0.0:
@@ -323,11 +339,7 @@ try:
                 for p in particles:
                     p.setWeight(1.0 / num_particles)
             
-            # Compute particle weights
-            # XXX: You do this finito tror jeg
 
-            # Resampling
-            # XXX: You do this finito?
 
             # Draw detected objects
             cam.draw_aruco_objects(colour)
@@ -355,6 +367,10 @@ try:
 
             # Show world
             cv2.imshow(WIN_World, world)
+
+
+        # Drive towards middle of landmarks
+
     
   
 finally: 
