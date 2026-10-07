@@ -57,7 +57,7 @@ CBLACK   = (0, 0, 0)
 
 # Landmarks.
 # The robot knows the position of 2 landmarks. Their coordinates are in the unit centimeters [cm].
-landmarks =drive 
+landmarks = {
     1: (300, 0),  # Coordinates for landmark 1
     2: (0, 0)  # Coordinates for landmark 2
 }
