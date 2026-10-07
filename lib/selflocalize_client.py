@@ -31,8 +31,14 @@ def main():
     buf = conn.makefile("r")
 
     plt.ion()
-    fig, ax = plt.subplots(figsize=(8, 8))
+    fig, ax = plt.subplots(figsize=(10, 10))
     jet = cm.get_cmap("jet")
+
+    # Fixed world window [cm] so the view stays large and doesn't rescale
+    # every frame. Covers the initial particle spread (x in [-100, 500],
+    # y in [-250, 350]) plus the landmarks, with a margin.
+    XLIM = (-150, 550)
+    YLIM = (-300, 400)
 
     for line in buf:  # one JSON state per line
         line = line.strip()
@@ -66,7 +72,9 @@ def main():
                       color="magenta", angles="xy", scale_units="xy", scale=1)
 
         ax.set_title("Self-localization world view")
-        ax.axis("equal")
+        ax.set_aspect("equal")
+        ax.set_xlim(*XLIM)
+        ax.set_ylim(*YLIM)
         ax.grid(True)
         plt.pause(0.001)
 
