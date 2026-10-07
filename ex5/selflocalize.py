@@ -13,6 +13,10 @@ import os
 EPS         = 0.05       # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA = 0.04363323 # Sigma noise for when turning
 SIGMA       = 0.02       # Sigma for driving distance
+# Measurement noise for the ArUco distance reading, in cm. This is the spread
+# of the sensor likelihood and must be on the scale of the distances (cm),
+# NOT the tiny motion sigma above. Too small -> all weights underflow to 0.
+SIGMA_D     = 10.0       # cm; tune to your camera's distance error
 
 # Flags
 showGUI  = False # Whether or not to open GUI windows
@@ -282,31 +286,42 @@ try:
                     landmark_x, landmark_y = landmarks[landmark_id]
                     
                     predicted_distance = math.sqrt((landmark_x - p.getX()) ** 2 + (landmark_y - p.getY()) **2)
-                    likelihood *= calc_likelihood(observed_distance, predicted_distance)
-                
+                    likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA_D)
+
                 p.setWeight(p.getWeight() * likelihood)
-            
+
             total_weight = sum(p.getWeight() for p in particles)
-            for p in particles:
-                p.setWeight(p.getWeight() / total_weight)
-            
-            weights = []
-            for p in particles:
-                weights.append(p.getWeight())
-            
-            cumsum = np.cumsum(weights)
-            
-            H20 = []
-            for k in range(num_particles):
-                z = np.random.rand()
-                for i in range(len(cumsum)):
-                    if z <= cumsum[i]:
-                        H20.append(particles[i])
-                        break
-            particles = H20
-            
-            for p in particles:
-                p.setWeight(1.0 / num_particles)
+            if total_weight > 0.0:
+                for p in particles:
+                    p.setWeight(p.getWeight() / total_weight)
+
+                weights = []
+                for p in particles:
+                    weights.append(p.getWeight())
+
+                cumsum = np.cumsum(weights)
+
+                H20 = []
+                for k in range(num_particles):
+                    z = np.random.rand()
+                    for i in range(len(cumsum)):
+                        if z <= cumsum[i]:
+                            # Copy the chosen particle: appending particles[i]
+                            # directly would alias the same object many times,
+                            # so move/noise would be applied to it repeatedly
+                            # and the cloud would collapse to a point.
+                            src = particles[i]
+                            H20.append(particle.Particle(src.getX(), src.getY(),
+                                                         src.getTheta(),
+                                                         1.0 / num_particles))
+                            break
+                particles = H20
+            else:
+                # Every weight underflowed to 0 (no particle fit the reading):
+                # keep the cloud and reset to a uniform distribution instead of
+                # dividing by zero.
+                for p in particles:
+                    p.setWeight(1.0 / num_particles)
             
             # Compute particle weights
             # XXX: You do this finito tror jeg
