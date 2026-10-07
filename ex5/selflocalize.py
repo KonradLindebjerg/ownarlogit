@@ -182,7 +182,7 @@ try:
     world = np.zeros((500,500,3), dtype=np.uint8)
 
     # Draw map
-    draw_world(est_pose, particles, world)
+    #draw_world(est_pose, particles, world)
 
     print("Opening and initializing camera")
     print(isRunningOnArlo)
@@ -196,8 +196,6 @@ try:
     while True:
         print("In while true")
         print("COORDINATE ", (est_pose.getX(), est_pose.getY(), est_pose.getTheta()))
-        for p in particles:
-            print("PARTICLE", (p.getX(), p.getY(), p.getTheta()))
 
         # Move the robot according to user input (only for testing)
         action = cv2.waitKey(10)
