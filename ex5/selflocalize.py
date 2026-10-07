@@ -47,21 +47,21 @@ onRobot = True
 
 
 # Some color constants in BGR format
-CRED = (0, 0, 255)
-CGREEN = (0, 255, 0)
-CBLUE = (255, 0, 0)
-CCYAN = (255, 255, 0)
-CYELLOW = (0, 255, 255)
+CRED     = (0, 0, 255)
+CGREEN   = (0, 255, 0)
+CBLUE    = (255, 0, 0)
+CCYAN    = (255, 255, 0)
+CYELLOW  = (0, 255, 255)
 CMAGENTA = (255, 0, 255)
-CWHITE = (255, 255, 255)
-CBLACK = (0, 0, 0)
+CWHITE   = (255, 255, 255)
+CBLACK   = (0, 0, 0)
 
 # Landmarks.
 # The robot knows the position of 2 landmarks. Their coordinates are in the unit centimeters [cm].
 landmarkIDs = [1, 2]
 landmarks = {
-    1: (-26.0, 167.0),  # Coordinates for landmark 1
-    2: (55.0, 167.0)  # Coordinates for landmark 2
+    1: (300, 0),  # Coordinates for landmark 1
+    2: (0, 0)  # Coordinates for landmark 2
 }
 landmark_colors = [CRED, CGREEN] # Colors used when drawing the landmarks
 
