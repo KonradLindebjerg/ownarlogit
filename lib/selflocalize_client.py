@@ -39,6 +39,18 @@ CBLACK   = (0, 0, 0)
 # to match draw_world's landmark_colors = [CRED, CGREEN].
 landmark_colors = [CRED, CGREEN, CBLUE, CYELLOW, CCYAN]
 
+# Fixed world window [cm] so the whole particle spread stays visible (covers the
+# initial spread x in [-100, 500], y in [-250, 350] plus landmarks, with a
+# margin). These match the old matplotlib XLIM/YLIM. The canvas is sized so that
+# 1 world cm == 1 pixel, and the offsets shift the window's min corner to 0 --
+# that way draw_world's native marker sizes (radius 2/5, 15 cm heading) are kept.
+XLIM = (-150, 550)
+YLIM = (-300, 400)
+WORLD_W = XLIM[1] - XLIM[0]      # 700
+WORLD_H = YLIM[1] - YLIM[0]      # 700
+OFFSET_X = -XLIM[0]              # 150
+OFFSET_Y = -YLIM[0]              # 300
+
 
 def jet(x):
     """Colour map for drawing particles. This function determines the colour of
@@ -62,9 +74,11 @@ def draw_world(est_pose, particles, landmarks, world):
         world     -- the cv2 image to paint into
     """
 
-    # Fix the origin of the coordinate system
-    offsetX = 0
-    offsetY = 0
+    # Fix the origin of the coordinate system. Unlike the on-robot draw_world
+    # (which uses 0, 0), we shift by the window's min corner so negative world
+    # coordinates are still drawn inside the canvas.
+    offsetX = OFFSET_X
+    offsetY = OFFSET_Y
 
     # Constant needed for transforming from world coordinates to screen coordinates (flip the y-axis)
     ymax = world.shape[0]
@@ -119,8 +133,9 @@ def main():
     WIN_World = "Self-localization world view"
     cv2.namedWindow(WIN_World)
 
-    # Allocate space for world map (same size as in ex5/selflocalize.py)
-    world = np.zeros((500, 500, 3), dtype=np.uint8)
+    # Allocate space for world map. Larger than the on-robot 500x500 so the
+    # full window (XLIM x YLIM) fits with 1 cm == 1 pixel.
+    world = np.zeros((WORLD_H, WORLD_W, 3), dtype=np.uint8)
 
     for line in buf:  # one JSON state per line
         line = line.strip()
