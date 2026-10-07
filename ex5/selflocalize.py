@@ -369,6 +369,7 @@ try:
 
         # Drive towards middle of landmarks
 
+    cam.terminateCaptureThread()
     
   
 finally: 
@@ -380,5 +381,5 @@ finally:
     cv2.destroyAllWindows()
 
     # Clean-up capture thread
-    cam.terminateCaptureThread()
+    #cam.terminateCaptureThread()
 
