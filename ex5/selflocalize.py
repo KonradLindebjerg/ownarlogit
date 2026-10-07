@@ -176,6 +176,7 @@ try:
 
     print("Opening and initializing camera")
     if isRunningOnArlo():
+        print("hej")
         #cam = camera.Camera(0, robottype='arlo', useCaptureThread=True)
         cam = camera.Camera(0, robottype='arlo', useCaptureThread=False)
     else:
