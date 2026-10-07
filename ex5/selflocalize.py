@@ -167,7 +167,8 @@ try:
     plot_sender = PlotSender(PLOT_HOST, PLOT_PORT) if sendPlot else None
 
     est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
-
+    print(est_pose)
+    
     # Driving parameters
     velocity = 0.0 # cm/sec
     angular_velocity = 0.0 # radians/sec
