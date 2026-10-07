@@ -175,13 +175,13 @@ try:
     draw_world(est_pose, particles, world)
 
     print("Opening and initializing camera")
+    print(isRunningOnArlo)
     if isRunningOnArlo():
         #cam = camera.Camera(0, robottype='arlo', useCaptureThread=True)
         cam = camera.Camera(0, robottype='arlo', useCaptureThread=False)
     else:
         #cam = camera.Camera(0, robottype='macbookpro', useCaptureThread=True)
-        #cam = camera.Camera(1, robottype='macbookpro', useCaptureThread=False)
-        cam = camera.Camera(0, robottype='arlo', useCaptureThread=False)
+        cam = camera.Camera(1, robottype='macbookpro', useCaptureThread=False)
 
     while True:
         print("In while true")
