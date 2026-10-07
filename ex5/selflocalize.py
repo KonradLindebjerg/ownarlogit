@@ -221,12 +221,12 @@ try:
         # XXX: You do this
 
         # Calculate the robots orientation and distance to the middle
-        angle    = drive.angle_to_target((est_pose.getX(), est_pose.getY()), est_pose.getTheta(), MIDDLEPOINT)
+        angle    = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), MIDDLEPOINT)
         deltadistance = math.sqrt((est_pose.getX() - MIDDLEPOINT[0])**2 + (est_pose.getY() - MIDDLEPOINT[1])**2)
 
         # Turn if needed
 
-        drive.turn(angle)
+        drive.turn(-angle)
         sleep(EPS)
         # Drive a small distance 
 
