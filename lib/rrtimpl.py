@@ -4,7 +4,7 @@ from time import sleep
 import math
 from lib import drive
 from lib import rrt_pi as rrt
-from lib import landmarkmapping as lm
+#from lib import landmarkmapping as lm
 from lib.netplot import PlotSender
 
 # IP of the laptop running plot_client.py. Override with:  PLOT_HOST=<ip> python ex4-2.py
@@ -31,45 +31,45 @@ def rotate_obstacles(obstacles, heading_deg):
     return rotated
 
 
-def scan_surroundings():
-    """Take 3 images to widen the field of view before planning.
-
-    Sequence: straight ahead, 45 degrees left, then 90 degrees right (ending
-    45 degrees right of start), then 45 degrees left back to the start
-    orientation. Detections from each pose are rotated into the starting map
-    frame and merged. drive.turn() is CW-positive, so a left (CCW) turn is
-    negated; `heading` tracks the CCW-positive orientation relative to start.
-    """
-    obstacles = []
-    heading = 0.0
-
-    # 1) Straight ahead.
-    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
-    sleep(EPS)
-
-    # 2) Turn 45 degrees left (CCW).
-    drive.turn(-45)
-    sleep(EPS)
-    heading += 45
-    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
-    sleep(EPS)
-
-    # 3) Turn 90 degrees right (CW) -> now 45 degrees right of start.
-    drive.turn(90)
-    sleep(EPS)
-    heading -= 90
-    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
-    sleep(EPS)
-
-    # 4) Turn 45 degrees left to return to the start orientation.
-    drive.turn(-45)
-    sleep(EPS)
-    heading += 45
-
-    print("Scan complete, heading back at:", heading)
-    print("Detected obstacles (map frame):", obstacles)
-    return obstacles
-
+#def scan_surroundings():
+#    """Take 3 images to widen the field of view before planning.
+#
+#    Sequence: straight ahead, 45 degrees left, then 90 degrees right (ending
+#    45 degrees right of start), then 45 degrees left back to the start
+#    orientation. Detections from each pose are rotated into the starting map
+#    frame and merged. drive.turn() is CW-positive, so a left (CCW) turn is
+#    negated; `heading` tracks the CCW-positive orientation relative to start.
+#    """
+#    obstacles = []
+#    heading = 0.0
+#
+#    # 1) Straight ahead.
+#    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+#    sleep(EPS)
+#
+#    # 2) Turn 45 degrees left (CCW).
+#    drive.turn(-45)
+#    sleep(EPS)
+#    heading += 45
+#    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+#    sleep(EPS)
+#
+#    # 3) Turn 90 degrees right (CW) -> now 45 degrees right of start.
+#    drive.turn(90)
+#    sleep(EPS)
+#    heading -= 90
+#    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+#    sleep(EPS)
+#
+#    # 4) Turn 45 degrees left to return to the start orientation.
+#    drive.turn(-45)
+#    sleep(EPS)
+#    heading += 45
+#
+#    print("Scan complete, heading back at:", heading)
+#    print("Detected obstacles (map frame):", obstacles)
+#    return obstacles
+#
 
 def driveToGoal(robotrrt, path):
     print("Started driving to goal")
