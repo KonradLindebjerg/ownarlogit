@@ -16,7 +16,7 @@ SIGMA       = 0.02       # Sigma for driving distance
 # Measurement noise for the ArUco distance reading, in cm. This is the spread
 # of the sensor likelihood and must be on the scale of the distances (cm),
 # NOT the tiny motion sigma above. Too small -> all weights underflow to 0.
-SIGMA_D     = 10.0       # cm; tune to your camera's distance error
+SIGMA_D     = .10       # cm; tune to your camera's distance error
 
 # Flags
 showGUI  = False # Whether or not to open GUI windows
