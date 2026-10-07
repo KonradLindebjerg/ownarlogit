@@ -176,12 +176,12 @@ try:
 
     print("Opening and initializing camera")
     if isRunningOnArlo():
-        print("hej")
         #cam = camera.Camera(0, robottype='arlo', useCaptureThread=True)
         cam = camera.Camera(0, robottype='arlo', useCaptureThread=False)
     else:
         #cam = camera.Camera(0, robottype='macbookpro', useCaptureThread=True)
-        cam = camera.Camera(1, robottype='macbookpro', useCaptureThread=False)
+        #cam = camera.Camera(1, robottype='macbookpro', useCaptureThread=False)
+        cam = camera.Camera(0, robottype='arlo', useCaptureThread=False)
 
     while True:
         print("In while true")
