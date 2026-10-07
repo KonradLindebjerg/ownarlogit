@@ -12,7 +12,7 @@ import os
 # CONSTANTS
 EPS         = 0.05       # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA = 0.04363323 # Sigma noise for when turning
-SIGMA       = 0.02       # Sigma for driving distance
+SIGMA       = 2.0       # Sigma for driving distance
 # Measurement noise for the ArUco distance reading, in cm. This is the spread
 # of the sensor likelihood and must be on the scale of the distances (cm),
 # NOT the tiny motion sigma above. Too small -> all weights underflow to 0.
@@ -232,15 +232,18 @@ try:
 
         drive.turn(-angle)
         sleep(EPS)
-        # Drive a small distance 
-
-        drive.drive(min(deltadistance, MAXDISTANCE))
+        # Drive a small distance.
+        #
+        # Everything in the filter is in cm. `deltadistance` is therefore
+        # already in cm, so cap it in cm and command the robot in meters.
+        MAX_DRIVE_CM = 50.0  # don't commit to more than 50 cm per step
+        drive_cm = min(deltadistance, MAX_DRIVE_CM)
+        drive.drive(drive_cm / 100.0)  # drive.drive() expects meters
         sleep(EPS)
 
-        # Convert the commanded motion into filter units (cm, radians).
-        # drive.drive(length) is in meters; the filter works in cm, so x100.
-        CM_PER_DRIVE_UNIT = 100.0  # 1.0 drive-unit (1 m) == 100 cm
-        delta_d = deltadistance * CM_PER_DRIVE_UNIT  # e.g. 0.2 m -> 20 cm
+        # Move the particles by exactly what we commanded the robot to do.
+        # This is already in cm -- do NOT rescale it.
+        delta_d = drive_cm
         delta_theta = np.deg2rad(angle)
 
         for p in particles:
