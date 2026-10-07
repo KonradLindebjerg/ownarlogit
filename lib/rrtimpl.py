@@ -3,9 +3,9 @@ from time import sleep
 
 import math
 from lib import drive
-import rrt_pi as rrt
-import landmarkmapping as lm
-from netplot import PlotSender
+from lib import rrt_pi as rrt
+from lib import landmarkmapping as lm
+from lib.netplot import PlotSender
 
 # IP of the laptop running plot_client.py. Override with:  PLOT_HOST=<ip> python ex4-2.py
 PLOT_HOST    = os.environ.get("PLOT_HOST", "172.20.10.3") # Hardcoded konrads ip
