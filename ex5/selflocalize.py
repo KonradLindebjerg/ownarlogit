@@ -125,6 +125,17 @@ def initialize_particles(num_particles):
     return particles
 
 
+def calc_likelihood(observed_distance, predicted_distance, sigma=SIGMA):
+    """Return the Gaussian likelihood for a measured distance.
+
+    The observed distance is noisy, so its residual from the predicted
+    distance is compared with the sensor's Gaussian noise distribution.
+    """
+    residual = observed_distance - predicted_distance
+    return (1.0 / (sigma * math.sqrt(2.0 * math.pi))
+            * math.exp(-0.5 * (residual / sigma) ** 2))
+
+
 # Main program #
 try:
     if showGUI:
@@ -246,30 +257,64 @@ try:
                     continue  # unknown landmark, or a duplicate of one already kept
                 observations[oid] = (dists[i], angles[i])
 
-
-            for p in particles:
-                predictions = {}
-                for l in oid:
-                    lx, ly = landmarks[l]
-                    dx = lx - p.getX()
-                    dy = ly - p.getY()
-                    d_pred = math.sqrt((dx**2) + (dy**2))
-                    predictions[oid] = d_pred
+                '''
+                for p in particles:
+                    predictions = {}
+                    for landmark_id, (observed_distance, observed_angle) in observations.items():
+                        lx, ly = landmarks[landmark_id]
+                        dx = lx - p.getX()
+                        dy = ly - p.getY()
+                        d_pred = math.sqrt((dx**2) + (dy**2))
+                        predictions[landmark_id] = d_pred
+                '''
+                '''    
                 # Calculate distance to L1
                 lx, ly = landmarks[1]
                 dx = lx - p.getX()
                 dy = ly - p.getY()
                 d_pred = math.sqrt((dx**2) + (dy**2))
-                    
+                '''
 
 
                 # Calculate distance to L2
-
+            
+            for p in particles:
+                likelihood = 1.0
+                for landmark_id, (observed_distance, observed_angle) in observations.items():
+                    landmark_x, landmark_y = landmarks[landmark_id]
+                    
+                    predicted_distance = math.sqrt((landmark_x - p.getX()) ** 2 + (landmark_y - p.getY()) **2)
+                    likelihood *= calc_likelihood(observed_distance, predicted_distance)
+                
+                p.setWeight(p.getWeight() * likelihood)
+            
+            total_weight = sum(p.getWeight() for p in particles)
+            for p in particles:
+                p.setWeight(p.getWeight() / total_weight)
+            
+            weights = []
+            for p in particles:
+                weights.append(p.getWeight())
+            
+            cumsum = np.cumsum(weights)
+            
+            H20 = []
+            for k in range(num_particles):
+                z = np.random.rand()
+                for i in range(len(cumsum)):
+                    if z <= cumsum[i]:
+                        H20.append(particles[i])
+                        break
+            particles = H20
+            
+            for p in particles:
+                p.setWeight(1.0 / num_particles)
+            
             # Compute particle weights
-            # XXX: You do this
+            # XXX: You do this finito tror jeg
 
             # Resampling
-            # XXX: You do this
+            # XXX: You do this finito?
 
             # Draw detected objects
             cam.draw_aruco_objects(colour)
