@@ -218,6 +218,45 @@ try:
 
 
         
+        # Use motor controls to update particles
+        # XXX: Make the robot drive
+        # XXX: You do this
+
+        # Calculate the robots orientation and distance to the middle
+        angle    = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), MIDDLEPOINT)
+        deltadistance = math.sqrt((est_pose.getX() - MIDDLEPOINT[0])**2 + (est_pose.getY() - MIDDLEPOINT[1])**2)
+
+        # Turn if needed
+
+        drive.turn(-angle)
+        sleep(EPS)
+        # Drive a small distance.
+        #
+        # Everything in the filter is in cm. `deltadistance` is therefore
+        # already in cm, so cap it in cm and command the robot in meters.
+        MAX_DRIVE_CM = 50.0  # don't commit to more than 50 cm per step
+        drive_cm = min(deltadistance, MAX_DRIVE_CM)
+        drive.drive(drive_cm / 100.0)  # drive.drive() expects meters
+        sleep(EPS)
+
+        # Move the particles by exactly what we commanded the robot to do.
+        # This is already in cm -- do NOT rescale it.
+        delta_d = drive_cm
+        delta_theta = np.deg2rad(angle)
+
+        for p in particles:
+            # Rotate first (robot turned, then drove)...
+            particle.move_particle(p, 0.0, 0.0, delta_theta)
+            # ...then translate along the particle's new heading.
+            particle.move_particle(p,
+                                   delta_d * np.cos(p.getTheta()),
+                                   delta_d * np.sin(p.getTheta()),
+                                   0.0)
+
+        # XXX (Half C): add motion noise so the cloud can cover real drift, e.g.
+        # particle.add_uncertainty(particles, sigma, sigma_theta)
+        particle.add_uncertainty(particles, SIGMA, SIGMA_THETA * (delta_theta / (2 * np.pi)))
+
         # Fetch next frame
         colour = cam.get_next_frame()
         
@@ -335,45 +374,6 @@ try:
 
 
         # Drive towards middle of landmarks
-        # Use motor controls to update particles
-        # XXX: Make the robot drive
-        # XXX: You do this
-
-        # Calculate the robots orientation and distance to the middle
-        angle    = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), MIDDLEPOINT)
-        deltadistance = math.sqrt((est_pose.getX() - MIDDLEPOINT[0])**2 + (est_pose.getY() - MIDDLEPOINT[1])**2)
-
-        # Turn if needed
-
-        drive.turn(-angle)
-        sleep(EPS)
-        # Drive a small distance.
-        #
-        # Everything in the filter is in cm. `deltadistance` is therefore
-        # already in cm, so cap it in cm and command the robot in meters.
-        MAX_DRIVE_CM = 50.0  # don't commit to more than 50 cm per step
-        drive_cm = min(deltadistance, MAX_DRIVE_CM)
-        drive.drive(drive_cm / 100.0)  # drive.drive() expects meters
-        sleep(EPS)
-
-        # Move the particles by exactly what we commanded the robot to do.
-        # This is already in cm -- do NOT rescale it.
-        delta_d = drive_cm
-        delta_theta = np.deg2rad(angle)
-
-        for p in particles:
-            # Rotate first (robot turned, then drove)...
-            particle.move_particle(p, 0.0, 0.0, delta_theta)
-            # ...then translate along the particle's new heading.
-            particle.move_particle(p,
-                                   delta_d * np.cos(p.getTheta()),
-                                   delta_d * np.sin(p.getTheta()),
-                                   0.0)
-
-        # XXX (Half C): add motion noise so the cloud can cover real drift, e.g.
-        # particle.add_uncertainty(particles, sigma, sigma_theta)
-        particle.add_uncertainty(particles, SIGMA, SIGMA_THETA * (delta_theta / (2 * np.pi)))
-
 
     cam.terminateCaptureThread()
     
