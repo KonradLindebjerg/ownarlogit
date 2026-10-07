@@ -304,7 +304,7 @@ try:
                     landmark_x, landmark_y = landmarks[landmark_id]
                     
                     predicted_distance = math.sqrt((landmark_x - p.getX()) ** 2 + (landmark_y - p.getY()) **2)
-                    likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA_D)
+                    likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA)
 
                 p.setWeight(p.getWeight() * likelihood)
             # Compute particle weights
