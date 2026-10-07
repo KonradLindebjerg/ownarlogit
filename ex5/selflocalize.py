@@ -214,8 +214,8 @@ try:
         # Use motor controls to update particles
         # XXX: Make the robot drive
         # XXX: You do this
-        deltadistance = 0.2
-        theta = 10
+        deltadistance = 0 #0.2
+        theta = 0 #10
         drive.turn(theta)
         drive.drive(deltadistance)
         sleep(EPS)

@@ -15,7 +15,6 @@ import os
 import socket
 
 import matplotlib.pyplot as plt
-from matplotlib import cm
 
 PORT = int(os.environ.get("PLOT_PORT", "5005"))
 
@@ -32,7 +31,7 @@ def main():
 
     plt.ion()
     fig, ax = plt.subplots(figsize=(10, 10))
-    jet = cm.get_cmap("jet")
+    jet = plt.get_cmap("jet")  # cm.get_cmap was removed in matplotlib 3.9+
 
     # Fixed world window [cm] so the view stays large and doesn't rescale
     # every frame. Covers the initial particle spread (x in [-100, 500],
