@@ -196,6 +196,8 @@ try:
     while True:
         print("In while true")
         print("COORDINATE ", (est_pose.getX(), est_pose.getY(), est_pose.getTheta()))
+        for p in particles:
+            print("PARTICLE", (p.getX(), p.getY(), p.getTheta()))
 
         # Move the robot according to user input (only for testing)
         action = cv2.waitKey(10)
