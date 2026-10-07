@@ -38,7 +38,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from lib import drive
 from lib.netplot import PlotSender
-from lib import rrtimpl as rrt
 
 print("imported robot")
 onRobot = True
@@ -58,8 +57,7 @@ CBLACK   = (0, 0, 0)
 
 # Landmarks.
 # The robot knows the position of 2 landmarks. Their coordinates are in the unit centimeters [cm].
-landmarkIDs = [1, 2]
-landmarks = {
+landmarks =drive 
     1: (300, 0),  # Coordinates for landmark 1
     2: (0, 0)  # Coordinates for landmark 2
 }
@@ -222,7 +220,7 @@ try:
         # XXX: You do this
 
         # Calculate the robots orientation and distance to the middle
-        angle    = rrt.angle_to_target((est_pose.getX(), est_pose.getY()), est_pose.getTheta(), MIDDLEPOINT)
+        angle    = drive.angle_to_target((est_pose.getX(), est_pose.getY()), est_pose.getTheta(), MIDDLEPOINT)
         deltadistance = math.sqrt((est_pose.getX() - MIDDLEPOINT[0])**2 + (est_pose.getY() - MIDDLEPOINT[1])**2)
 
         # Turn if needed
