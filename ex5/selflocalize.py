@@ -153,7 +153,7 @@ try:
     num_particles = 1000
     particles = initialize_particles(num_particles)
 
-    PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.8")   # laptop IP
+    PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.3")   # laptop IP
     PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
     plot_sender = PlotSender(PLOT_HOST, PLOT_PORT) if sendPlot else None
 
