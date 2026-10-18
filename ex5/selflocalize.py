@@ -11,12 +11,12 @@ import os
 
 # CONSTANTS
 EPS         = 0.1       # EPS for sleep time so arlo hsa time to catch up
-SIGMA_THETA = 0.04363323 # Sigma noise for when turning
+SIGMA_THETA = 0.029320 # Sigma noise for when turning
 SIGMA       = 2.0       # Sigma for driving distance
 # Measurement noise for the ArUco distance reading, in cm. This is the spread
 # of the sensor likelihood and must be on the scale of the distances (cm),
 # NOT the tiny motion sigma above. Too small -> all weights underflow to 0.
-SIGMA_D     = 0.10       # m; tune to your camera's distance error
+SIGMA_D     = 0.379435       # m; tune to your camera's distance error
 MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 
 # Flags
