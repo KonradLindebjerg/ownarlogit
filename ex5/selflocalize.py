@@ -202,7 +202,7 @@ try:
     GOAL_DISTANCE_TOLERANCE_CM = 10.0
     GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
     SEARCH_TURN_STEP_DEG = 25.0
-    SEARCH_DRIVE_STEP_CM = 10.0
+    SEARCH_DRIVE_STEP_CM = 1
     search_mode = False
     frame_count = 0
 
@@ -373,7 +373,7 @@ try:
             drive_cmd_cm = SEARCH_DRIVE_STEP_CM
             drive.turn(turn_cmd_deg)
             sleep(EPS)
-            drive.drive(drive_cmd_cm / 100.0)
+            drive.drive(drive_cmd_cm)
             sleep(EPS)
         else:
             turn_cmd_deg = -goal_angle
@@ -381,7 +381,7 @@ try:
             sleep(EPS)
             MAX_DRIVE_CM = 50.0
             drive_cmd_cm = min(goal_distance, MAX_DRIVE_CM)
-            drive.drive(drive_cmd_cm / 100.0)
+            drive.drive(drive_cmd_cm)
             sleep(EPS)
 
         if DEBUG:
