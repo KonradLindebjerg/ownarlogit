@@ -201,9 +201,8 @@ try:
     last_goal = MIDDLEPOINT
     GOAL_DISTANCE_TOLERANCE_CM = 10.0
     GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
-    SEARCH_TURN_STEP_DEG = 20.0
-    MARKER_CENTER_TOLERANCE_DEG = 3.0
-    MAX_MARKER_CORRECTION_DEG = 20.0
+    SEARCH_TURN_STEP_DEG = 25.0
+    SEARCH_DRIVE_STEP_CM = 10.0
     search_mode = False
     frame_count = 0
 
@@ -341,8 +340,7 @@ try:
         heading_error = abs(wrapped_angle(math.atan2(target[1] - est_pose.getY(), target[0] - est_pose.getX()) - est_pose.getTheta()))
 
         if DEBUG:
-            mode = ("TRACK" if len(observations) == 1 else
-                    "SEARCH" if search_mode else "NAVIGATE")
+            mode = "SEARCH" if search_mode else "NAVIGATE"
             spread_x = float(np.std([p.getX() for p in particles]))
             spread_y = float(np.std([p.getY() for p in particles]))
             observed_ids = sorted(observations)
@@ -370,21 +368,12 @@ try:
         turn_cmd_deg = 0.0
         drive_cmd_cm = 0.0
 
-        if len(observations) == 1:
-            marker_id = next(iter(observations))
-            marker_bearing_deg = math.degrees(observations[marker_id][1])
-            if abs(marker_bearing_deg) > MARKER_CENTER_TOLERANCE_DEG:
-                turn_cmd_deg = float(np.clip(-marker_bearing_deg,
-                                             -MAX_MARKER_CORRECTION_DEG,
-                                             MAX_MARKER_CORRECTION_DEG))
-            drive_cmd_cm = 0.0
-            if turn_cmd_deg != 0.0:
-                drive.turn(turn_cmd_deg)
-                sleep(EPS)
-        elif should_search:
+        if should_search:
             turn_cmd_deg = SEARCH_TURN_STEP_DEG
-            drive_cmd_cm = 0.0
+            drive_cmd_cm = SEARCH_DRIVE_STEP_CM
             drive.turn(turn_cmd_deg)
+            sleep(EPS)
+            drive.drive(drive_cmd_cm / 100.0)
             sleep(EPS)
         else:
             turn_cmd_deg = -goal_angle
