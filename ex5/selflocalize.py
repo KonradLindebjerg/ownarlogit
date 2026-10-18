@@ -201,8 +201,8 @@ try:
     last_goal = MIDDLEPOINT
     GOAL_DISTANCE_TOLERANCE_CM = 10.0
     GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
-    SEARCH_TURN_STEP_DEG = 10.0
-    SINGLE_MARKER_TURN_STEP_DEG = 10.0
+    SEARCH_TURN_STEP_DEG = 20.0
+    SINGLE_MARKER_TURN_STEP_DEG = 20.0
     search_mode = False
     frame_count = 0
 
