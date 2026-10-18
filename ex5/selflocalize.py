@@ -312,9 +312,8 @@ try:
                 last_goal = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
                 search_mode = False
             elif len(observations) == 1:
-                # One landmark does not reliably resolve heading; keep scanning
-                # gently instead of making a large midpoint correction.
-                search_mode = True
+                # Use the single landmark to update pose and resume target navigation.
+                search_mode = False
             else:
                 # No valid landmark observations remain after filtering.
                 search_mode = True
