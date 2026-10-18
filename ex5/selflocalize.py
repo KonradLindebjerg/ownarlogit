@@ -140,7 +140,7 @@ def initialize_particles(num_particles):
     return particles
 
 
-def calc_likelihood(observed_distance, predicted_distance, sigma=SIGMA):
+def calc_likelihood(observed_distance, predicted_distance, sigma):
     """Return the Gaussian likelihood for a measured distance.
 
     The observed distance is noisy, so its residual from the predicted
