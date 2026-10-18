@@ -361,7 +361,7 @@ try:
         # target temporarily; otherwise keep moving toward the midpoint.
         # If no valid landmark was seen on the current frame, force a search
         # manoeuvre instead of continuing toward a stale goal.
-        should_search = search_mode or (goal_distance < 5.0)
+        should_search = search_mode
 
         turn_cmd_deg = 0.0
         drive_cmd_cm = 0.0
