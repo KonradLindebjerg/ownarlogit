@@ -57,10 +57,10 @@ CBLACK   = (0, 0, 0)
 
 # Landmarks.
 # The robot knows the position of 2 landmarks. Their coordinates are in the unit centimeters [cm].
-landmarkIDs = [1, 2]
+landmarkIDs = [1, 3]
 landmarks = {
     1: (0.0, 0.0),    # Coordinates for landmark 1
-    2: (300.0, 0.0)  # Coordinates for landmark 2
+    3: (300.0, 0.0)  # Coordinates for landmark 2
 }
 landmark_colors = [CRED, CGREEN] # Colors used when drawing the landmarks
 
@@ -199,6 +199,8 @@ try:
         cam = camera.Camera(1, robottype='macbookpro', useCaptureThread=False)
 
     last_goal = MIDDLEPOINT
+    GOAL_DISTANCE_TOLERANCE_CM = 10.0
+    GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
 
     while True:
         print("In while true")
@@ -226,6 +228,14 @@ try:
         target = last_goal
         goal_angle = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), target)
         goal_distance = math.hypot(est_pose.getX() - target[0], est_pose.getY() - target[1])
+        heading_error = abs(wrapped_angle(math.atan2(target[1] - est_pose.getY(), target[0] - est_pose.getX()) - est_pose.getTheta()))
+
+        # Stop once we are close enough to the target midpoint and aligned with it.
+        if goal_distance <= GOAL_DISTANCE_TOLERANCE_CM and heading_error <= GOAL_ANGLE_TOLERANCE_RAD:
+            print("Reached target midpoint within tolerance; stopping.")
+            drive.drive(0.0)
+            sleep(EPS)
+            break
 
         # If we have no observation at all, do a slow scan/search instead of driving blindly.
         # This is the required fallback strategy when the boxes are not visible.
