@@ -23,6 +23,7 @@ MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 showGUI  = False # Whether or not to open GUI windows
 onRobot  = True  # Whether or not we are running on the Arlo robot
 sendPlot = True
+DEBUG    = True
 
 
 def isRunningOnArlo():
@@ -39,7 +40,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from lib import drive
 from lib.netplot import PlotSender
 
-print("imported robot")
+print("Robot drive modules loaded")
 onRobot = True
 
 
@@ -189,8 +190,7 @@ try:
     # Draw map
     #draw_world(est_pose, particles, world)
 
-    print("Opening and initializing camera")
-    print(isRunningOnArlo)
+    print("Initializing camera...")
     if isRunningOnArlo():
         #cam = camera.Camera(0, robottype='arlo', useCaptureThread=True)
         cam = camera.Camera(0, robottype='arlo', useCaptureThread=False)
@@ -202,10 +202,14 @@ try:
     GOAL_DISTANCE_TOLERANCE_CM = 10.0
     GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
     search_mode = False
+    frame_count = 0
+
+    if DEBUG:
+        print(f"Localization started: {num_particles} particles, landmarks={landmarkIDs}, "
+              f"distance sigma={SIGMA_D:.2f} cm, angle sigma={np.rad2deg(SIGMA_THETA):.1f} deg")
 
     while True:
-        print("In while true")
-        print("COORDINATE ", (est_pose.getX(), est_pose.getY(), est_pose.getTheta()))
+        frame_count += 1
 
         # Move the robot according to user input (only for testing)
         action = cv2.waitKey(10)
@@ -231,15 +235,25 @@ try:
         # Detect objects
         objectIDs, dists, angles = cam.detect_aruco_objects(colour)
         observations = {}
+        weight_status = "no valid landmark observations"
         if not isinstance(objectIDs, type(None)):
             # List detected objects, keeping ONE observation per unique ID.
             for i in range(len(objectIDs)):
-                print("Object ID = ", objectIDs[i], ", Distance = ", dists[i], ", angle = ", angles[i])
-
                 oid = int(objectIDs[i])
-                if oid not in landmarkIDs or oid in observations:
+                if oid not in landmarkIDs:
+                    detection_status = "ignored: unknown landmark ID"
+                elif oid in observations:
+                    detection_status = "ignored: duplicate ID"
+                else:
+                    detection_status = "used"
+                    observations[oid] = (dists[i], angles[i])
+
+                if DEBUG:
+                    print(f"  Detection ID {oid}: {float(dists[i]):.1f} cm, "
+                          f"{math.degrees(float(angles[i])):+.1f} deg ({detection_status})")
+
+                if detection_status != "used":
                     continue
-                observations[oid] = (dists[i], angles[i])
 
             for p in particles:
                 likelihood = 1.0
@@ -257,9 +271,16 @@ try:
                 p.setWeight(p.getWeight() * likelihood)
 
             total_weight = sum(p.getWeight() for p in particles)
-            if total_weight > 0.0:
+            if not observations:
+                weight_status = "prior only; no recognized landmarks"
+            elif total_weight > 0.0:
                 for p in particles:
                     p.setWeight(p.getWeight() / total_weight)
+
+                effective_sample_size = 1.0 / sum(p.getWeight() ** 2 for p in particles)
+                max_weight = max(p.getWeight() for p in particles)
+                weight_status = (f"updated; ESS={effective_sample_size:.0f}/{num_particles}, "
+                                 f"max weight={max_weight:.4f}")
 
                 weights = []
                 for p in particles:
@@ -280,6 +301,7 @@ try:
             else:
                 for p in particles:
                     p.setWeight(1.0 / num_particles)
+                weight_status = "all likelihoods underflowed; reset weights uniformly"
 
             if len(observations) >= 2:
                 # Both landmarks are visible: target the midpoint between them.
@@ -305,6 +327,7 @@ try:
             search_mode = True
             for p in particles:
                 p.setWeight(1.0 / num_particles)
+            weight_status = "no markers detected; weights unchanged"
 
         est_pose = particle.estimate_pose(particles)
 
@@ -316,8 +339,22 @@ try:
         goal_distance = math.hypot(est_pose.getX() - target[0], est_pose.getY() - target[1])
         heading_error = abs(wrapped_angle(math.atan2(target[1] - est_pose.getY(), target[0] - est_pose.getX()) - est_pose.getTheta()))
 
+        if DEBUG:
+            mode = "SEARCH" if search_mode else "NAVIGATE"
+            spread_x = float(np.std([p.getX() for p in particles]))
+            spread_y = float(np.std([p.getY() for p in particles]))
+            observed_ids = sorted(observations)
+            print(f"Frame {frame_count}: detections={observed_ids or 'none'}; {weight_status}")
+            print(f"  Pose estimate: x={est_pose.getX():.1f} cm, y={est_pose.getY():.1f} cm, "
+                  f"heading={math.degrees(est_pose.getTheta()):+.1f} deg "
+                  f"(particle spread x={spread_x:.1f}, y={spread_y:.1f} cm)")
+            print(f"  Target: x={target[0]:.1f} cm, y={target[1]:.1f} cm; "
+                  f"distance={goal_distance:.1f} cm, bearing error={goal_angle:+.1f} deg, "
+                  f"heading error={math.degrees(heading_error):.1f} deg; mode={mode}")
+
         if not search_mode and goal_distance <= GOAL_DISTANCE_TOLERANCE_CM and heading_error <= GOAL_ANGLE_TOLERANCE_RAD:
-            print("Reached target midpoint within tolerance; stopping.")
+            print(f"Stopping: target tolerance reached ({goal_distance:.1f} cm, "
+                f"heading error {math.degrees(heading_error):.1f} deg).")
             drive.drive(0.0)
             sleep(EPS)
             break
@@ -346,6 +383,9 @@ try:
             drive_cmd_cm = min(goal_distance, MAX_DRIVE_CM)
             drive.drive(drive_cmd_cm / 100.0)
             sleep(EPS)
+
+        if DEBUG:
+            print(f"  Command: turn {turn_cmd_deg:+.1f} deg, drive {drive_cmd_cm:.1f} cm")
 
         # Move the particles by exactly what we commanded the robot to do.
         delta_theta = np.deg2rad(turn_cmd_deg)
