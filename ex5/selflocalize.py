@@ -201,6 +201,7 @@ try:
     last_goal = MIDDLEPOINT
     GOAL_DISTANCE_TOLERANCE_CM = 10.0
     GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
+    search_mode = False
 
     while True:
         print("In while true")
@@ -239,10 +240,9 @@ try:
 
         # If the robot is near a single visible landmark, treat it as a tracking
         # target temporarily; otherwise keep moving toward the midpoint.
-        should_search = False
-        if goal_distance < 5.0:
-            # scan when close to, or uncertain about, the current target
-            should_search = True
+        # If no valid landmark was seen on the previous frame, force a search
+        # manoeuvre instead of continuing toward a stale goal.
+        should_search = search_mode or (goal_distance < 5.0)
 
         if should_search:
             drive.turn(25.0)
@@ -332,19 +332,22 @@ try:
                 l1x, l1y = landmarks[observed_ids[0]]
                 l2x, l2y = landmarks[observed_ids[1]]
                 last_goal = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
+                search_mode = False
             elif len(observations) == 1:
                 # Only one landmark is visible: keep the last midpoint as the goal
                 # but use this landmark to keep the pose estimate consistent.
                 landmark_id = next(iter(observations))
                 last_goal = last_goal if abs(last_goal[0]) > 0.0 or abs(last_goal[1]) > 0.0 else landmarks[landmark_id]
+                search_mode = False
             else:
                 # No valid landmark observations remain after filtering.
-                last_goal = last_goal
+                search_mode = True
 
             cam.draw_aruco_objects(colour)
         else:
-            # No landmark seen in this frame: search behaviour continues, but do
-            # not force the robot to target a single landmark.
+            # No landmark seen in this frame: force search behaviour instead of
+            # continuing toward a stale target.
+            search_mode = True
             for p in particles:
                 p.setWeight(1.0 / num_particles)
 
