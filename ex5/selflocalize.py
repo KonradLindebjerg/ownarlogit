@@ -281,7 +281,7 @@ try:
             for i in range(len(objectIDs)):
                 print("Object ID = ", objectIDs[i], ", Distance = ", dists[i], ", angle = ", angles[i])
 
-                oid = int([i])
+                oid = int(objectIDs[i])
                 if oid not in landmarkIDs or oid in observations:
                     continue
                 observations[oid] = (dists[i], angles[i])
