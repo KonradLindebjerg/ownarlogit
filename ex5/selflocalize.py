@@ -237,9 +237,14 @@ try:
             sleep(EPS)
             break
 
-        # If we have no observation at all, do a slow scan/search instead of driving blindly.
-        # This is the required fallback strategy when the boxes are not visible.
+        # If the robot is near a single visible landmark, treat it as a tracking
+        # target temporarily; otherwise keep moving toward the midpoint.
+        should_search = False
         if goal_distance < 5.0:
+            # scan when close to, or uncertain about, the current target
+            should_search = True
+
+        if should_search:
             drive.turn(25.0)
             sleep(EPS)
             drive.drive(0.10)
@@ -276,7 +281,7 @@ try:
             for i in range(len(objectIDs)):
                 print("Object ID = ", objectIDs[i], ", Distance = ", dists[i], ", angle = ", angles[i])
 
-                oid = int(objectIDs[i])
+                oid = int([i])
                 if oid not in landmarkIDs or oid in observations:
                     continue
                 observations[oid] = (dists[i], angles[i])
@@ -322,19 +327,24 @@ try:
                     p.setWeight(1.0 / num_particles)
 
             if len(observations) >= 2:
+                # Both landmarks are visible: target the midpoint between them.
                 observed_ids = sorted(observations.keys())
                 l1x, l1y = landmarks[observed_ids[0]]
                 l2x, l2y = landmarks[observed_ids[1]]
                 last_goal = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
             elif len(observations) == 1:
+                # Only one landmark is visible: keep the last midpoint as the goal
+                # but use this landmark to keep the pose estimate consistent.
                 landmark_id = next(iter(observations))
-                last_goal = landmarks[landmark_id]
+                last_goal = last_goal if abs(last_goal[0]) > 0.0 or abs(last_goal[1]) > 0.0 else landmarks[landmark_id]
             else:
+                # No valid landmark observations remain after filtering.
                 last_goal = last_goal
 
             cam.draw_aruco_objects(colour)
         else:
-            # No observation - reset weights to uniform distribution.
+            # No landmark seen in this frame: search behaviour continues, but do
+            # not force the robot to target a single landmark.
             for p in particles:
                 p.setWeight(1.0 / num_particles)
 
