@@ -251,7 +251,7 @@ try:
                     predicted_distance = math.hypot(dx, dy)
                     predicted_angle = wrapped_angle(math.atan2(dy, dx) - p.getTheta())
 
-                    likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA)
+                    likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA_D)
                     likelihood *= calc_likelihood(observed_angle, predicted_angle, SIGMA_THETA)
 
                 p.setWeight(p.getWeight() * likelihood)
