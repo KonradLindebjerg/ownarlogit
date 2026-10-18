@@ -10,7 +10,7 @@ import sys
 import os
 
 # CONSTANTS
-EPS         = 0.05       # EPS for sleep time so arlo hsa time to catch up
+EPS         = 0.1       # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA = 0.04363323 # Sigma noise for when turning
 SIGMA       = 2.0       # Sigma for driving distance
 # Measurement noise for the ArUco distance reading, in cm. This is the spread
