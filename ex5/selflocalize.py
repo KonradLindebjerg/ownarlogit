@@ -16,7 +16,7 @@ SIGMA       = 2.0       # Sigma for driving distance
 # Measurement noise for the ArUco distance reading, in cm. This is the spread
 # of the sensor likelihood and must be on the scale of the distances (cm),
 # NOT the tiny motion sigma above. Too small -> all weights underflow to 0.
-SIGMA_D     = 0.379435       # m; tune to your camera's distance error
+SIGMA_D     = 0.379435       # cm; calibrated distance-measurement standard deviation
 MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 
 # Flags
