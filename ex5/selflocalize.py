@@ -385,10 +385,12 @@ try:
             sleep(EPS)
 
         if DEBUG:
-            print(f"  Command: turn {turn_cmd_deg:+.1f} deg, drive {drive_cmd_cm:.1f} cm")
+            print(f"  Command: motor turn {turn_cmd_deg:+.1f} deg, drive {drive_cmd_cm:.1f} cm")
+            print(f"  Particle heading update: {-turn_cmd_deg:+.1f} deg")
 
         # Move the particles by exactly what we commanded the robot to do.
-        delta_theta = np.deg2rad(turn_cmd_deg)
+        # Motor turn and particle heading use opposite sign conventions.
+        delta_theta = np.deg2rad(-turn_cmd_deg)
         delta_d = drive_cmd_cm
 
         for p in particles:
