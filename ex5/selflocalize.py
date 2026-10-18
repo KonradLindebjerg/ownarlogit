@@ -201,6 +201,8 @@ try:
     last_goal = MIDDLEPOINT
     GOAL_DISTANCE_TOLERANCE_CM = 10.0
     GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
+    SEARCH_TURN_STEP_DEG = 10.0
+    SINGLE_MARKER_TURN_STEP_DEG = 3.0
     search_mode = False
     frame_count = 0
 
@@ -311,11 +313,9 @@ try:
                 last_goal = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
                 search_mode = False
             elif len(observations) == 1:
-                # Only one landmark is visible: keep the last midpoint as the goal
-                # but use this landmark to keep the pose estimate consistent.
-                landmark_id = next(iter(observations))
-                last_goal = last_goal if abs(last_goal[0]) > 0.0 or abs(last_goal[1]) > 0.0 else landmarks[landmark_id]
-                search_mode = False
+                # One landmark does not reliably resolve heading; keep scanning
+                # gently instead of making a large midpoint correction.
+                search_mode = True
             else:
                 # No valid landmark observations remain after filtering.
                 search_mode = True
@@ -369,11 +369,10 @@ try:
         drive_cmd_cm = 0.0
 
         if should_search:
-            turn_cmd_deg = 25.0
-            drive_cmd_cm = 10.0
+            turn_cmd_deg = (SINGLE_MARKER_TURN_STEP_DEG if len(observations) == 1
+                            else SEARCH_TURN_STEP_DEG)
+            drive_cmd_cm = 0.0
             drive.turn(turn_cmd_deg)
-            sleep(EPS)
-            drive.drive(drive_cmd_cm / 100.0)
             sleep(EPS)
         else:
             turn_cmd_deg = -goal_angle
