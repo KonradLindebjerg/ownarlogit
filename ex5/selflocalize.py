@@ -57,17 +57,22 @@ CBLACK   = (0, 0, 0)
 
 # Landmarks.
 # The robot knows the position of 2 landmarks. Their coordinates are in the unit centimeters [cm].
-landmarkIDs = [1,2]
+landmarkIDs = [1, 2]
 landmarks = {
-    1: (150, 0),  # Coordinates for landmark 1
-    2: (0, 0)  # Coordinates for landmark 2
+    1: (0.0, 0.0),    # Coordinates for landmark 1
+    2: (300.0, 0.0)  # Coordinates for landmark 2
 }
 landmark_colors = [CRED, CGREEN] # Colors used when drawing the landmarks
 
-l1x,l1y = landmarks[1]
-l2x,l2y = landmarks[2]
+l1x, l1y = landmarks[1]
+l2x, l2y = landmarks[2]
 
-MIDDLEPOINT = (l1x + l2x) / 2, (l1y + l2y) / 2 
+MIDDLEPOINT = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
+
+
+def wrapped_angle(angle):
+    """Normalize an angle to the interval [-pi, pi)."""
+    return (angle + math.pi) % (2.0 * math.pi) - math.pi
 
 
 
@@ -162,7 +167,7 @@ try:
     num_particles = 1000
     particles = initialize_particles(num_particles)
 
-    PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.3")   # laptop IP
+    PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.8")   # laptop IP
     PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
     plot_sender = PlotSender(PLOT_HOST, PLOT_PORT) if sendPlot else None
 
@@ -193,6 +198,8 @@ try:
         #cam = camera.Camera(0, robottype='macbookpro', useCaptureThread=True)
         cam = camera.Camera(1, robottype='macbookpro', useCaptureThread=False)
 
+    last_goal = MIDDLEPOINT
+
     while True:
         print("In while true")
         print("COORDINATE ", (est_pose.getX(), est_pose.getY(), est_pose.getTheta()))
@@ -201,7 +208,7 @@ try:
         action = cv2.waitKey(10)
         if action == ord('q'): # Quit
             break
-    
+
         if not isRunningOnArlo():
             if action == ord('w'): # Forward
                 velocity += 4.0
@@ -215,100 +222,69 @@ try:
             elif action == ord('d'): # Right
                 angular_velocity -= 0.2
 
+        # Use the last known target unless a new observation updates it.
+        target = last_goal
+        goal_angle = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), target)
+        goal_distance = math.hypot(est_pose.getX() - target[0], est_pose.getY() - target[1])
 
-
-        
-        # Use motor controls to update particles
-        # XXX: Make the robot drive
-        # XXX: You do this
-
-        # Calculate the robots orientation and distance to the middle
-        angle    = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), MIDDLEPOINT)
-        deltadistance = math.sqrt((est_pose.getX() - MIDDLEPOINT[0])**2 + (est_pose.getY() - MIDDLEPOINT[1])**2)
-
-        # Turn if needed
-
-        drive.turn(-angle)
-        sleep(EPS)
-        # Drive a small distance.
-        #
-        # Everything in the filter is in cm. `deltadistance` is therefore
-        # already in cm, so cap it in cm and command the robot in meters.
-        MAX_DRIVE_CM = 50.0  # don't commit to more than 50 cm per step
-        drive_cm = min(deltadistance, MAX_DRIVE_CM)
-        drive.drive(drive_cm / 100.0)  # drive.drive() expects meters
-        sleep(EPS)
+        # If we have no observation at all, do a slow scan/search instead of driving blindly.
+        # This is the required fallback strategy when the boxes are not visible.
+        if goal_distance < 5.0:
+            drive.turn(25.0)
+            sleep(EPS)
+            drive.drive(0.10)
+            sleep(EPS)
+        else:
+            drive.turn(-goal_angle)
+            sleep(EPS)
+            MAX_DRIVE_CM = 50.0
+            drive_cm = min(goal_distance, MAX_DRIVE_CM)
+            drive.drive(drive_cm / 100.0)
+            sleep(EPS)
 
         # Move the particles by exactly what we commanded the robot to do.
-        # This is already in cm -- do NOT rescale it.
-        delta_d = drive_cm
-        delta_theta = np.deg2rad(angle)
+        delta_d = drive_cm if 'drive_cm' in locals() else 0.0
+        delta_theta = np.deg2rad(goal_angle)
 
         for p in particles:
-            # Rotate first (robot turned, then drove)...
             particle.move_particle(p, 0.0, 0.0, delta_theta)
-            # ...then translate along the particle's new heading.
             particle.move_particle(p,
                                    delta_d * np.cos(p.getTheta()),
                                    delta_d * np.sin(p.getTheta()),
                                    0.0)
 
-        # XXX (Half C): add motion noise so the cloud can cover real drift, e.g.
-        # particle.add_uncertainty(particles, sigma, sigma_theta)
         particle.add_uncertainty(particles, SIGMA, SIGMA_THETA * (delta_theta / (2 * np.pi)))
 
         # Fetch next frame
         colour = cam.get_next_frame()
-        
+
         # Detect objects
         objectIDs, dists, angles = cam.detect_aruco_objects(colour)
+        observations = {}
         if not isinstance(objectIDs, type(None)):
             # List detected objects, keeping ONE observation per unique ID.
-            # The same marker may be detected several times in a single frame;
-            # objectIDs/dists/angles are numpy arrays (no .pop()), so instead of
-            # mutating them we collect into a dict keyed by ID.
-            observations = {}  # ID -> (dist, angle), first occurrence wins
             for i in range(len(objectIDs)):
                 print("Object ID = ", objectIDs[i], ", Distance = ", dists[i], ", angle = ", angles[i])
 
-                # Since we know where the landmarks are, use only known IDs.
                 oid = int(objectIDs[i])
                 if oid not in landmarkIDs or oid in observations:
-                    continue  # unknown landmark, or a duplicate of one already kept
+                    continue
                 observations[oid] = (dists[i], angles[i])
 
-                '''
-                for p in particles:
-                    predictions = {}
-                    for landmark_id, (observed_distance, observed_angle) in observations.items():
-                        lx, ly = landmarks[landmark_id]
-                        dx = lx - p.getX()
-                        dy = ly - p.getY()
-                        d_pred = math.sqrt((dx**2) + (dy**2))
-                        predictions[landmark_id] = d_pred
-                '''
-                '''    
-                # Calculate distance to L1
-                lx, ly = landmarks[1]
-                dx = lx - p.getX()
-                dy = ly - p.getY()
-                d_pred = math.sqrt((dx**2) + (dy**2))
-                '''
-
-
-                # Calculate distance to L2
-            
             for p in particles:
                 likelihood = 1.0
                 for landmark_id, (observed_distance, observed_angle) in observations.items():
                     landmark_x, landmark_y = landmarks[landmark_id]
-                    
-                    predicted_distance = math.sqrt((landmark_x - p.getX()) ** 2 + (landmark_y - p.getY()) **2)
+
+                    dx = landmark_x - p.getX()
+                    dy = landmark_y - p.getY()
+                    predicted_distance = math.hypot(dx, dy)
+                    predicted_angle = wrapped_angle(math.atan2(dy, dx) - p.getTheta())
+
                     likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA)
+                    likelihood *= calc_likelihood(observed_angle, predicted_angle, SIGMA_THETA)
 
                 p.setWeight(p.getWeight() * likelihood)
-            # Compute particle weights
-            # XXX: You do this finito tror jeg
 
             total_weight = sum(p.getWeight() for p in particles)
             if total_weight > 0.0:
@@ -320,16 +296,11 @@ try:
                     weights.append(p.getWeight())
 
                 cumsum = np.cumsum(weights)
-
                 H20 = []
-                for k in range(num_particles):
+                for _ in range(num_particles):
                     z = np.random.rand()
                     for i in range(len(cumsum)):
                         if z <= cumsum[i]:
-                            # Copy the chosen particle: appending particles[i]
-                            # directly would alias the same object many times,
-                            # so move/noise would be applied to it repeatedly
-                            # and the cloud would collapse to a point.
                             src = particles[i]
                             H20.append(particle.Particle(src.getX(), src.getY(),
                                                          src.getTheta(),
@@ -337,23 +308,27 @@ try:
                             break
                 particles = H20
             else:
-                # Every weight underflowed to 0 (no particle fit the reading):
-                # keep the cloud and reset to a uniform distribution instead of
-                # dividing by zero.
                 for p in particles:
                     p.setWeight(1.0 / num_particles)
-            
 
+            if len(observations) >= 2:
+                observed_ids = sorted(observations.keys())
+                l1x, l1y = landmarks[observed_ids[0]]
+                l2x, l2y = landmarks[observed_ids[1]]
+                last_goal = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
+            elif len(observations) == 1:
+                landmark_id = next(iter(observations))
+                last_goal = landmarks[landmark_id]
+            else:
+                last_goal = last_goal
 
-            # Draw detected objects
             cam.draw_aruco_objects(colour)
         else:
-            # No observation - reset weights to uniform distribution
+            # No observation - reset weights to uniform distribution.
             for p in particles:
-                p.setWeight(1.0/num_particles)
+                p.setWeight(1.0 / num_particles)
 
-    
-        est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
+        est_pose = particle.estimate_pose(particles)
 
         if plot_sender is not None:
             plot_sender.send({
@@ -363,15 +338,9 @@ try:
                 "landmarks": {str(i): list(landmarks[i]) for i in landmarkIDs},
             })
         if showGUI:
-            # Draw map
             draw_world(est_pose, particles, world)
-    
-            # Show frame
             cv2.imshow(WIN_RF1, colour)
-
-            # Show world
             cv2.imshow(WIN_World, world)
-
 
         # Drive towards middle of landmarks
 
