@@ -204,6 +204,8 @@ try:
     SEARCH_TURN_STEP_DEG = 20.0
     search_mode = False
     frame_count = 0
+    seen_landmark_ids = set()
+    landmarks_acquired = False
 
     if DEBUG:
         print(f"Localization started: {num_particles} particles, landmarks={landmarkIDs}, "
@@ -255,6 +257,10 @@ try:
 
                 if detection_status != "used":
                     continue
+
+            seen_landmark_ids.update(observations)
+            landmarks_acquired = all(landmark_id in seen_landmark_ids
+                                     for landmark_id in landmarkIDs)
 
             for p in particles:
                 likelihood = 1.0
@@ -310,19 +316,12 @@ try:
                 l1x, l1y = landmarks[observed_ids[0]]
                 l2x, l2y = landmarks[observed_ids[1]]
                 last_goal = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
-                search_mode = False
-            elif len(observations) == 1:
-                # Use the single landmark to update pose and resume target navigation.
-                search_mode = False
-            else:
-                # No valid landmark observations remain after filtering.
-                search_mode = True
+            search_mode = not landmarks_acquired
 
             cam.draw_aruco_objects(colour)
         else:
-            # No landmark seen in this frame: force search behaviour instead of
-            # continuing toward a stale target.
-            search_mode = True
+            # Search until both landmark IDs have been observed at least once.
+            search_mode = not landmarks_acquired
             for p in particles:
                 p.setWeight(1.0 / num_particles)
             weight_status = "no markers detected; weights unchanged"
@@ -338,11 +337,12 @@ try:
         heading_error = abs(wrapped_angle(math.atan2(target[1] - est_pose.getY(), target[0] - est_pose.getX()) - est_pose.getTheta()))
 
         if DEBUG:
-            mode = "SEARCH" if search_mode else "NAVIGATE"
+            mode = "SEARCH: acquire landmarks" if search_mode else "NAVIGATE: midpoint"
             spread_x = float(np.std([p.getX() for p in particles]))
             spread_y = float(np.std([p.getY() for p in particles]))
             observed_ids = sorted(observations)
-            print(f"Frame {frame_count}: detections={observed_ids or 'none'}; {weight_status}")
+            print(f"Frame {frame_count}: detections={observed_ids or 'none'}, "
+                  f"seen={sorted(seen_landmark_ids)}; {weight_status}")
             print(f"  Pose estimate: x={est_pose.getX():.1f} cm, y={est_pose.getY():.1f} cm, "
                   f"heading={math.degrees(est_pose.getTheta()):+.1f} deg "
                   f"(particle spread x={spread_x:.1f}, y={spread_y:.1f} cm)")
@@ -361,7 +361,7 @@ try:
         # target temporarily; otherwise keep moving toward the midpoint.
         # If no valid landmark was seen on the current frame, force a search
         # manoeuvre instead of continuing toward a stale goal.
-        should_search = search_mode or (goal_distance < 5.0)
+        should_search = search_mode
 
         turn_cmd_deg = 0.0
         drive_cmd_cm = 0.0
