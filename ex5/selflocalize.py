@@ -225,51 +225,6 @@ try:
             elif action == ord('d'): # Right
                 angular_velocity -= 0.2
 
-        # Use the last known target unless a new observation updates it.
-        target = last_goal
-        goal_angle = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), target)
-        goal_distance = math.hypot(est_pose.getX() - target[0], est_pose.getY() - target[1])
-        heading_error = abs(wrapped_angle(math.atan2(target[1] - est_pose.getY(), target[0] - est_pose.getX()) - est_pose.getTheta()))
-
-        # Stop once we are close enough to the target midpoint and aligned with it.
-        if goal_distance <= GOAL_DISTANCE_TOLERANCE_CM and heading_error <= GOAL_ANGLE_TOLERANCE_RAD:
-            print("Reached target midpoint within tolerance; stopping.")
-            drive.drive(0.0)
-            sleep(EPS)
-            break
-
-        # If the robot is near a single visible landmark, treat it as a tracking
-        # target temporarily; otherwise keep moving toward the midpoint.
-        # If no valid landmark was seen on the previous frame, force a search
-        # manoeuvre instead of continuing toward a stale goal.
-        should_search = search_mode or (goal_distance < 5.0)
-
-        if should_search:
-            drive.turn(25.0)
-            sleep(EPS)
-            drive.drive(0.10)
-            sleep(EPS)
-        else:
-            drive.turn(-goal_angle)
-            sleep(EPS)
-            MAX_DRIVE_CM = 50.0
-            drive_cm = min(goal_distance, MAX_DRIVE_CM)
-            drive.drive(drive_cm / 100.0)
-            sleep(EPS)
-
-        # Move the particles by exactly what we commanded the robot to do.
-        delta_d = drive_cm if 'drive_cm' in locals() else 0.0
-        delta_theta = np.deg2rad(goal_angle)
-
-        for p in particles:
-            particle.move_particle(p, 0.0, 0.0, delta_theta)
-            particle.move_particle(p,
-                                   delta_d * np.cos(p.getTheta()),
-                                   delta_d * np.sin(p.getTheta()),
-                                   0.0)
-
-        particle.add_uncertainty(particles, SIGMA, SIGMA_THETA * (delta_theta / (2 * np.pi)))
-
         # Fetch next frame
         colour = cam.get_next_frame()
 
@@ -352,6 +307,58 @@ try:
                 p.setWeight(1.0 / num_particles)
 
         est_pose = particle.estimate_pose(particles)
+
+        # Use the current estimate and the latest observed target to decide whether
+        # to stop or move. Doing this after the camera update prevents stale
+        # estimates from driving the robot past the correct midpoint.
+        target = last_goal
+        goal_angle = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), target)
+        goal_distance = math.hypot(est_pose.getX() - target[0], est_pose.getY() - target[1])
+        heading_error = abs(wrapped_angle(math.atan2(target[1] - est_pose.getY(), target[0] - est_pose.getX()) - est_pose.getTheta()))
+
+        if not search_mode and goal_distance <= GOAL_DISTANCE_TOLERANCE_CM and heading_error <= GOAL_ANGLE_TOLERANCE_RAD:
+            print("Reached target midpoint within tolerance; stopping.")
+            drive.drive(0.0)
+            sleep(EPS)
+            break
+
+        # If the robot is near a single visible landmark, treat it as a tracking
+        # target temporarily; otherwise keep moving toward the midpoint.
+        # If no valid landmark was seen on the current frame, force a search
+        # manoeuvre instead of continuing toward a stale goal.
+        should_search = search_mode or (goal_distance < 5.0)
+
+        turn_cmd_deg = 0.0
+        drive_cmd_cm = 0.0
+
+        if should_search:
+            turn_cmd_deg = 25.0
+            drive_cmd_cm = 10.0
+            drive.turn(turn_cmd_deg)
+            sleep(EPS)
+            drive.drive(drive_cmd_cm / 100.0)
+            sleep(EPS)
+        else:
+            turn_cmd_deg = -goal_angle
+            drive.turn(turn_cmd_deg)
+            sleep(EPS)
+            MAX_DRIVE_CM = 50.0
+            drive_cmd_cm = min(goal_distance, MAX_DRIVE_CM)
+            drive.drive(drive_cmd_cm / 100.0)
+            sleep(EPS)
+
+        # Move the particles by exactly what we commanded the robot to do.
+        delta_theta = np.deg2rad(turn_cmd_deg)
+        delta_d = drive_cmd_cm
+
+        for p in particles:
+            particle.move_particle(p, 0.0, 0.0, delta_theta)
+            particle.move_particle(p,
+                                   delta_d * np.cos(p.getTheta()),
+                                   delta_d * np.sin(p.getTheta()),
+                                   0.0)
+
+        particle.add_uncertainty(particles, SIGMA, SIGMA_THETA * (delta_theta / (2 * np.pi)))
 
         if plot_sender is not None:
             plot_sender.send({
