@@ -370,10 +370,7 @@ try:
 
         if should_search:
             turn_cmd_deg = SEARCH_TURN_STEP_DEG
-            drive_cmd_cm = SEARCH_DRIVE_STEP_CM
             drive.turn(turn_cmd_deg)
-            sleep(EPS)
-            drive.drive(drive_cmd_cm / 100.0)
             sleep(EPS)
         else:
             turn_cmd_deg = -goal_angle
