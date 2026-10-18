@@ -65,7 +65,7 @@ landmarks = {
 landmark_colors = [CRED, CGREEN] # Colors used when drawing the landmarks
 
 l1x, l1y = landmarks[1]
-l2x, l2y = landmarks[2]
+l2x, l2y = landmarks[3]
 
 MIDDLEPOINT = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
 
