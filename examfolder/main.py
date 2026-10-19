@@ -102,9 +102,11 @@ def main():
     ## Turn the amount of degrees we need
     
     angle = np.rad2deg(angles[idx])
+    print("Angle is:", angle)
     drive.turn(angle)
     ## Drive the distance
     distance = dists[idx]
+    print("distance is :", distance)
     drive.drive(distance)
 
 
