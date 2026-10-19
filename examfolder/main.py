@@ -152,7 +152,7 @@ def main():
     idss, tvecs, radius = obstacleList
     goalx, goaly= 0.0, 300.0
 
-    for i in range(idss):
+    for i in range(len(idss)):
         if idss[i] == 3:
             coords = tvecs[i]
             goalx, goaly = coords[1], coords[0]
