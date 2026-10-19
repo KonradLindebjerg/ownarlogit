@@ -149,11 +149,19 @@ def main():
 
     id, dists, angles = findNextLandmark(3)
     obstacleList = rrt.scan_surroundings(cam, angles)
+    idss, tvecs, radius = obstacleList
+    goalx, goaly= 0.0, 300.0
+
+    for i in range(idss):
+        if idss[i] == 3:
+            coords = tvecs[i]
+            goalx, goaly = coords[1], coords[0]
+            
 
 
     robotrrt = rrt.RRT(
         start=[0, 0 - ROBOT_RADIUS],
-        goal=[0.0, 300 - 40],
+        goal=[goalx, goaly],
         rand_area=rand_area,
         obstacle_list=obstacleList,
         play_area=play_area,
@@ -165,13 +173,16 @@ def main():
     )
 
     path = robotrrt.planning(animation=True)
+    print("GOAL IS", goalx, goaly)
     
     print("Path is:")
     print(path)
     print("orientation is")
     print(robotrrt.robot_orientation)
-    rrt.driveToGoal(robotrrt, path)
 
+    # SET GOAL TO L2
+
+    rrt.driveToGoal(robotrrt, path)
 
 
 
