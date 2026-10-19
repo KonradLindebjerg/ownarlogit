@@ -115,7 +115,7 @@ def angle_to_target(position, orientation_deg, target):
 def calculate_drive_distance(u, v):
     lefthand  = (v[0] - u[0])**2
     righthand = (v[1] - u[1])**2
-    return math.sqrt(lefthand + righthand)
+    return math.sqrt(lefthand + righthand) * 100
 
 
 
