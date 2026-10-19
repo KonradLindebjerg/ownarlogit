@@ -1,0 +1,22 @@
+
+
+
+
+
+
+We have predifined racetrack.
+We will start out by facing L1, but cant make any other assumptions
+
+We have to visit L1 to L4 in order and get penalty for going out of order.
+
+
+We should use self localisation
+
+USe a bit of obstacle avoidance with the sonars
+
+KLD sampling
+
+
+
+
+
