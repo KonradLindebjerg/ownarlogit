@@ -83,6 +83,7 @@ def deduplicate(objectIDs, dists, angles):
 
 
 def drivetol1():
+    #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
     colour = cam.get_next_frame() # Capture image
     sleep(EPS)
     objectIDs, dists, angles = cam.detect_aruco_objects(colour) # Return ID's
