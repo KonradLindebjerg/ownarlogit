@@ -11,6 +11,8 @@ import os
 
 
 piCamera2Found = False
+cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
+sleep(EPS)
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -102,8 +104,6 @@ def drivetol1():
 def main():
 # Plan
 ## Start out by localising our selves. 
-    cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
-    sleep(EPS)
     
     drivetol1()
 
