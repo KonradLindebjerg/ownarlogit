@@ -86,9 +86,11 @@ def main():
 
     idx = 0
     for i in range(len(objectIDs)):
-        if objectIDs[i] == 1:
+        if objectIDs[i] == 6:
+            print("Found first landmark")
             break
         else: idx += 1
+
 
 
 
