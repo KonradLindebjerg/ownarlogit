@@ -123,6 +123,7 @@ def do360(targetLandmark):
         if objectIDs is not None:
             for i in range(len(objectIDs)):
                 if objectIDs[i] == targetLandmark:
+                    print("FOUND TARGET LANDMARK: ", targetLandmark)
                     return objectIDs[i], dists[i], angles[i]
         drive.turn(20)
         sleep(EPS)
