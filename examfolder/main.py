@@ -93,9 +93,9 @@ def drivetol1():
     print("Angle is:", angle)
     drive.turn(angle)
     ## Drive the distance
-    distance = dists[idx] / 100
+    distance = dists[idx] 
     print("distance is :", distance)
-    drive.drive(distance)
+    drive.drive(distance - 10)
 
 
 

@@ -26,7 +26,7 @@ def turn(angle):
 
 def drive(length):
     print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
-    sleep(driveTime*length)
+    sleep(driveTime*length/100)
     print(arlo.stop())
     sleep(eps)
 
