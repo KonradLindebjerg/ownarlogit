@@ -1,8 +1,11 @@
 import math
 import random
 import landmarkmapping as lm
+import sys
+import os
 from time import sleep
 # import drive and robot from lib
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from lib import drive
 from lib import robot
 
