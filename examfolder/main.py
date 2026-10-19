@@ -148,7 +148,7 @@ def main():
     # We assume that we find the next landmark here
 
     id, dists, angles = findNextLandmark(3)
-    obstacleList = rrt.scan_surroundings()
+    obstacleList = rrt.scan_surroundings(cam)
 
 
     robotrrt = rrt.RRT(

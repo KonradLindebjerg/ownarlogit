@@ -1,63 +1,28 @@
 import numpy as np
-import sys
-import picamera2
-import time
 import os
-import csv
-import subprocess
 import cv2 # Import the OpenCV library
-# Create a robot object and initialize
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-# import drive and robot from lib
-from lib import drive
-from lib import robot
-arlo = robot.Robot()
+# NOTE: This module must NOT open the camera (or the robot) at import time.
+# main.py owns the single camera via camera.Camera, and the Pi only allows one
+# PiCamera2 instance at a time. Opening a second one here caused
+# "Failed to acquire camera: Device or resource busy". detectLandmark() now
+# takes the shared camera object instead.
 
-# Open a camera device for capturing
-cam = cv2.VideoCapture(0)
 # scp_dest = 'konrad@172.20.10.3:/home/konrad/Desktop/rex/REX-students/Arlo/ex4'
 
-leftSpeed  = 68
-rightSpeed = 65
 imageSize  = (1640, 1232)
-FPS        = 30
 arloR     = 0.25
 landmarkR = 0.15
-
-cam = picamera2.Picamera2()
-frame_duration_limit = int(1/FPS * 1000000)
-
-
-picam2_config = cam.create_video_configuration(
-    {"size": imageSize, "format": "RGB888"},
-    controls={
-        "FrameDurationLimits": (
-            frame_duration_limit,
-            frame_duration_limit
-        ),
-        "ScalerCrop": (0, 0, 3280, 2464)
-    },
-    queue=False
-)
-
-cam.configure(picam2_config)
-cam.start(show_preview=False)
-
-print(cam.camera_configuration())
-time.sleep(1)
-
-
 
 folder = "camera_images"
 os.makedirs(folder, exist_ok=True)
 
-print("Saving images to:", folder)
 image_number = 0
 
 
-def detectLandmark():
-    image = cam.capture_array("main")
+def detectLandmark(cam):
+    # `cam` is the shared camera.Camera owned by main.py.
+    image = cam.get_next_frame()
     global image_number
     
     arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
@@ -101,9 +66,6 @@ def estimateLandmark(corners, id):
     )
 
     return id, tvecs, landmarkR
-
-
-print(detectLandmark())
 
 
 

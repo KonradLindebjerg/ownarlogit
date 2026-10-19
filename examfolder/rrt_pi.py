@@ -31,7 +31,7 @@ def rotate_obstacles(obstacles, heading_deg):
     return rotated
 
 
-def scan_surroundings():
+def scan_surroundings(cam):
     """Take 3 images to widen the field of view before planning.
 
     Sequence: straight ahead, 45 degrees left, then 90 degrees right (ending
@@ -44,21 +44,21 @@ def scan_surroundings():
     heading = 0.0
 
     # 1) Straight ahead.
-    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+    obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     sleep(EPS)
 
     # 2) Turn 45 degrees left (CCW).
     drive.turn(-45)
     sleep(EPS)
     heading += 45
-    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+    obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     sleep(EPS)
 
     # 3) Turn 90 degrees right (CW) -> now 45 degrees right of start.
     drive.turn(90)
     sleep(EPS)
     heading -= 90
-    obstacles += rotate_obstacles(lm.detectLandmark(), heading)
+    obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     sleep(EPS)
 
     # 4) Turn 45 degrees left to return to the start orientation.
