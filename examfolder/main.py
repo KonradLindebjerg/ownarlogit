@@ -27,12 +27,12 @@ from lib import robot
 EPS         = 0.075    # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA = 0.029320 # Sigma noise for when turning
 SIGMA       = 2.0      # Sigma for driving distance
-ROBOT_RADIUS = 0.225   # Robot radius for rrt
+ROBOT_RADIUS = 22.5   # Robot radius for rrt
 
 # Landmarks and maps
 play_area = [-120 + ROBOT_RADIUS, 620 - ROBOT_RADIUS, 
              -120 + ROBOT_RADIUS, 520 - ROBOT_RADIUS] # Size of the map
-rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])]
+rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] # Sampling area for RRT
 landmarkIDs = [1,2,3,4]
 ## Landmark Coordinates
 landmarks = {
@@ -153,7 +153,7 @@ def main():
 
     robotrrt = rrt.RRT(
         start=[0, 0 - ROBOT_RADIUS],
-        goal=[0.0, 300],
+        goal=[0.0, 300 - 40],
         rand_area=rand_area,
         obstacle_list=obstacleList,
         play_area=play_area,
