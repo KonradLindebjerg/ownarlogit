@@ -34,7 +34,7 @@ def rotate_obstacles(obstacles, heading_deg):
     return rotated
 
 
-def scan_surroundings(cam):
+def scan_surroundings(cam, inputheading):
     """Take 3 images to widen the field of view before planning.
 
     Sequence: straight ahead, 45 degrees left, then 90 degrees right (ending
@@ -44,7 +44,7 @@ def scan_surroundings(cam):
     negated; `heading` tracks the CCW-positive orientation relative to start.
     """
     obstacles = []
-    heading = 0.0
+    heading = 0.0 + inputheading
 
     # 1) Straight ahead.
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
