@@ -112,6 +112,7 @@ def searchState():
 def do360(targetLandmark):
 
     for i in range(18):
+        print(i)
 
         colour = cam.get_next_frame() # Capture image
         sleep(EPS)
@@ -124,6 +125,7 @@ def do360(targetLandmark):
                 if objectIDs[i] == targetLandmark:
                     return objectIDs[i], dists[i], angles[i]
         drive.turn(20)
+        sleep(EPS)
 
     return None, None, None
 
