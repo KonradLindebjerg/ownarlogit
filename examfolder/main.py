@@ -3,6 +3,8 @@ import math
 import camera
 import numpy as np
 import time
+import rrt_pi as rrt
+import landmarkmapping as lm
 from time import sleep
 from timeit import default_timer as timer
 import sys
@@ -22,13 +24,15 @@ from lib import robot
 
 
 # Constants
-EPS         = 0.05     # EPS for sleep time so arlo hsa time to catch up
+EPS         = 0.075    # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA = 0.029320 # Sigma noise for when turning
 SIGMA       = 2.0      # Sigma for driving distance
-
+ROBOT_RADIUS = 0.225   # Robot radius for rrt
 
 # Landmarks and maps
-MAPSIZE  = [[-120, 620], [-120, 520]] # Size of the map
+play_area = [[-120 + ROBOT_RADIUS, 620 - ROBOT_RADIUS], 
+             [-120 + ROBOT_RADIUS, 520 - ROBOT_RADIUS]] # Size of the map
+rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])]
 landmarkIDs = [1,2,3,4]
 ## Landmark Coordinates
 landmarks = {
@@ -109,7 +113,7 @@ def searchState():
     return
 
 
-def do360(targetLandmark):
+def findNextLandmark(targetLandmark):
 
     for i in range(18):
         print(i)
@@ -138,9 +142,30 @@ def main():
     drivetol1()
 
 ## Self localise
+    # We are now at Landmark 1 and now begin ussing RRT to go to the next landmark
 
-    do360(3)
+    # We assume that we find the next landmark here
 
+    id, dists, angles = findNextLandmark(3)
+    obstacleList = rrt.scan_surroundings()
+
+
+    robotrrt = rrt.RRT(
+        start=[0, 0 - ROBOT_RADIUS],
+        goal=[0.0, 300],
+        rand_area=rand_area,
+        obstacle_list=obstacleList,
+        play_area=play_area,
+        robot_radius= ROBOT_RADIUS,
+    )
+
+    path = robotrrt.planning(animation=True)
+    
+    print("Path is:")
+    print(path)
+    print("orientation is")
+    print(robotrrt.robot_orientation)
+    rrt.driveToGoal(robotrrt, path)
 
 
 
