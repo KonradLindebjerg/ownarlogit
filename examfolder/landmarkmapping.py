@@ -1,4 +1,4 @@
-import robot
+from lib import robot
 import numpy as np
 import picamera2
 import time
