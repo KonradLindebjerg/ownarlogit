@@ -105,7 +105,7 @@ def main():
     print("Angle is:", angle)
     drive.turn(angle)
     ## Drive the distance
-    distance = dists[idx]
+    distance = dists[idx] / 100
     print("distance is :", distance)
     drive.drive(distance)
 
