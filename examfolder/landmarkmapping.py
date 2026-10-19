@@ -11,8 +11,9 @@ import cv2 # Import the OpenCV library
 # scp_dest = 'konrad@172.20.10.3:/home/konrad/Desktop/rex/REX-students/Arlo/ex4'
 
 imageSize  = (1640, 1232)
-arloR     = 0.25
-landmarkR = 0.15
+# Radii in centimeters (the map/RRT convention used by main.py).
+arloR     = 25.0
+landmarkR = 15.0
 
 folder = "camera_images"
 os.makedirs(folder, exist_ok=True)
@@ -45,8 +46,10 @@ def detectLandmark(cam):
 
     for i in range(len(idss)):
         tvec = tvecs[i][0]
-        x = float(tvec[0])
-        z = float(tvec[2])
+        # estimatePoseSingleMarkers returns tvecs in the same unit as
+        # MARKER_SIZE (meters); convert to centimeters for the map/RRT frame.
+        x = float(tvec[0]) * 100
+        z = float(tvec[2]) * 100
         #marker_id = int(idss[i][0])
         obstaclelist.append((x,z, radius))
     return obstaclelist
@@ -56,7 +59,7 @@ def estimateLandmark(corners, id):
                              [0, 1377,imageSize[1]/2],
                              [0,   0,   1]], dtype=np.float32)
     dist_coeffs = np.zeros((1, 5), dtype=np.float32)
-    MARKER_SIZE = 0.145  
+    MARKER_SIZE = 0.15  # [m] must match camera.py's arucoMarkerLength
 
     if id is None or len(corners) == 0:
         return np.empty((0, 1), dtype=int), np.empty((0, 1, 3), dtype=np.float32), landmarkR

@@ -39,7 +39,7 @@ landmarks = {
     1: (0.0, 0.0),
     2: (0.0, 300.0),
     3: (400.0, 0.0),
-    4: (400.0, 3.0),
+    4: (400.0, 300.0),
 }
 
 ## What landmarks have been visited?
@@ -158,6 +158,10 @@ def main():
         obstacle_list=obstacleList,
         play_area=play_area,
         robot_radius= ROBOT_RADIUS,
+        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
+        # meter-scaled and far too fine for a ~400-500 cm map.
+        expand_dis=30.0,
+        path_resolution=5.0,
     )
 
     path = robotrrt.planning(animation=True)
