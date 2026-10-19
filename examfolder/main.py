@@ -65,8 +65,11 @@ def main():
 # Plan
 ## Start out by localising our selves. 
     cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
+    sleep(EPS)
     colour = cam.get_next_frame() # Capture image
+    sleep(EPS)
     objectIDs, dists, angles = cam.detect_aruco_objects(colour) # Return ID's
+    sleep(EPS)
 
     # A landmark can be seen from the side and detected twice (both papers).
     # The arrays are sorted by distance, so keep the first (closest) occurrence
