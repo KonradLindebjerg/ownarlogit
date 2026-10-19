@@ -56,7 +56,7 @@ def calculate_drive_distance(u, v):
 
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     turn(-360)
     drive(2)
 
