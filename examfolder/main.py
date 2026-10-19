@@ -11,8 +11,6 @@ import os
 
 
 piCamera2Found = False
-cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
-sleep(EPS)
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -48,6 +46,8 @@ VisitedLandmark = {
     4: False
 }
 
+cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
+sleep(EPS)
 
 # We know that obstacle landmarks are > 4
 
