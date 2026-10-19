@@ -14,8 +14,8 @@ driveTime  = 2.25
 eps        = 0.1
 
 def turn(angle):
-    left = 1
-    right = 0
+    left  = 0
+    right = 1
     if (angle < 0):
         left, right = right, left
 
