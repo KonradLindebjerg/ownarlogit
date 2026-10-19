@@ -56,15 +56,7 @@ sleep(EPS)
 
 
 
-
-
-
-def drivetol1():
-    colour = cam.get_next_frame() # Capture image
-    sleep(EPS)
-    objectIDs, dists, angles = cam.detect_aruco_objects(colour) # Return ID's
-    sleep(EPS)
-
+def deduplicate(objectIDs, dists, angles):
     # A landmark can be seen from the side and detected twice (both papers).
     # The arrays are sorted by distance, so keep the first (closest) occurrence
     # of each ID and drop any later duplicates.
@@ -79,6 +71,19 @@ def drivetol1():
         objectIDs = objectIDs[keep]
         dists = dists[keep]
         angles = angles[keep]
+        return objectIDs, dists, angles
+    return None, None, None
+
+
+
+
+
+def drivetol1():
+    colour = cam.get_next_frame() # Capture image
+    sleep(EPS)
+    objectIDs, dists, angles = cam.detect_aruco_objects(colour) # Return ID's
+    objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
+    sleep(EPS)
 
     idx = 0
     for i in range(len(objectIDs)):
@@ -97,8 +102,30 @@ def drivetol1():
     print("distance is :", distance)
     drive.drive(distance - 10)
 
+    VisitedLandmark[1] = True
 
 
+def searchState():
+    return
+
+
+def do360(targetLandmark):
+
+    for i in range(18):
+
+        colour = cam.get_next_frame() # Capture image
+        sleep(EPS)
+        objectIDs, dists, angles = cam.detect_aruco_objects(colour) # Return ID's
+        sleep(EPS)
+        objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
+        
+        if objectIDs is not None:
+            for i in range(len(objectIDs)):
+                if objectIDs[i] == targetLandmark:
+                    return objectIDs[i], dists[i], angles[i]
+        drive.turn(20)
+
+    return None, None, None
 
 
 def main():
@@ -107,10 +134,9 @@ def main():
     
     drivetol1()
 
-
-
-
 ## Self localise
+
+    do360(3)
 
 
 
