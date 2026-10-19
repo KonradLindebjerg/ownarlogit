@@ -168,7 +168,6 @@ def main():
         robot_radius= ROBOT_RADIUS,
         # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
         # meter-scaled and far too fine for a ~400-500 cm map.
-        expand_dis=30.0,
         path_resolution=5.0,
     )
 
