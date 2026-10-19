@@ -12,7 +12,7 @@ from lib import robot
 # NOTE: This is a matplotlib-free variant of rrt.py for running on the Pi,
 # which cannot import matplotlib. All local plotting has been removed.
 
-EPS          = 0.5
+EPS = 0.75
 
 # Helper functions from ex4
 
