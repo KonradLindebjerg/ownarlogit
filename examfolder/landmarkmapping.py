@@ -1,5 +1,5 @@
-from lib import robot
 import numpy as np
+import sys
 import picamera2
 import time
 import os
@@ -7,6 +7,11 @@ import csv
 import subprocess
 import cv2 # Import the OpenCV library
 # Create a robot object and initialize
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+# import drive and robot from lib
+from lib import drive
+from lib import robot
 arlo = robot.Robot()
 
 # Open a camera device for capturing
