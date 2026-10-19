@@ -151,19 +151,6 @@ def calc_likelihood(observed_distance, predicted_distance, sigma):
             * math.exp(-0.5 * (residual / sigma) ** 2))
 
 
-def estimate_weighted_pose(particles):
-    total_weight = sum(p.getWeight() for p in particles)
-    if total_weight <= 0.0:
-        return particle.estimate_pose(particles)
-
-    x = sum(p.getWeight() * p.getX() for p in particles) / total_weight
-    y = sum(p.getWeight() * p.getY() for p in particles) / total_weight
-    cos_theta = sum(p.getWeight() * math.cos(p.getTheta()) for p in particles)
-    sin_theta = sum(p.getWeight() * math.sin(p.getTheta()) for p in particles)
-    theta = math.atan2(sin_theta, cos_theta)
-    return particle.Particle(x, y, theta)
-
-
 # Main program #
 try:
     if showGUI:
@@ -213,6 +200,7 @@ try:
 
     last_goal = MIDDLEPOINT
     GOAL_DISTANCE_TOLERANCE_CM = 10.0
+    GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
     SEARCH_TURN_STEP_DEG = 20.0
     search_mode = False
     frame_count = 0
@@ -270,7 +258,10 @@ try:
                 if detection_status != "used":
                     continue
 
-            previous_weights = [p.getWeight() for p in particles]
+            seen_landmark_ids.update(observations)
+            landmarks_acquired = all(landmark_id in seen_landmark_ids
+                                     for landmark_id in landmarkIDs)
+
             for p in particles:
                 likelihood = 1.0
                 for landmark_id, (observed_distance, observed_angle) in observations.items():
@@ -298,33 +289,24 @@ try:
                 weight_status = (f"updated; ESS={effective_sample_size:.0f}/{num_particles}, "
                                  f"max weight={max_weight:.4f}")
 
-                seen_landmark_ids.update(observations)
-                landmarks_acquired = all(landmark_id in seen_landmark_ids
-                                         for landmark_id in landmarkIDs)
-
-                if landmarks_acquired and effective_sample_size < num_particles / 2.0:
-                    weights = [p.getWeight() for p in particles]
-                    cumsum = np.cumsum(weights)
-                    resampled = []
-                    for _ in range(num_particles):
-                        z = np.random.rand()
-                        index = np.searchsorted(cumsum, z, side="left")
-                        index = min(index, len(particles) - 1)
-                        src = particles[index]
-                        resampled.append(particle.Particle(
-                            src.getX(), src.getY(), src.getTheta(),
-                            1.0 / num_particles,
-                        ))
-                    particles = resampled
+                weights = [p.getWeight() for p in particles]
+                cumsum = np.cumsum(weights)
+                resampled = []
+                for _ in range(num_particles):
+                    z = np.random.rand()
+                    for i in range(len(cumsum)):
+                        if z <= cumsum[i]:
+                            src = particles[i]
+                            resampled.append(particle.Particle(
+                                src.getX(), src.getY(), src.getTheta(),
+                                1.0 / num_particles,
+                            ))
+                            break
+                particles = resampled
             else:
-                if landmarks_acquired:
-                    for p, previous_weight in zip(particles, previous_weights):
-                        p.setWeight(previous_weight)
-                    weight_status = "measurement rejected: likelihood underflow"
-                else:
-                    for p in particles:
-                        p.setWeight(1.0 / num_particles)
-                    weight_status = "measurement underflow; kept particles, reset weights"
+                for p in particles:
+                    p.setWeight(1.0 / num_particles)
+                weight_status = "all likelihoods underflowed; reset weights uniformly"
 
             if len(observations) >= 2:
                 # Both landmarks are visible: target the midpoint between them.
@@ -338,9 +320,11 @@ try:
         else:
             # Search until both landmark IDs have been observed at least once.
             search_mode = not landmarks_acquired
+            for p in particles:
+                p.setWeight(1.0 / num_particles)
             weight_status = "no markers detected; weights unchanged"
 
-        est_pose = estimate_weighted_pose(particles)
+        est_pose = particle.estimate_pose(particles)
 
         # Use the current estimate and the latest observed target to decide whether
         # to stop or move. Doing this after the camera update prevents stale
@@ -364,10 +348,14 @@ try:
                   f"distance={goal_distance:.1f} cm, bearing error={goal_angle:+.1f} deg, "
                   f"heading error={math.degrees(heading_error):.1f} deg; mode={mode}")
 
-        if not search_mode and goal_distance <= GOAL_DISTANCE_TOLERANCE_CM:
-            print(f"Stopping: midpoint is within {GOAL_DISTANCE_TOLERANCE_CM:.1f} cm "
-                  f"(estimated distance {goal_distance:.1f} cm).")
-            drive.arlo.stop()
+        if (
+            not search_mode
+            and goal_distance <= GOAL_DISTANCE_TOLERANCE_CM
+            and heading_error <= GOAL_ANGLE_TOLERANCE_RAD
+        ):
+            print(f"Stopping: target tolerance reached ({goal_distance:.1f} cm, "
+                f"heading error {math.degrees(heading_error):.1f} deg).")
+            drive.drive(0.0)
             sleep(EPS)
             break
 
