@@ -57,15 +57,7 @@ VisitedLandmark = {
 
 
 
-
-
-
-
-def main():
-# Plan
-## Start out by localising our selves. 
-    cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
-    sleep(EPS)
+def drivetol1():
     colour = cam.get_next_frame() # Capture image
     sleep(EPS)
     objectIDs, dists, angles = cam.detect_aruco_objects(colour) # Return ID's
@@ -85,23 +77,12 @@ def main():
         objectIDs = objectIDs[keep]
         dists = dists[keep]
         angles = angles[keep]
-    else:
-        drive.turn()
-
-
-
 
     idx = 0
     for i in range(len(objectIDs)):
         if objectIDs[i] == 6:
-            print("Found first landmark")
             break
         else: idx += 1
-
-
-
-
-
 ## Drive towards L1
 
     ## Turn the amount of degrees we need
@@ -115,7 +96,25 @@ def main():
     drive.drive(distance)
 
 
+
+
+
+def main():
+# Plan
+## Start out by localising our selves. 
+    cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
+    sleep(EPS)
+    
+    drivetol1()
+
+
+
+
 ## Self localise
+
+
+
+
 
 ## RRt to L2
 
