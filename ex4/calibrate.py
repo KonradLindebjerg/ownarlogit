@@ -30,4 +30,4 @@ def drive(length):
 
 turn(-360)
 
-drive(1)
+drive(2)

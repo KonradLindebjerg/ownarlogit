@@ -85,6 +85,11 @@ def main():
         objectIDs = objectIDs[keep]
         dists = dists[keep]
         angles = angles[keep]
+    else:
+        drive.turn()
+
+
+
 
     idx = 0
     for i in range(len(objectIDs)):
