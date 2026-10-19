@@ -30,8 +30,8 @@ SIGMA       = 2.0      # Sigma for driving distance
 ROBOT_RADIUS = 0.225   # Robot radius for rrt
 
 # Landmarks and maps
-play_area = [[-120 + ROBOT_RADIUS, 620 - ROBOT_RADIUS], 
-             [-120 + ROBOT_RADIUS, 520 - ROBOT_RADIUS]] # Size of the map
+play_area = [-120 + ROBOT_RADIUS, 620 - ROBOT_RADIUS, 
+             -120 + ROBOT_RADIUS, 520 - ROBOT_RADIUS] # Size of the map
 rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])]
 landmarkIDs = [1,2,3,4]
 ## Landmark Coordinates
@@ -142,6 +142,7 @@ def main():
     drivetol1()
 
 ## Self localise
+    #TODO DONT ASSUME THE BELOW
     # We are now at Landmark 1 and now begin ussing RRT to go to the next landmark
 
     # We assume that we find the next landmark here
