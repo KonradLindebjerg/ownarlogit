@@ -89,8 +89,6 @@ def wrapped_angle(angle):
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
 
 
-
-
 def jet(x):
     """Colour map for drawing particles. This function determines the colour of 
     a particle from its weight."""
@@ -405,7 +403,6 @@ try:
 
     cam.terminateCaptureThread()
     
-  
 finally: 
     # Make sure to clean up even if an exception occurred
     
