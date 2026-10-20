@@ -154,7 +154,7 @@ class RRT:
                  goal,
                  obstacle_list,
                  rand_area,
-                 expand_dis=50.0,
+                 expand_dis=25.0,
                  path_resolution=0.5,
                  goal_sample_rate=5,
                  max_iter=500,
