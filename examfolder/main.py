@@ -158,7 +158,7 @@ def main():
     i = 0
     while i < length:
         if obstacleList[i][3] == 3:
-            goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
             obstacleList.pop(i)
             i -= 1
             length -= 1
