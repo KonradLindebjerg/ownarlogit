@@ -151,13 +151,12 @@ def main():
     id, dists, angles = findNextLandmark(3)
     obstacleList = rrt.scan_surroundings(cam, angles)
     print("LINE 153: Obstaclelist is: ", obstacleList)
-    idss, tvecs, radius = obstacleList
+    x,y, radius, idss = obstacleList
     goalx, goaly= 0.0, 300.0
 
     for i in range(len(idss)):
         if idss[i] == 3:
-            coords = tvecs[i]
-            goalx, goaly = coords[1], coords[0]
+            goalx, goaly = x[i], y[i]
             
 
 

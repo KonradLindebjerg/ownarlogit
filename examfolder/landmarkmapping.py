@@ -50,8 +50,8 @@ def detectLandmark(cam):
         # MARKER_SIZE (meters); convert to centimeters for the map/RRT frame.
         x = float(tvec[0]) * 100
         z = float(tvec[2]) * 100
-        #marker_id = int(idss[i][0])
-        obstaclelist.append((x,z, radius))
+        marker_id = int(idss[i][0])
+        obstaclelist.append((x,z, radius, marker_id))
     return obstaclelist
 
 def estimateLandmark(corners, id):
