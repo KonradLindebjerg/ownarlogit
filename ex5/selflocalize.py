@@ -11,12 +11,27 @@ import os
 
 # CONSTANTS
 EPS         = 0.05       # EPS for sleep time so arlo hsa time to catch up
-SIGMA_THETA = 0.029320 # Sigma noise for when turning
+SIGMA_THETA = 0.029320 # Sigma noise for when turning (process/motion heading noise)
 SIGMA       = 2.0       # Sigma for driving distance
-# Measurement noise for the ArUco distance reading, in cm. This is the spread
-# of the sensor likelihood and must be on the scale of the distances (cm),
-# NOT the tiny motion sigma above. Too small -> all weights underflow to 0.
-SIGMA_D     = 0.379435       # cm; calibrated distance-measurement standard deviation
+
+# --- Observation-model (likelihood) noise ---------------------------------
+# These are the spread of the measurement likelihood and must reflect the TOTAL
+# sensor+model uncertainty across the operating range (focal-length error,
+# range-dependent bias, marker size, mounting), NOT the fixed-pose repeatability
+# that calibratesigma.py reports. The calibrated values (SIGMA_D=0.38 cm,
+# bearing=1.7 deg) are ~50x too tight: with 1000 particles spread over a
+# ~600x600 cm area (~19 cm spacing), almost none land inside such a narrow
+# likelihood shell, so a single frame collapses the whole cloud onto 1-2
+# samples -> overconfident on one landmark, then stuck. Keep these on the scale
+# of the real error and retune on the robot.
+SIGMA_D         = 20.0      # cm; distance-measurement std in the likelihood
+SIGMA_THETA_OBS = 0.15      # rad (~8.6 deg); bearing-measurement std in the likelihood
+
+# Roughening added to the resampled cloud each update, to prevent particle
+# impoverishment (repeated resampling collapsing to identical points).
+ROUGHEN_SIGMA       = 4.0   # cm
+ROUGHEN_SIGMA_THETA = 0.05  # rad (~2.9 deg)
+
 MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 
 # Flags
@@ -273,7 +288,7 @@ try:
                     predicted_angle = wrapped_angle(math.atan2(dy, dx) - p.getTheta())
 
                     likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA_D)
-                    likelihood *= calc_likelihood(observed_angle, predicted_angle, SIGMA_THETA)
+                    likelihood *= calc_likelihood(observed_angle, predicted_angle, SIGMA_THETA_OBS)
 
                 p.setWeight(p.getWeight() * likelihood)
 
@@ -303,6 +318,10 @@ try:
                             ))
                             break
                 particles = resampled
+                # Roughen the resampled cloud so repeated resampling cannot
+                # collapse it to a few identical points (particle
+                # impoverishment -> locking onto one landmark and getting stuck).
+                particle.add_uncertainty(particles, ROUGHEN_SIGMA, ROUGHEN_SIGMA_THETA)
             else:
                 for p in particles:
                     p.setWeight(1.0 / num_particles)
@@ -397,7 +416,10 @@ try:
                                    delta_d * np.sin(p.getTheta()),
                                    0.0)
 
-        particle.add_uncertainty(particles, SIGMA, SIGMA_THETA * (delta_theta / (2 * np.pi)))
+        # Heading process noise: scale a little with the commanded turn, but keep
+        # a floor so theta diversity does not decay to zero when driving straight.
+        theta_noise = max(SIGMA_THETA * abs(delta_theta) / (2 * np.pi), 0.5 * ROUGHEN_SIGMA_THETA)
+        particle.add_uncertainty(particles, SIGMA, theta_noise)
 
         if plot_sender is not None:
             plot_sender.send({
