@@ -27,10 +27,10 @@ def rotate_obstacles(obstacles, heading_deg):
     phi = math.radians(heading_deg)
     cos_p, sin_p = math.cos(phi), math.sin(phi)
     rotated = []
-    for (x, z, r) in obstacles:
+    for (x, z, r, id) in obstacles:
         wx = x * cos_p - z * sin_p
         wy = x * sin_p + z * cos_p
-        rotated.append((wx, wy, r))
+        rotated.append((wx, wy, r, id))
     return rotated
 
 
@@ -47,7 +47,6 @@ def scan_surroundings(cam, inputheading):
     heading = 0.0 + inputheading
 
     # 1) Straight ahead.
-    print(rotate_obstacles(lm.detectLandmark(cam), heading))
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     print("LINE 51; OBSTACLES IN RRT IS ;", obstacles)
     sleep(EPS)
