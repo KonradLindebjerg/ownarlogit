@@ -47,6 +47,7 @@ def scan_surroundings(cam, inputheading):
     heading = 0.0 + inputheading
 
     # 1) Straight ahead.
+    print(rotate_obstacles(lm.detectLandmark(cam), heading))
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     print("LINE 51; OBSTACLES IN RRT IS ;", obstacles)
     sleep(EPS)
