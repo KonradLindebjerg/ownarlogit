@@ -154,9 +154,13 @@ def main():
     #x,y, radius, idss = obstacleList
     goalx, goaly= 0.0, 300.0
 
-    for i in range(len(obstacleList)):
+    length = len(obstacleList)
+    for i in range(length):
         if obstacleList[i][3] == 3:
             goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            obstacleList.pop(i)
+            i -= 1
+            length -= 1
             
 
 
