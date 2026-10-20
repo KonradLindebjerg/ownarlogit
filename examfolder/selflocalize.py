@@ -35,7 +35,6 @@ ROUGHEN_SIGMA_THETA = 0.05  # rad (~2.9 deg)
 MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 
 # Flags
-showGUI  = False # Whether or not to open GUI windows
 onRobot  = True  # Whether or not we are running on the Arlo robot
 sendPlot = True
 
@@ -51,7 +50,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 from lib import drive
-from lib.netplot import PlotSender
 
 print("Robot drive modules loaded")
 onRobot = True
@@ -71,74 +69,34 @@ CBLACK   = (0, 0, 0)
 
 # Landmarks.
 # The robot knows the position of 2 landmarks. Their coordinates are in the unit centimeters [cm].
-landmarkIDs = [1, 3]
-landmarks = {
-    1: (0.0, 0.0),    # Coordinates for landmark 1
-    3: (300.0, 0.0)  # Coordinates for landmark 2
-}
-landmark_colors = [CRED, CGREEN] # Colors used when drawing the landmarks
+    #landmarkIDs = [1, 3]
+    #landmarks = {
+    #    1: (0.0, 0.0),    # Coordinates for landmark 1
+    #    2: (0.0, 0.0),    # Coordinates for landmark 1
+    #    3: (0.0, 0.0),    # Coordinates for landmark 1
+    #    4: (300.0, 0.0)  # Coordinates for landmark 2
+    #}
+    #landmark_colors = [CRED, CGREEN] # Colors used when drawing the landmarks
 
-l1x, l1y = landmarks[1]
-l2x, l2y = landmarks[3]
-
-MIDDLEPOINT = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
+##landmarkIDs = {
+##    "LANDMARK1": 1,
+##    "LANDMARK2": 2,
+##    "LANDMARK3": 3,
+##    "LANDMARK4": 4,
+##}
+#### Landmark Coordinates
+##landmarks = {
+##    "LANDMARK1": (0.0, 0.0),
+##    "LANDMARK2": (0.0, 300.0),
+##    "LANDMARK3": (400.0, 0.0),
+##    "LANDMARK4": (400.0, 300.0),
+##}
+##
 
 
 def wrapped_angle(angle):
     """Normalize an angle to the interval [-pi, pi)."""
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
-
-
-def jet(x):
-    """Colour map for drawing particles. This function determines the colour of 
-    a particle from its weight."""
-    r = (x >= 3.0/8.0 and x < 5.0/8.0) * (4.0 * x - 3.0/2.0) + (x >= 5.0/8.0 and x < 7.0/8.0) + (x >= 7.0/8.0) * (-4.0 * x + 9.0/2.0)
-    g = (x >= 1.0/8.0 and x < 3.0/8.0) * (4.0 * x - 1.0/2.0) + (x >= 3.0/8.0 and x < 5.0/8.0) + (x >= 5.0/8.0 and x < 7.0/8.0) * (-4.0 * x + 7.0/2.0)
-    b = (x < 1.0/8.0) * (4.0 * x + 1.0/2.0) + (x >= 1.0/8.0 and x < 3.0/8.0) + (x >= 3.0/8.0 and x < 5.0/8.0) * (-4.0 * x + 5.0/2.0)
-
-    return (255.0*r, 255.0*g, 255.0*b)
-
-def draw_world(est_pose, particles, world):
-    """Visualization.
-    This functions draws robots position in the world coordinate system."""
-
-    # Fix the origin of the coordinate system
-    offsetX = 0
-    offsetY = 0
-
-    # Constant needed for transforming from world coordinates to screen coordinates (flip the y-axis)
-    ymax = world.shape[0]
-
-    world[:] = CWHITE # Clear background to white
-
-    # Find largest weight
-    max_weight = 0
-    for particle in particles:
-        max_weight = max(max_weight, particle.getWeight())
-
-    # Draw particles
-    for particle in particles:
-        x = int(particle.getX() + offsetX)
-        y = ymax - (int(particle.getY() + offsetY))
-        colour = jet(particle.getWeight() / max_weight)
-        cv2.circle(world, (x,y), 2, colour, 2)
-        b = (int(particle.getX() + 15.0*np.cos(particle.getTheta()))+offsetX, 
-                                     ymax - (int(particle.getY() + 15.0*np.sin(particle.getTheta()))+offsetY))
-        cv2.line(world, (x,y), b, colour, 2)
-
-    # Draw landmarks
-    for i in range(len(landmarkIDs)):
-        ID = landmarkIDs[i]
-        lm = (int(landmarks[ID][0] + offsetX), int(ymax - (landmarks[ID][1] + offsetY)))
-        cv2.circle(world, lm, 5, landmark_colors[i], 2)
-
-    # Draw estimated robot pose
-    a = (int(est_pose.getX())+offsetX, ymax-(int(est_pose.getY())+offsetY))
-    b = (int(est_pose.getX() + 15.0*np.cos(est_pose.getTheta()))+offsetX, 
-         ymax-(int(est_pose.getY() + 15.0*np.sin(est_pose.getTheta()))+offsetY))
-    cv2.circle(world, a, 5, CMAGENTA, 2)
-    cv2.line(world, a, b, CMAGENTA, 2)
-
 
 
 def initialize_particles(num_particles):
@@ -163,65 +121,40 @@ def calc_likelihood(observed_distance, predicted_distance, sigma):
 
 
 # Main program #
-try:
-    if showGUI:
-        # Open windows
-        WIN_RF1 = "Robot view"
-        cv2.namedWindow(WIN_RF1)
-        cv2.moveWindow(WIN_RF1, 50, 50)
-
-        WIN_World = "World view"
-        cv2.namedWindow(WIN_World)
-        cv2.moveWindow(WIN_World, 500, 50)
-
-
+# TODO Change the function name to not be main
+def main(cam, landmarkIDs, landmarks):
     # Initialize particles
     num_particles = 1000
     particles = initialize_particles(num_particles)
-
+    
     est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
     
     
     # Driving parameters
     velocity = 0.0 # cm/sec
     angular_velocity = 0.0 # radians/sec
-
-    # Initialize the robot (XXX: You do this)
-    # Robot gets init in lib/drive.python
     
-    
-
     # Allocate space for world map
     world = np.zeros((500,500,3), dtype=np.uint8)
-
-    # Draw map
-    #draw_world(est_pose, particles, world)
-
-    print("Initializing camera...")
-    if isRunningOnArlo():
-        #cam = camera.Camera(0, robottype='arlo', useCaptureThread=True)
-        cam = camera.Camera(0, robottype='arlo', useCaptureThread=False)
-    else:
-        #cam = camera.Camera(0, robottype='macbookpro', useCaptureThread=True)
-        cam = camera.Camera(1, robottype='macbookpro', useCaptureThread=False)
-
-    last_goal = MIDDLEPOINT
-    GOAL_DISTANCE_TOLERANCE_CM = 10.0
-    GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
+    
+    
+    #last_goal = MIDDLEPOINT
+    #GOAL_DISTANCE_TOLERANCE_CM = 40.0
+    #GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
     SEARCH_TURN_STEP_DEG = 20.0
     search_mode = False
     frame_count = 0
     seen_landmark_ids = set()
     landmarks_acquired = False
-
+    
     while True:
         frame_count += 1
-
+    
         # Move the robot according to user input (only for testing)
         action = cv2.waitKey(10)
         if action == ord('q'): # Quit
             break
-
+    
         if not isRunningOnArlo():
             if action == ord('w'): # Forward
                 velocity += 4.0
@@ -234,10 +167,10 @@ try:
                 angular_velocity += 0.2
             elif action == ord('d'): # Right
                 angular_velocity -= 0.2
-
+    
         # Fetch next frame
         colour = cam.get_next_frame()
-
+    
         # Detect objects
         objectIDs, dists, angles = cam.detect_aruco_objects(colour)
         observations = {}
@@ -253,41 +186,41 @@ try:
                 else:
                     detection_status = "used: closest detection"
                     observations[oid] = (dists[i], angles[i])
-
+    
                 if detection_status != "used":
                     continue
-
+    
             seen_landmark_ids.update(observations)
             landmarks_acquired = all(landmark_id in seen_landmark_ids
                                      for landmark_id in landmarkIDs)
-
+    
             for p in particles:
                 likelihood = 1.0
                 for landmark_id, (observed_distance, observed_angle) in observations.items():
                     landmark_x, landmark_y = landmarks[landmark_id]
-
+    
                     dx = landmark_x - p.getX()
                     dy = landmark_y - p.getY()
                     predicted_distance = math.hypot(dx, dy)
                     predicted_angle = wrapped_angle(math.atan2(dy, dx) - p.getTheta())
-
+    
                     likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA_D)
                     likelihood *= calc_likelihood(observed_angle, predicted_angle, SIGMA_THETA_OBS)
-
+    
                 p.setWeight(p.getWeight() * likelihood)
-
+    
             total_weight = sum(p.getWeight() for p in particles)
             if not observations:
                 weight_status = "prior only; no recognized landmarks"
             elif total_weight > 0.0:
                 for p in particles:
                     p.setWeight(p.getWeight() / total_weight)
-
+    
                 effective_sample_size = 1.0 / sum(p.getWeight() ** 2 for p in particles)
                 max_weight = max(p.getWeight() for p in particles)
                 weight_status = (f"updated; ESS={effective_sample_size:.0f}/{num_particles}, "
                                  f"max weight={max_weight:.4f}")
-
+    
                 weights = [p.getWeight() for p in particles]
                 cumsum = np.cumsum(weights)
                 resampled = []
@@ -306,19 +239,16 @@ try:
                 # collapse it to a few identical points (particle
                 # impoverishment -> locking onto one landmark and getting stuck).
                 particle.add_uncertainty(particles, ROUGHEN_SIGMA, ROUGHEN_SIGMA_THETA)
+
+                # POSSIBLE TODO: ADD RANDOM UNIFORM PARTICLES IN THE MIX HERE
+
             else:
                 for p in particles:
                     p.setWeight(1.0 / num_particles)
                 weight_status = "all likelihoods underflowed; reset weights uniformly"
 
-            if len(observations) >= 2:
-                # Both landmarks are visible: target the midpoint between them.
-                observed_ids = sorted(observations.keys())
-                l1x, l1y = landmarks[observed_ids[0]]
-                l2x, l2y = landmarks[observed_ids[1]]
-                last_goal = ((l1x + l2x) / 2.0, (l1y + l2y) / 2.0)
             search_mode = not landmarks_acquired
-
+    
             cam.draw_aruco_objects(colour)
         else:
             # Search until both landmark IDs have been observed at least once.
@@ -326,91 +256,50 @@ try:
             for p in particles:
                 p.setWeight(1.0 / num_particles)
             weight_status = "no markers detected; weights unchanged"
-
+    
         est_pose = particle.estimate_pose(particles)
+    
 
-        # Use the current estimate and the latest observed target to decide whether
-        # to stop or move. Doing this after the camera update prevents stale
-        # estimates from driving the robot past the correct midpoint.
-        target = last_goal
-        goal_angle = drive.angle_to_target((est_pose.getX(), est_pose.getY()), np.rad2deg(est_pose.getTheta()), target)
-        goal_distance = math.hypot(est_pose.getX() - target[0], est_pose.getY() - target[1])
-        heading_error = abs(wrapped_angle(math.atan2(target[1] - est_pose.getY(), target[0] - est_pose.getX()) - est_pose.getTheta()))
+        # IF EST_POSE IS WITHIN STASFIABLE CONDITION RETURN EST_POSE TO main.py
 
-        if (
-            not search_mode
-            and goal_distance <= GOAL_DISTANCE_TOLERANCE_CM
-            and heading_error <= GOAL_ANGLE_TOLERANCE_RAD
-        ):
-            print(f"Stopping: target tolerance reached ({goal_distance:.1f} cm, "
-                f"heading error {math.degrees(heading_error):.1f} deg).")
-            drive.drive(0.0)
-            sleep(EPS)
-            break
 
         # If the robot is near a single visible landmark, treat it as a tracking
         # target temporarily; otherwise keep moving toward the midpoint.
         # If no valid landmark was seen on the current frame, force a search
         # manoeuvre instead of continuing toward a stale goal.
         should_search = search_mode
-
+    
         turn_cmd_deg = 0.0
+        # We probably shouldt be driving in the exam solution
         drive_cmd_cm = 0.0
-
+    
         if should_search:
             turn_cmd_deg = SEARCH_TURN_STEP_DEG
             drive.turn(turn_cmd_deg)
             sleep(EPS)
-        else:
-            turn_cmd_deg = -goal_angle
-            drive.turn(turn_cmd_deg)
-            sleep(EPS)
-            MAX_DRIVE_CM = 50.0
-            drive_cmd_cm = min(goal_distance, MAX_DRIVE_CM)
-            drive.drive(drive_cmd_cm)
-            sleep(EPS)
-
+        # The below was used for for driing towards the middlepoint in ex5, maybe delete
+        #else:
+        #    turn_cmd_deg = -goal_angle
+        #    drive.turn(turn_cmd_deg)
+        #    sleep(EPS)
+        #    MAX_DRIVE_CM = 50.0
+        #    drive_cmd_cm = min(goal_distance, MAX_DRIVE_CM)
+        #    drive.drive(drive_cmd_cm)
+        #    sleep(EPS)
+    
         # Move the particles by exactly what we commanded the robot to do.
         # Motor turn and particle heading use opposite sign conventions.
         delta_theta = np.deg2rad(-turn_cmd_deg)
         delta_d = drive_cmd_cm
-
+    
         for p in particles:
             particle.move_particle(p, 0.0, 0.0, delta_theta)
             particle.move_particle(p,
                                    delta_d * np.cos(p.getTheta()),
                                    delta_d * np.sin(p.getTheta()),
                                    0.0)
-
+    
         # Heading process noise: scale a little with the commanded turn, but keep
         # a floor so theta diversity does not decay to zero when driving straight.
         theta_noise = max(SIGMA_THETA * abs(delta_theta) / (2 * np.pi), 0.5 * ROUGHEN_SIGMA_THETA)
         particle.add_uncertainty(particles, SIGMA, theta_noise)
-
-        if plot_sender is not None:
-            plot_sender.send({
-                "particles": [[p.getX(), p.getY(), p.getTheta(), p.getWeight()]
-                              for p in particles],
-                "est_pose": [est_pose.getX(), est_pose.getY(), est_pose.getTheta()],
-                "landmarks": {str(i): list(landmarks[i]) for i in landmarkIDs},
-            })
-        if showGUI:
-            draw_world(est_pose, particles, world)
-            cv2.imshow(WIN_RF1, colour)
-            cv2.imshow(WIN_World, world)
-
-        # Drive towards middle of landmarks
-
-    cam.terminateCaptureThread()
-    
-finally: 
-    # Make sure to clean up even if an exception occurred
-    
-    if sendPlot and 'plot_sender' in dir() and plot_sender is not None:
-        plot_sender.close()
-    # Close all windows
-    cv2.destroyAllWindows()
-
-    # Clean-up capture thread
-    #cam.terminateCaptureThread()
-

@@ -23,6 +23,7 @@ from lib import robot
 
 
 
+
 # Constants
 EPS         = 0.075    # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA = 0.029320 # Sigma noise for when turning
@@ -33,21 +34,27 @@ ROBOT_RADIUS = 22.5   # Robot radius for rrt
 play_area = [-120 + ROBOT_RADIUS, 620 - ROBOT_RADIUS, 
              -120 + ROBOT_RADIUS, 520 - ROBOT_RADIUS] # Size of the map
 rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] # Sampling area for RRT
-landmarkIDs = [1,2,3,4]
+
+landmarkIDs = {
+    "LANDMARK1": 1,
+    "LANDMARK2": 2,
+    "LANDMARK3": 3,
+    "LANDMARK4": 4,
+}
 ## Landmark Coordinates
 landmarks = {
-    1: (0.0, 0.0),
-    2: (0.0, 300.0),
-    3: (400.0, 0.0),
-    4: (400.0, 300.0),
+    "LANDMARK1": (0.0, 0.0),
+    "LANDMARK2": (0.0, 300.0),
+    "LANDMARK3": (400.0, 0.0),
+    "LANDMARK4": (400.0, 300.0),
 }
 
 ## What landmarks have been visited?
 VisitedLandmark = {
-    1: False,
-    2: False,
-    3: False,
-    4: False
+    "LANDMARK1": False,
+    "LANDMARK2": False,
+    "LANDMARK3": False,
+    "LANDMARK4": False
 }
 
 cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
@@ -92,7 +99,7 @@ def drivetol1():
 
     idx = 0
     for i in range(len(objectIDs)):
-        if objectIDs[i] == 1:
+        if objectIDs[i] == landmarkIDs["LANDMARK1"]:
             break
         else: idx += 1
 ## Drive towards L1
@@ -107,7 +114,7 @@ def drivetol1():
     print("distance is :", distance)
     drive.drive(distance - 10)
 
-    VisitedLandmark[1] = True
+    VisitedLandmark["LANDMARK1"] = True
 
 
 def searchState():
@@ -148,7 +155,7 @@ def main():
 
     # We assume that we find the next landmark here
 
-    id, dists, angles = findNextLandmark(3)
+    id, dists, angles = findNextLandmark(landmarkIDs["LANDMARK2"])
     obstacleList = rrt.scan_surroundings(cam, angles)
     print("LINE 153: Obstaclelist is: ", obstacleList)
     #x,y, radius, idss = obstacleList
@@ -157,7 +164,7 @@ def main():
     length = len(obstacleList)
     i = 0
     while i < length:
-        if obstacleList[i][3] == 3:
+        if obstacleList[i][3] == landmarkIDs["LANDMARK2"]:
             #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
             obstacleList.pop(i)
             i -= 1
