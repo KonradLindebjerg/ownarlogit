@@ -92,7 +92,7 @@ def drivetol1():
 
     idx = 0
     for i in range(len(objectIDs)):
-        if objectIDs[i] == 6:
+        if objectIDs[i] == 1:
             break
         else: idx += 1
 ## Drive towards L1
