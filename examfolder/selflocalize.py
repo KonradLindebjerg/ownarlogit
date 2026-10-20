@@ -38,8 +38,6 @@ MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 showGUI  = False # Whether or not to open GUI windows
 onRobot  = True  # Whether or not we are running on the Arlo robot
 sendPlot = True
-DEBUG    = True
-
 
 def isRunningOnArlo():
     """Return True if we are running on Arlo, otherwise False.
@@ -183,10 +181,6 @@ try:
     num_particles = 1000
     particles = initialize_particles(num_particles)
 
-    PLOT_HOST = os.environ.get("PLOT_HOST", "172.20.10.8")   # laptop IP
-    PLOT_PORT = int(os.environ.get("PLOT_PORT", "5005"))
-    plot_sender = PlotSender(PLOT_HOST, PLOT_PORT) if sendPlot else None
-
     est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
     
     
@@ -221,10 +215,6 @@ try:
     frame_count = 0
     seen_landmark_ids = set()
     landmarks_acquired = False
-
-    if DEBUG:
-        print(f"Localization started: {num_particles} particles, landmarks={landmarkIDs}, "
-              f"distance sigma={SIGMA_D:.2f} cm, angle sigma={np.rad2deg(SIGMA_THETA):.1f} deg")
 
     while True:
         frame_count += 1
@@ -265,10 +255,6 @@ try:
                 else:
                     detection_status = "used: closest detection"
                     observations[oid] = (dists[i], angles[i])
-
-                if DEBUG:
-                    print(f"  Detection ID {oid}: {float(dists[i]):.1f} cm, "
-                          f"{math.degrees(float(angles[i])):+.1f} deg ({detection_status})")
 
                 if detection_status != "used":
                     continue
@@ -353,20 +339,6 @@ try:
         goal_distance = math.hypot(est_pose.getX() - target[0], est_pose.getY() - target[1])
         heading_error = abs(wrapped_angle(math.atan2(target[1] - est_pose.getY(), target[0] - est_pose.getX()) - est_pose.getTheta()))
 
-        if DEBUG:
-            mode = "SEARCH: acquire landmarks" if search_mode else "NAVIGATE: midpoint"
-            spread_x = float(np.std([p.getX() for p in particles]))
-            spread_y = float(np.std([p.getY() for p in particles]))
-            observed_ids = sorted(observations)
-            print(f"Frame {frame_count}: detections={observed_ids or 'none'}, "
-                  f"seen={sorted(seen_landmark_ids)}; {weight_status}")
-            print(f"  Pose estimate: x={est_pose.getX():.1f} cm, y={est_pose.getY():.1f} cm, "
-                  f"heading={math.degrees(est_pose.getTheta()):+.1f} deg "
-                  f"(particle spread x={spread_x:.1f}, y={spread_y:.1f} cm)")
-            print(f"  Target: x={target[0]:.1f} cm, y={target[1]:.1f} cm; "
-                  f"distance={goal_distance:.1f} cm, bearing error={goal_angle:+.1f} deg, "
-                  f"heading error={math.degrees(heading_error):.1f} deg; mode={mode}")
-
         if (
             not search_mode
             and goal_distance <= GOAL_DISTANCE_TOLERANCE_CM
@@ -399,10 +371,6 @@ try:
             drive_cmd_cm = min(goal_distance, MAX_DRIVE_CM)
             drive.drive(drive_cmd_cm)
             sleep(EPS)
-
-        if DEBUG:
-            print(f"  Command: motor turn {turn_cmd_deg:+.1f} deg, drive {drive_cmd_cm:.1f} cm")
-            print(f"  Particle heading update: {-turn_cmd_deg:+.1f} deg")
 
         # Move the particles by exactly what we commanded the robot to do.
         # Motor turn and particle heading use opposite sign conventions.
