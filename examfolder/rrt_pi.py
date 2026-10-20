@@ -48,6 +48,7 @@ def scan_surroundings(cam, inputheading):
 
     # 1) Straight ahead.
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
+    print("LINE 51; OBSTACLES IN RRT IS ;", obstacles)
     sleep(EPS)
 
     # 2) Turn 45 degrees left (CCW).
