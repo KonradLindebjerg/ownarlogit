@@ -130,7 +130,7 @@ def findNextLandmark(targetLandmark):
                 if objectIDs[i] == targetLandmark:
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
                     return objectIDs[i], dists[i], angles[i]
-        drive.turn(20)
+        drive.turn(-20)
         sleep(EPS)
 
     return None, None, None
