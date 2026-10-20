@@ -162,6 +162,7 @@ def main():
             obstacleList.pop(i)
             i -= 1
             length -= 1
+        i += 1
             
 
 
