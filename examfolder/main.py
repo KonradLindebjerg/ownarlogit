@@ -92,7 +92,7 @@ def drivetol1():
 
     idx = 0
     for i in range(len(objectIDs)):
-        if objectIDs[i] == 6:
+        if objectIDs[i] == 1:
             break
         else: idx += 1
 ## Drive towards L1
@@ -130,7 +130,7 @@ def findNextLandmark(targetLandmark):
                 if objectIDs[i] == targetLandmark:
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
                     return objectIDs[i], dists[i], angles[i]
-        drive.turn(20)
+        drive.turn(-20)
         sleep(EPS)
 
     return None, None, None
@@ -150,13 +150,19 @@ def main():
 
     id, dists, angles = findNextLandmark(3)
     obstacleList = rrt.scan_surroundings(cam, angles)
-    idss, tvecs, radius = obstacleList
+    print("LINE 153: Obstaclelist is: ", obstacleList)
+    #x,y, radius, idss = obstacleList
     goalx, goaly= 0.0, 300.0
 
-    for i in range(len(idss)):
-        if idss[i] == 3:
-            coords = tvecs[i]
-            goalx, goaly = coords[1], coords[0]
+    length = len(obstacleList)
+    i = 0
+    while i < length:
+        if obstacleList[i][3] == 3:
+            #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            obstacleList.pop(i)
+            i -= 1
+            length -= 1
+        i += 1
             
 
 

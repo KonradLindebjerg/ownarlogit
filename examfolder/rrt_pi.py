@@ -27,10 +27,10 @@ def rotate_obstacles(obstacles, heading_deg):
     phi = math.radians(heading_deg)
     cos_p, sin_p = math.cos(phi), math.sin(phi)
     rotated = []
-    for (x, z, r) in obstacles:
+    for (x, z, r, id) in obstacles:
         wx = x * cos_p - z * sin_p
         wy = x * sin_p + z * cos_p
-        rotated.append((wx, wy, r))
+        rotated.append((wx, wy, r, id))
     return rotated
 
 
@@ -48,6 +48,7 @@ def scan_surroundings(cam, inputheading):
 
     # 1) Straight ahead.
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
+    print("LINE 51; OBSTACLES IN RRT IS ;", obstacles)
     sleep(EPS)
 
     # 2) Turn 45 degrees left (CCW).
@@ -153,7 +154,7 @@ class RRT:
                  goal,
                  obstacle_list,
                  rand_area,
-                 expand_dis=50.0,
+                 expand_dis=25.0,
                  path_resolution=0.5,
                  goal_sample_rate=5,
                  max_iter=500,
@@ -297,8 +298,8 @@ class RRT:
         state = {
             "edges": [[node.path_x, node.path_y]
                       for node in self.node_list if node.parent],
-            "obstacles": [[ox, oy, size]
-                          for (ox, oy, size) in self.obstacle_list],
+            "obstacles": [[ox, oy, size, id]
+                          for (ox, oy, size, id) in self.obstacle_list],
             "start": [self.start.x, self.start.y],
             "end": [self.end.x, self.end.y],
             "rnd": None if rnd is None else [rnd.x, rnd.y],
@@ -332,7 +333,7 @@ class RRT:
         if node is None:
             return False
 
-        for (ox, oy, size) in obstacleList:
+        for (ox, oy, size, id) in obstacleList:
             dx_list = [ox - x for x in node.path_x]
             dy_list = [oy - y for y in node.path_y]
             d_list = [dx * dx + dy * dy for (dx, dy) in zip(dx_list, dy_list)]
