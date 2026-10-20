@@ -397,7 +397,7 @@ try:
             sleep(EPS)
             MAX_DRIVE_CM = 50.0
             drive_cmd_cm = min(goal_distance, MAX_DRIVE_CM)
-            drive.drive(drive_cmd_cm / 100.0)
+            drive.drive(drive_cmd_cm)
             sleep(EPS)
 
         if DEBUG:
