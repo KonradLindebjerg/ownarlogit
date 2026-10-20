@@ -333,7 +333,7 @@ class RRT:
         if node is None:
             return False
 
-        for (ox, oy, size) in obstacleList:
+        for (ox, oy, size, id) in obstacleList:
             dx_list = [ox - x for x in node.path_x]
             dy_list = [oy - y for y in node.path_y]
             d_list = [dx * dx + dy * dy for (dx, dy) in zip(dx_list, dy_list)]
