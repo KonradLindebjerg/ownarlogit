@@ -8,7 +8,7 @@ arlo = robot.Robot()
 
 
 leftSpeed  = 68
-rightSpeed = 67
+rightSpeed = 66
 circleTime = 2.75
 driveTime  = 2.25
 eps        = 0.3
@@ -58,7 +58,7 @@ def calculate_drive_distance(u, v):
 
 if __name__ == "__main__":
     turn(360)
-    drive(2)
+    drive(200)
 
 
 
