@@ -298,8 +298,8 @@ class RRT:
         state = {
             "edges": [[node.path_x, node.path_y]
                       for node in self.node_list if node.parent],
-            "obstacles": [[ox, oy, size]
-                          for (ox, oy, size) in self.obstacle_list],
+            "obstacles": [[ox, oy, size, id]
+                          for (ox, oy, size, id) in self.obstacle_list],
             "start": [self.start.x, self.start.y],
             "end": [self.end.x, self.end.y],
             "rnd": None if rnd is None else [rnd.x, rnd.y],
