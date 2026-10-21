@@ -225,12 +225,9 @@ def localize(cam, landmarkIDs, landmarks, particles):
         # We probably shouldt be driving in the exam solution
         drive_cmd_cm = 0.0
     
-        if len(seen_landmark_ids) < 2:
-            turn_cmd_deg = SEARCH_TURN_STEP_DEG
-            drive.turn(turn_cmd_deg, particles)
-            sleep(EPS)
-        else:
-            est_pose = particle.estimate_pose(particles)
+        turn_cmd_deg = SEARCH_TURN_STEP_DEG
+        drive.turn(turn_cmd_deg, particles)
+        sleep(EPS)
             
         counter += 1
     return particles
