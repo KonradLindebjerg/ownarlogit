@@ -140,8 +140,8 @@ def findNextLandmark(targetLandmark, est_pose, particles):
                 if objectIDs[i] == targetLandmark:
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
                     return objectIDs[i], dists[i], angles[i], est_pose
-        drive.turn(-20, particles)
-        est_pose.setTheta(est_pose.getTheta() + -20) 
+        drive.turn(20, particles)
+        est_pose.setTheta(est_pose.getTheta() + 20) 
         sleep(EPS)
 
     return None, None, None, est_pose
