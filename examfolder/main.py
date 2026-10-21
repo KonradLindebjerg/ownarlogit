@@ -169,7 +169,7 @@ def main():
     # We assume that we find the next landmark here
     #rotated estimated heading by whatever we rotated
     id, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK2"], est_pose, particles)
-    obstacleList = rrt.scan_surroundings(cam, angles)
+    obstacleList = rrt.scan_surroundings(cam, angles, particles)
     print("LINE 153: Obstaclelist is: ", obstacleList)
     #x,y, radius, idss = obstacleList
     goalx, goaly= 0.0, 300.0
