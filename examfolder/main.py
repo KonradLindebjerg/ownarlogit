@@ -69,9 +69,7 @@ sleep(EPS)
 # We know that obstacle landmarks are > 4
 
 
-
-
-
+### HELPERS ###
 
 def deduplicate(objectIDs, dists, angles):
     # A landmark can be seen from the side and detected twice (both papers).
@@ -224,10 +222,16 @@ def main():
     )
 
     path = robotrrt.planning(animation=True)
-    print("GOAL IS", goalx, goaly)
-    
     print("Path is:")
     print(path)
+
+
+    path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
+    print("Optimized path is:")
+    print(path)
+
+    print("GOAL IS", goalx, goaly)
+    
     print("orientation is")
     print(robotrrt.robot_orientation)
 

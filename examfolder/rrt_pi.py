@@ -14,6 +14,52 @@ from lib import robot
 
 EPS = 0.75
 
+
+# Checks if there is a clear path between two notdes
+def segment_is_free(rrt, a, b):
+    """True if the straight line a -> b is clear of obstacles and inside the play area."""
+    d = math.hypot(b[0] - a[0], b[1] - a[1])
+    n = max(1, int(d / rrt.path_resolution))
+    node = RRT.Node(a[0], a[1])
+    node.path_x = [a[0] + (b[0] - a[0]) * k / n for k in range(n + 1)]
+    node.path_y = [a[1] + (b[1] - a[1]) * k / n for k in range(n + 1)]
+                                                                                           
+    if not RRT.check_collision(node, rrt.obstacle_list, rrt.robot_radius):
+        return False
+    for x, y in zip(node.path_x, node.path_y):
+        p = RRT.Node(x, y)
+        if not RRT.check_if_outside_play_area(p, rrt.play_area):
+            return False
+    return True
+
+
+
+# Calculate the shorcut path
+def shortcut_path(rrt, path):
+    """Remove waypoints that can be skipped with a straight, collision-free line.
+                                                                                  
+    `path` uses RRT's order: [goal, ..., start]. The result uses the same order,
+    so driveToGoal() works without changes.
+    """
+    if path is None or len(path) < 3:
+        return path
+                                                                                  
+    pts = path[::-1]              # start -> goal is easier to read
+    out = [pts[0]]
+    i = 0
+    while i < len(pts) - 1:
+        # Try the furthest point first, then step back until one is reachable.
+        j = len(pts) - 1
+        while j > i + 1 and not segment_is_free(rrt, pts[i], pts[j]):
+            j -= 1
+        out.append(pts[j])
+        i = j
+    return out[::-1]              # back to [goal, ..., start]
+
+
+
+
+
 # Helper functions from ex4
 
 def rotate_obstacles(obstacles, heading_deg):
