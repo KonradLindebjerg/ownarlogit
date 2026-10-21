@@ -192,7 +192,7 @@ def main():
         obstacle_list=obstacleList,
         play_area=play_area,
         robot_radius= ROBOT_RADIUS,
-        robot_orientation= est_pose[2]
+        robot_orientation= est_pose[2],
         # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,
