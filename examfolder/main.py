@@ -100,31 +100,28 @@ def drivetol1(particles, est_pose):
     sleep(EPS)
 
     l1found = False
+    objectID, angle, dist = 0,0,0
 
     idx = 0
     for i in range(len(objectIDs)):
         if objectIDs[i] == landmarkIDs["LANDMARK1"]:
             l1found = True
+            objectID, angle, dist = objectIDs[i], angles[i], dists[i]
             break
         else: idx += 1
     if not l1found:
-        objectIDs, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK1"], est_pose, particles)
-        for j in range(len(objectIDs)):
-            if objectIDs[j] == landmarkIDs["LANDMARK1"]:
-                l1found = True
-                break
-            else: idx += 1
+        objectID, dist, angle, est_pose = findNextLandmark(landmarkIDs["LANDMARK1"], est_pose, particles)
 
 
 ## Drive towards L1
 
     ## Turn the amount of degrees we need
     
-    angle = np.rad2deg(angles[idx])
+    angle = np.rad2deg(angle)
     print("Angle is:", angle)
     drive.turn(angle, particles)
     ## Drive the distance
-    distance = dists[idx] 
+    distance = dist
     print("distance is :", distance)
     drive.drive(distance - 10, particles)
  
