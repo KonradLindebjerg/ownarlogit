@@ -85,7 +85,7 @@ def driveToGoal(robotrrt, path, particles):
 
         # Rotate angle on robot. `angle` is CCW-positive (math convention), but
         # drive.turn() is CW-positive (positive -> right turn), so negate it here.
-        drive.turn(-angle, particles)
+        drive.turn(angle, particles)
         robotrrt.robot_orientation += angle
         # Drive distance on robot
         distance = calculate_drive_distance(robotrrt.position, path[i])

@@ -192,7 +192,7 @@ def main():
     id, dists, angles= findNextLandmark(landmarkIDs["LANDMARK2"], particles)
 
     est_pose = particle.estimate_pose(particles)
-    scan_heading_deg = math.degrees(est_pose.getTheta())
+    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
     print("LINE 153: Obstaclelist is: ", obstacleList)
     #x,y, radius, idss = obstacleList
