@@ -150,7 +150,7 @@ def findNextLandmark(targetLandmark, est_pose, particles):
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
                     return objectIDs[i], dists[i], angles[i], est_pose
         drive.turn(20, particles)
-        est_pose.setTheta(est_pose.getTheta() + 20) 
+        est_pose.setTheta(est_pose.getTheta() + np.deg2rad(20)) 
         sleep(EPS)
 
     return None, None, None, est_pose
@@ -160,7 +160,7 @@ def main():
 # Plan
 ## Start out by localising our selves.
     num_particles = 1000
-    particles = sl.initialize_particles(1000)
+    particles = sl.initialize_particles(num_particles)
     #est pose og particles, spørgsmålet om vi måske skal bruge mindst 2 før vi kan være sikker på localize
     #måske localize skal ændres til at bruge 2? eller skal vi have en seperat funktion til starten? idk 
 
@@ -183,7 +183,8 @@ def main():
     # We assume that we find the next landmark here
     #rotated estimated heading by whatever we rotated
     id, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK2"], est_pose, particles)
-    obstacleList = rrt.scan_surroundings(cam, angles, particles)
+    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
+    obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
     print("LINE 153: Obstaclelist is: ", obstacleList)
     #x,y, radius, idss = obstacleList
     goalx, goaly= 0.0, 300.0
@@ -207,7 +208,7 @@ def main():
         obstacle_list=obstacleList,
         play_area=play_area,
         robot_radius= ROBOT_RADIUS,
-        robot_orientation= est_pose.getTheta(),
+        robot_orientation= np.rad2deg(est_pose.getTheta()) - 90,
         # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,
