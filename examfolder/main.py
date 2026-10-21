@@ -209,7 +209,7 @@ def main():
 
     # SET GOAL TO L2
 
-    rrt.driveToGoal(robotrrt, path)
+    rrt.driveToGoal(robotrrt, path, particles)
 
 
 
