@@ -160,7 +160,7 @@ def main():
     drivetol1(particles)
     #we should now have an idea of where we are?
     est_pose = particle.estimate_pose(particles)
-    print("ESTIMATED POSE", est_pose)
+    print("ESTIMATED POSE", est_pose[0], est_pose[1], est_pose[2])
     
 ## Self localise
     #TODO DONT ASSUME THE BELOW
