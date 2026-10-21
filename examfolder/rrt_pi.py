@@ -34,7 +34,7 @@ def rotate_obstacles(obstacles, heading_deg):
     return rotated
 
 
-def scan_surroundings(cam, inputheading):
+def scan_surroundings(cam, inputheading, particles):
     """Take 3 images to widen the field of view before planning.
 
     Sequence: straight ahead, 45 degrees left, then 90 degrees right (ending
@@ -52,21 +52,21 @@ def scan_surroundings(cam, inputheading):
     sleep(EPS)
 
     # 2) Turn 45 degrees left (CCW).
-    drive.turn(-45)
+    drive.turn(-45, particles)
     sleep(EPS)
     heading += 45
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     sleep(EPS)
 
     # 3) Turn 90 degrees right (CW) -> now 45 degrees right of start.
-    drive.turn(90)
+    drive.turn(90, particles)
     sleep(EPS)
     heading -= 90
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     sleep(EPS)
 
     # 4) Turn 45 degrees left to return to the start orientation.
-    drive.turn(-45)
+    drive.turn(-45, particles)
     sleep(EPS)
     heading += 45
 
@@ -75,7 +75,7 @@ def scan_surroundings(cam, inputheading):
     return obstacles
 
 
-def driveToGoal(robotrrt, path):
+def driveToGoal(robotrrt, path, particles):
     print("Started driving to goal")
     i = len(path) - 2
     while (i >= 0):
@@ -85,13 +85,13 @@ def driveToGoal(robotrrt, path):
 
         # Rotate angle on robot. `angle` is CCW-positive (math convention), but
         # drive.turn() is CW-positive (positive -> right turn), so negate it here.
-        drive.turn(-angle)
+        drive.turn(-angle, particles)
         robotrrt.robot_orientation += angle
         # Drive distance on robot
         distance = calculate_drive_distance(robotrrt.position, path[i])
         print("Driving distance: ", distance)
         # Update robots position
-        drive.drive(distance)
+        drive.drive(distance, particles)
         robotrrt.position = path[i]
         i -= 1
 
