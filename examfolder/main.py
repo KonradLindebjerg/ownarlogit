@@ -9,6 +9,8 @@ from time import sleep
 from timeit import default_timer as timer
 import sys
 import os
+import selflocalize as sl
+import particle
 
 
 
@@ -89,7 +91,7 @@ def deduplicate(objectIDs, dists, angles):
 
 
 
-def drivetol1():
+def drivetol1(particles):
     #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
     colour = cam.get_next_frame() # Capture image
     sleep(EPS)
@@ -108,11 +110,12 @@ def drivetol1():
     
     angle = np.rad2deg(angles[idx])
     print("Angle is:", angle)
-    drive.turn(angle)
+    drive.turn(angle, particles)
     ## Drive the distance
     distance = dists[idx] 
     print("distance is :", distance)
-    drive.drive(distance - 10)
+    drive.drive(distance - 10, particles)
+ 
 
     VisitedLandmark["LANDMARK1"] = True
 
@@ -121,7 +124,7 @@ def searchState():
     return
 
 
-def findNextLandmark(targetLandmark):
+def findNextLandmark(targetLandmark, est_pose):
 
     for i in range(18):
         print(i)
@@ -136,26 +139,35 @@ def findNextLandmark(targetLandmark):
             for i in range(len(objectIDs)):
                 if objectIDs[i] == targetLandmark:
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
-                    return objectIDs[i], dists[i], angles[i]
+                    return objectIDs[i], dists[i], angles[i], est_pose
         drive.turn(-20)
+        est_pose[2] = est_pose[2] + np.deg2rad(-20)
         sleep(EPS)
 
-    return None, None, None
+    return None, None, None, est_pose
 
 
 def main():
 # Plan
-## Start out by localising our selves. 
+## Start out by localising our selves.
+    num_particles = 1000
+    particles = sl.initialize_particles(1000)
+    #est pose og particles, spørgsmålet om vi måske skal bruge mindst 2 før vi kan være sikker på localize
+    #måske localize skal ændres til at bruge 2? eller skal vi have en seperat funktion til starten? idk 
+    est_pose, particles = sl.localize(cam, landmarkIDs, landmarks, particles)
     
-    drivetol1()
 
+    drivetol1(particles)
+    #we should now have an idea of where we are?
+    est_pose = particle.estimate_pose(particles)
+    
 ## Self localise
     #TODO DONT ASSUME THE BELOW
     # We are now at Landmark 1 and now begin ussing RRT to go to the next landmark
 
     # We assume that we find the next landmark here
-
-    id, dists, angles = findNextLandmark(landmarkIDs["LANDMARK2"])
+    #rotated estimated heading by whatever we rotated
+    id, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK2"], est_pose)
     obstacleList = rrt.scan_surroundings(cam, angles)
     print("LINE 153: Obstaclelist is: ", obstacleList)
     #x,y, radius, idss = obstacleList
@@ -172,14 +184,15 @@ def main():
         i += 1
             
 
-
+    #maybe change something with the heading or modify rrt so that it also uses heading
     robotrrt = rrt.RRT(
-        start=[0, 0 - ROBOT_RADIUS],
+        start=[est_pose[0],est_pose[1]],
         goal=[goalx, goaly],
         rand_area=rand_area,
         obstacle_list=obstacleList,
         play_area=play_area,
         robot_radius= ROBOT_RADIUS,
+        robot_orientation= est_pose[2]
         # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,

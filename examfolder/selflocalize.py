@@ -122,17 +122,8 @@ def calc_likelihood(observed_distance, predicted_distance, sigma):
 
 # Main program #
 # TODO Change the function name to not be main
-def main(cam, landmarkIDs, landmarks):
-    # Initialize particles
-    num_particles = 1000
-    particles = initialize_particles(num_particles)
-    
+def localize(cam, landmarkIDs, landmarks, particles):
     est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
-    
-    
-    # Driving parameters
-    velocity = 0.0 # cm/sec
-    angular_velocity = 0.0 # radians/sec
     
     # Allocate space for world map
     world = np.zeros((500,500,3), dtype=np.uint8)
@@ -146,6 +137,7 @@ def main(cam, landmarkIDs, landmarks):
     frame_count = 0
     seen_landmark_ids = set()
     landmarks_acquired = False
+    counter = 0
     
     while True:
         frame_count += 1
@@ -261,6 +253,8 @@ def main(cam, landmarkIDs, landmarks):
     
 
         # IF EST_POSE IS WITHIN STASFIABLE CONDITION RETURN EST_POSE TO main.py
+        if counter > 10:
+            break
 
 
         # If the robot is near a single visible landmark, treat it as a tracking
@@ -303,3 +297,5 @@ def main(cam, landmarkIDs, landmarks):
         # a floor so theta diversity does not decay to zero when driving straight.
         theta_noise = max(SIGMA_THETA * abs(delta_theta) / (2 * np.pi), 0.5 * ROUGHEN_SIGMA_THETA)
         particle.add_uncertainty(particles, SIGMA, theta_noise)
+        counter += 1
+    return est_pose, particles

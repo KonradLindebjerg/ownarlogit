@@ -1,5 +1,7 @@
 from time import sleep
 import math
+import particle 
+import numpy as np
 
 import robot
 
@@ -13,7 +15,7 @@ circleTime = 2.75
 driveTime  = 2.25
 eps        = 0.3
 
-def turn(angle):
+def turn(angle, particles):
     left  = 0
     right = 1
     if (angle < 0):
@@ -23,12 +25,27 @@ def turn(angle):
     sleep((abs(angle)/360)*circleTime)
     print(arlo.stop())
     sleep(eps)
+    delta_theta = np.deg2rad(-angle)
+    for p in particles:
+        particle.move_particle(p, 0, 0, delta_theta)
+    #maybe return particle but they get modified directly
+    
+    
 
-def drive(length):
+def drive(length, particles):
     print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
     sleep(driveTime*length/100)
     print(arlo.stop())
     sleep(eps)
+    for p in particles:
+        particle.move_particle(p,
+                        length * np.cos(p.getTheta()),
+                        length * np.sin(p.getTheta()),
+                        0.0)
+    #maybe unit difference type maybe need to divide by 100.
+    
+    
+    
 
 
 def angle_to_target(position, orientation_deg, target):
