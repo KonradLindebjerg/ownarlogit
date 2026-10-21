@@ -124,7 +124,7 @@ def searchState():
     return
 
 
-def findNextLandmark(targetLandmark, est_pose):
+def findNextLandmark(targetLandmark, est_pose, particles):
 
     for i in range(18):
         print(i)
@@ -140,7 +140,7 @@ def findNextLandmark(targetLandmark, est_pose):
                 if objectIDs[i] == targetLandmark:
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
                     return objectIDs[i], dists[i], angles[i], est_pose
-        drive.turn(-20)
+        drive.turn(-20, particles)
         est_pose[2] = est_pose[2] + np.deg2rad(-20)
         sleep(EPS)
 
@@ -160,6 +160,7 @@ def main():
     drivetol1(particles)
     #we should now have an idea of where we are?
     est_pose = particle.estimate_pose(particles)
+    print("ESTIMATED POSE", est_pose)
     
 ## Self localise
     #TODO DONT ASSUME THE BELOW
@@ -167,7 +168,7 @@ def main():
 
     # We assume that we find the next landmark here
     #rotated estimated heading by whatever we rotated
-    id, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK2"], est_pose)
+    id, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK2"], est_pose, particles)
     obstacleList = rrt.scan_surroundings(cam, angles)
     print("LINE 153: Obstaclelist is: ", obstacleList)
     #x,y, radius, idss = obstacleList
