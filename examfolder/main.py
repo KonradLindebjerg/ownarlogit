@@ -41,7 +41,7 @@ landmarkIDs = {
     "LANDMARK1": 1,
     "LANDMARK2": 7,
     "LANDMARK3": 100,
-    "LANDMARK4": 4,
+    "LANDMARK4": 1000,
 }
 ## Landmark Coordinates
 landmarks = {
