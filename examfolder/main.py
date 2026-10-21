@@ -177,63 +177,64 @@ def main():
 
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
 
-    drivetol1(particles)
-    #we should now have an idea of where we are?
-    est_pose = particle.estimate_pose(particles)
-    print("ESTIMATED POSE", est_pose.getX(), est_pose.getY(), est_pose.getTheta())
-    
-## Self localise
-    #TODO DONT ASSUME THE BELOW
-    # We are now at Landmark 1 and now begin ussing RRT to go to the next landmark
+    drive.turn(45,particles)
+    # drivetol1(particles)
+    # #we should now have an idea of where we are?
+    # est_pose = particle.estimate_pose(particles)
+    # print("ESTIMATED POSE", est_pose.getX(), est_pose.getY(), est_pose.getTheta())
+    # 
+## S# elf localise
+    # #TODO DONT ASSUME THE BELOW
+    # # We are now at Landmark 1 and now begin ussing RRT to go to the next landmark
 
-    # We assume that we find the next landmark here
-    # Reobserve our surroundings
-    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
-    id, dists, angles= findNextLandmark(landmarkIDs["LANDMARK2"], particles)
+    # # We assume that we find the next landmark here
+    # # Reobserve our surroundings
+    # particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+    # id, dists, angles= findNextLandmark(landmarkIDs["LANDMARK2"], particles)
 
-    est_pose = particle.estimate_pose(particles)
-    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-    obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
-    print("LINE 153: Obstaclelist is: ", obstacleList)
-    #x,y, radius, idss = obstacleList
-    goalx, goaly= 0.0, 300.0
+    # est_pose = particle.estimate_pose(particles)
+    # scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
+    # obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
+    # print("LINE 153: Obstaclelist is: ", obstacleList)
+    # #x,y, radius, idss = obstacleList
+    # goalx, goaly= 0.0, 300.0
 
-    length = len(obstacleList)
-    i = 0
-    while i < length:
-        if obstacleList[i][3] == landmarkIDs["LANDMARK2"]:
-            #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
-            obstacleList.pop(i)
-            i -= 1
-            length -= 1
-        i += 1
-            
+    # length = len(obstacleList)
+    # i = 0
+    # while i < length:
+    #     if obstacleList[i][3] == landmarkIDs["LANDMARK2"]:
+    #         #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+    #         obstacleList.pop(i)
+    #         i -= 1
+    #         length -= 1
+    #     i += 1
+    #         
 
-    #maybe change something with the heading or modify rrt so that it also uses heading
-    robotrrt = rrt.RRT(
-        start=[est_pose.getX(),est_pose.getY()],
-        goal=[goalx, goaly],
-        rand_area=rand_area,
-        obstacle_list=obstacleList,
-        play_area=play_area,
-        robot_radius= ROBOT_RADIUS,
-        robot_orientation= np.rad2deg(est_pose.getTheta()) - 90,
-        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
-        # meter-scaled and far too fine for a ~400-500 cm map.
-        path_resolution=5.0,
-    )
+    # #maybe change something with the heading or modify rrt so that it also uses heading
+    # robotrrt = rrt.RRT(
+    #     start=[est_pose.getX(),est_pose.getY()],
+    #     goal=[goalx, goaly],
+    #     rand_area=rand_area,
+    #     obstacle_list=obstacleList,
+    #     play_area=play_area,
+    #     robot_radius= ROBOT_RADIUS,
+    #     robot_orientation= np.rad2deg(est_pose.getTheta()) - 90,
+    #     # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
+    #     # meter-scaled and far too fine for a ~400-500 cm map.
+    #     path_resolution=5.0,
+    # )
 
-    path = robotrrt.planning(animation=True)
-    print("GOAL IS", goalx, goaly)
-    
-    print("Path is:")
-    print(path)
-    print("orientation is")
-    print(robotrrt.robot_orientation)
+    # path = robotrrt.planning(animation=True)
+    # print("GOAL IS", goalx, goaly)
+    # 
+    # print("Path is:")
+    # print(path)
+    # print("orientation is")
+    # print(robotrrt.robot_orientation)
 
-    # SET GOAL TO L2
+    # # SET GOAL TO L2
 
-    rrt.driveToGoal(robotrrt, path, particles)
+    # rrt.driveToGoal(robotrrt, path, particles)
 
 
 
