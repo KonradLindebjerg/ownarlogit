@@ -141,7 +141,7 @@ def findNextLandmark(targetLandmark, est_pose, particles):
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
                     return objectIDs[i], dists[i], angles[i], est_pose
         drive.turn(-20, particles)
-        est_pose[2] = est_pose[2] + np.deg2rad(-20)
+        est_pose.setTheta(est_pose.getTheta() + -20) 
         sleep(EPS)
 
     return None, None, None, est_pose
@@ -187,13 +187,13 @@ def main():
 
     #maybe change something with the heading or modify rrt so that it also uses heading
     robotrrt = rrt.RRT(
-        start=[est_pose[0],est_pose[1]],
+        start=[est_pose.getX(),est_pose.getY()],
         goal=[goalx, goaly],
         rand_area=rand_area,
         obstacle_list=obstacleList,
         play_area=play_area,
         robot_radius= ROBOT_RADIUS,
-        robot_orientation= est_pose[2],
+        robot_orientation= est_pose.getTheta(),
         # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,
