@@ -228,7 +228,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
         
         # IF EST_POSE IS WITHIN STASFIABLE CONDITION RETURN EST_POSE TO main.py
         posconf, thetaconf = filter_confidence(particles)
-        if posconf < 30 and thetaconf < 15:
+        if posconf < 20 and thetaconf < 15:
             break
 
 
