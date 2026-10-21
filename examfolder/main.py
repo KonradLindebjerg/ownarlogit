@@ -109,8 +109,8 @@ def drivetol1(particles, est_pose):
         else: idx += 1
     if not l1found:
         objectIDs, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK1"], est_pose, particles)
-        for i in range(len(objectIDs)):
-            if objectIDs[i] == landmarkIDs["LANDMARK1"]:
+        for j in range(len(objectIDs)):
+            if objectIDs[j] == landmarkIDs["LANDMARK1"]:
                 l1found = True
                 break
             else: idx += 1
