@@ -121,14 +121,14 @@ def drivetol1(particles):
 ## Drive towards L1
 
     ## Turn the amount of degrees we need
-    
-    angle = np.rad2deg(angle)
-    print("Angle is:", angle)
-    drive.turn(angle, particles)
-    ## Drive the distance
-    distance = dist
-    print("distance is :", distance)
-    drive.drive(distance - 10, particles)
+    if angle is not None: 
+        angle = np.rad2deg(angle)
+        print("Angle is:", angle)
+        drive.turn(angle, particles)
+        ## Drive the distance
+        distance = dist
+        print("distance is :", distance)
+        drive.drive(distance - 10, particles)
  
 
     VisitedLandmark["LANDMARK1"] = True
