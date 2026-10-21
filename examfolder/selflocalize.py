@@ -123,6 +123,7 @@ def calc_likelihood(observed_distance, predicted_distance, sigma):
 # Main program #
 # TODO Change the function name to not be main
 def localize(cam, landmarkIDs, landmarks, particles):
+    num_particles = 1000
     est_pose = particle.estimate_pose(particles) # The estimate of the robots current pose
     
     # Allocate space for world map
@@ -269,7 +270,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
     
         if should_search:
             turn_cmd_deg = SEARCH_TURN_STEP_DEG
-            drive.turn(turn_cmd_deg)
+            drive.turn(turn_cmd_deg, particles)
             sleep(EPS)
         # The below was used for for driing towards the middlepoint in ex5, maybe delete
         #else:
