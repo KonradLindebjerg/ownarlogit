@@ -226,7 +226,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
     
 
         # IF EST_POSE IS WITHIN STASFIABLE CONDITION RETURN EST_POSE TO main.py
-        if counter > 1000:
+        if counter > 18:
             break
 
 
