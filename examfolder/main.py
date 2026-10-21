@@ -170,7 +170,7 @@ def main():
     landmark_ids    = set(landmarkIDs.values()) 
     landmark_coords = {landmarkIDs[name]: landmarks[name] for name in landmarkIDs}
 
-    est_pose, particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
 
     drivetol1(particles)
     #we should now have an idea of where we are?
