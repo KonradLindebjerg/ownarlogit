@@ -109,120 +109,6 @@ def calc_likelihood(observed_distance, predicted_distance, sigma):
             * math.exp(-0.5 * (residual / sigma) ** 2))
 
 
-def collect_observations(objectIDs, dists, angles, landmarkIDs):
-    """Build {landmark_id: (distance, angle)} from one detection.
-
-    Only recognised landmark IDs are kept, and when the same ID shows up twice
-    (a landmark seen from the side exposes both papers) the closest detection
-    wins.
-    """
-    observations = {}
-    if isinstance(objectIDs, type(None)):
-        return observations
-    for i in range(len(objectIDs)):
-        oid = int(objectIDs[i])
-        if oid not in landmarkIDs:
-            continue
-        if oid in observations and dists[i] >= observations[oid][0]:
-            continue
-        observations[oid] = (dists[i], angles[i])
-    return observations
-
-
-def measurement_update(particles, observations, landmarks):
-    """Reweight the particles against the observed landmarks and resample.
-
-    Each particle's weight is multiplied by the Gaussian likelihood of the
-    distance and bearing measurements, the cloud is resampled in proportion to
-    the weights and then roughened to avoid particle impoverishment. The new
-    particle list is returned. If there is nothing to update on, or every
-    likelihood underflows, the weights are reset uniformly instead.
-    """
-    num_particles = len(particles)
-
-    if not observations:
-        for p in particles:
-            p.setWeight(1.0 / num_particles)
-        return particles
-
-    for p in particles:
-        likelihood = 1.0
-        for landmark_id, (observed_distance, observed_angle) in observations.items():
-            landmark_x, landmark_y = landmarks[landmark_id]
-
-            dx = landmark_x - p.getX()
-            dy = landmark_y - p.getY()
-            predicted_distance = math.hypot(dx, dy)
-            predicted_angle = wrapped_angle(math.atan2(dy, dx) - p.getTheta())
-
-            likelihood *= calc_likelihood(observed_distance, predicted_distance, SIGMA_D)
-            likelihood *= calc_likelihood(observed_angle, predicted_angle, SIGMA_THETA_OBS)
-
-        p.setWeight(p.getWeight() * likelihood)
-
-    total_weight = sum(p.getWeight() for p in particles)
-    if total_weight <= 0.0:
-        # All likelihoods underflowed; fall back to a uniform prior.
-        for p in particles:
-            p.setWeight(1.0 / num_particles)
-        return particles
-
-    for p in particles:
-        p.setWeight(p.getWeight() / total_weight)
-
-    # Resample by inverse-CDF sampling of the normalised weights.
-    weights = [p.getWeight() for p in particles]
-    cumsum = np.cumsum(weights)
-    resampled = []
-    for _ in range(num_particles):
-        z = np.random.rand()
-        for i in range(len(cumsum)):
-            if z <= cumsum[i]:
-                src = particles[i]
-                resampled.append(particle.Particle(
-                    src.getX(), src.getY(), src.getTheta(),
-                    1.0 / num_particles,
-                ))
-                break
-
-    # Roughen the resampled cloud so repeated resampling cannot collapse it to a
-    # few identical points (particle impoverishment).
-    particle.add_uncertainty(resampled, ROUGHEN_SIGMA, ROUGHEN_SIGMA_THETA)
-    return resampled
-
-
-def scan_for_landmarks(cam, landmarkIDs, landmarks, particles):
-    """Turn a full circle, updating the particle filter with every landmark seen.
-
-    Mirrors the turning logic of main.findNextLandmark: 18 steps of 20 degrees
-    (360 degrees in total), capturing a frame and running a measurement update
-    at each step before turning on to the next. Sweeping the whole circle up
-    front guarantees the filter observes landmarks on more than one side of the
-    track before the refinement loop in localize() begins; turning 20 degrees at
-    a time inside that loop and stopping as soon as the cloud looks tight can
-    otherwise converge on a wrong pose after seeing only same-side landmarks.
-    """
-    seen_landmark_ids = set()
-
-    for i in range(18):
-        colour = cam.get_next_frame()  # Capture image
-        sleep(EPS)
-        objectIDs, dists, angles = cam.detect_aruco_objects(colour)  # Return ID's
-        sleep(EPS)
-
-        observations = collect_observations(objectIDs, dists, angles, landmarkIDs)
-        if observations:
-            seen_landmark_ids.update(observations)
-            print("SCAN OBSERVATION", observations)
-            print("SCAN SET", seen_landmark_ids)
-            particles = measurement_update(particles, observations, landmarks)
-
-        drive.turn(20, particles)
-        sleep(EPS)
-
-    return particles
-
-
 # Main program #
 # TODO Change the function name to not be main
 def localize(cam, landmarkIDs, landmarks, particles):
@@ -242,11 +128,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
     seen_landmark_ids = set()
     landmarks_acquired = False
     counter = 0
-
-    # Sweep a full circle first so the filter observes landmarks on more than one
-    # side of the track before we start refining (see scan_for_landmarks).
-    particles = scan_for_landmarks(cam, landmarkIDs, landmarks, particles)
-
+    
     while True:
         frame_count += 1
 
@@ -346,7 +228,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
         
         # IF EST_POSE IS WITHIN STASFIABLE CONDITION RETURN EST_POSE TO main.py
         posconf, thetaconf = filter_confidence(particles)
-        if posconf < 30 and np.rad2deg(thetaconf) < 15:
+        if posconf < 30 and thetaconf < 15:
             break
 
 
