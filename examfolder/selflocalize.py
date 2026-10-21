@@ -155,8 +155,9 @@ def localize(cam, landmarkIDs, landmarks, particles):
     
                 if detection_status != "used":
                     continue
-    
+                    
             seen_landmark_ids.update(observations)
+            print(seen_landmark_ids)
             landmarks_acquired = all(landmark_id in seen_landmark_ids
                                      for landmark_id in landmarkIDs)
     
@@ -225,6 +226,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
         est_pose = particle.estimate_pose(particles)
     
 
+        
         # IF EST_POSE IS WITHIN STASFIABLE CONDITION RETURN EST_POSE TO main.py
         if counter > 18:
             break
