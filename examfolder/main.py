@@ -40,7 +40,7 @@ rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] #
 landmarkIDs = {
     "LANDMARK1": 1,
     "LANDMARK2": 7,
-    "LANDMARK3": 2,
+    "LANDMARK3": 100,
     "LANDMARK4": 4,
 }
 ## Landmark Coordinates
@@ -91,7 +91,7 @@ def deduplicate(objectIDs, dists, angles):
 
 
 
-def drivetol1(particles):
+def drivetol1(particles, est_pose):
     #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
     colour = cam.get_next_frame() # Capture image
     sleep(EPS)
@@ -99,11 +99,16 @@ def drivetol1(particles):
     objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
     sleep(EPS)
 
+    l1found = False
+
     idx = 0
     for i in range(len(objectIDs)):
         if objectIDs[i] == landmarkIDs["LANDMARK1"]:
+            l1found = True
             break
         else: idx += 1
+    if not l1found:
+        findNextLandmark(landmarkIDs["LANDMARK1"], est_pose, particles)
 ## Drive towards L1
 
     ## Turn the amount of degrees we need
@@ -162,7 +167,7 @@ def main():
 
     est_pose, particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
 
-    drivetol1(particles)
+    drivetol1(particles, est_pose)
     #we should now have an idea of where we are?
     est_pose = particle.estimate_pose(particles)
     print("ESTIMATED POSE", est_pose.getX(), est_pose.getY(), est_pose.getTheta())
