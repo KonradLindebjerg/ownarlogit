@@ -428,10 +428,6 @@ try:
                 "est_pose": [est_pose.getX(), est_pose.getY(), est_pose.getTheta()],
                 "landmarks": {str(i): list(landmarks[i]) for i in landmarkIDs},
             })
-        if showGUI:
-            draw_world(est_pose, particles, world)
-            cv2.imshow(WIN_RF1, colour)
-            cv2.imshow(WIN_World, world)
 
         # Drive towards middle of landmarks
 

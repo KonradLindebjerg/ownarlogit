@@ -33,15 +33,19 @@ SIGMA       = 2.0      # Sigma for driving distance
 ROBOT_RADIUS = 22.5   # Robot radius for rrt
 
 # Landmarks and maps
-play_area = [-120 + ROBOT_RADIUS, 620 - ROBOT_RADIUS, 
-             -120 + ROBOT_RADIUS, 520 - ROBOT_RADIUS] # Size of the map
+
+DISTANCETOWALL = 53 
+
+
+play_area = [-120 + DISTANCETOWALL + ROBOT_RADIUS, 620 - DISTANCETOWALL - ROBOT_RADIUS, 
+             -120 + DISTANCETOWALL + ROBOT_RADIUS, 520 - DISTANCETOWALL - ROBOT_RADIUS] # Size of the map
 rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] # Sampling area for RRT
 
 landmarkIDs = {
     "LANDMARK1": 1,
     "LANDMARK2": 7,
     "LANDMARK3": 3,
-    "LANDMARK4": 1000,
+    "LANDMARK4": 6,
 }
 ## Landmark Coordinates
 landmarks = {
@@ -132,7 +136,7 @@ def drivetol1(particles):
  
 
 
-def searchState():
+def searchState():1000
     return
 
 
@@ -183,8 +187,10 @@ def main():
     # We are now at Landmark 1 and now begin ussing RRT to go to the next landmark
 
     # We assume that we find the next landmark here
-    #rotated estimated heading by whatever we rotated
+    # Reobserve our surroundings
+    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
     id, dists, angles= findNextLandmark(landmarkIDs["LANDMARK2"], particles)
+
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)

@@ -14,15 +14,6 @@ EPS         = 0.05       # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA = 0.029320 # Sigma noise for when turning (process/motion heading noise)
 SIGMA       = 2.0       # Sigma for driving distance
 
-# --- Observation-model (likelihood) noise ---------------------------------
-# These are the spread of the measurement likelihood and must reflect the TOTAL
-# sensor+model uncertainty across the operating range (focal-length error,
-# range-dependent bias, marker size, mounting), NOT the fixed-pose repeatability
-# that calibratesigma.py reports. The calibrated values (SIGMA_D=0.38 cm,
-# bearing=1.7 deg) are ~50x too tight: with 1000 particles spread over a
-# ~600x600 cm area (~19 cm spacing), almost none land inside such a narrow
-# likelihood shell, so a single frame collapses the whole cloud onto 1-2
-# samples -> overconfident on one landmark, then stuck. Keep these on the scale
 # of the real error and retune on the robot.
 SIGMA_D         = 20.0      # cm; distance-measurement std in the likelihood
 SIGMA_THETA_OBS = 0.15      # rad (~8.6 deg); bearing-measurement std in the likelihood
@@ -67,6 +58,7 @@ CMAGENTA = (255, 0, 255)
 CWHITE   = (255, 255, 255)
 CBLACK   = (0, 0, 0)
 
+
 def wrapped_angle(angle):
     """Normalize an angle to the interval [-pi, pi)."""
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
@@ -80,6 +72,30 @@ def initialize_particles(num_particles):
         particles.append(p)
 
     return particles
+
+
+def filter_confidence(particles):
+    """Return (pos_std_cm, theta_std_rad) describing how tightly the cloud is clustered.
+
+    pos_std is the spatial spread of the particles (sqrt of the summed x/y
+    variances, in cm); theta_std is the circular standard deviation of the
+    headings (in rad), computed from the resultant length of the unit heading
+    vectors (R -> 1 as the particles align). Both shrink as the filter
+    converges, so they are the natural signal for "the particles are close".
+    """
+    xs = np.array([p.getX() for p in particles])
+    ys = np.array([p.getY() for p in particles])
+    thetas = np.array([p.getTheta() for p in particles])
+
+    pos_std = math.sqrt(xs.var() + ys.var())
+
+    cos_mean = np.cos(thetas).mean()
+    sin_mean = np.sin(thetas).mean()
+    R = math.hypot(cos_mean, sin_mean)        # 1.0 = perfectly aligned
+    R = min(R, 1.0 - 1e-12)                    # guard against log(0)
+    theta_std = math.sqrt(-2.0 * math.log(R))
+
+    return pos_std, theta_std
 
 
 def calc_likelihood(observed_distance, predicted_distance, sigma):
@@ -211,7 +227,8 @@ def localize(cam, landmarkIDs, landmarks, particles):
 
         
         # IF EST_POSE IS WITHIN STASFIABLE CONDITION RETURN EST_POSE TO main.py
-        if counter > 17:
+        posconf, thetaconf = filter_confidence(particles)
+        if posconf < 30 and thetaconf < 15:
             break
 
 
