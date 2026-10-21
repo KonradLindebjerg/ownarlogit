@@ -114,8 +114,11 @@ def drivetol1(particles):
                 l1found = True
                 objectID, angle, dist = objectIDs[i], angles[i], dists[i]
                 break
-    if not l1found:
+        if not l1found:
+            objectID, dist, angle = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
+    else: 
         objectID, dist, angle = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
+        drivetol1(particles)
 
 
 ## Drive towards L1
