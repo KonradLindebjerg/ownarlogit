@@ -133,8 +133,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
     #last_goal = MIDDLEPOINT
     #GOAL_DISTANCE_TOLERANCE_CM = 40.0
     #GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
-    #SEARCH_TURN_STEP_DEG = 20.0
-    SEARCH_TURN_STEP_DEG = 0.0
+    SEARCH_TURN_STEP_DEG = 20.0
     search_mode = False
     frame_count = 0
     seen_landmark_ids = set()
@@ -240,7 +239,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
                 for p in particles:
                     p.setWeight(1.0 / num_particles)
                 weight_status = "all likelihoods underflowed; reset weights uniformly"
-
+            print(search_mode)
             search_mode = not landmarks_acquired
     
             cam.draw_aruco_objects(colour)
@@ -255,7 +254,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
     
 
         # IF EST_POSE IS WITHIN STASFIABLE CONDITION RETURN EST_POSE TO main.py
-        if counter > 10:
+        if counter > 1000:
             break
 
 
