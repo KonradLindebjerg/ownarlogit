@@ -5,11 +5,12 @@ import robot
 
 arlo = robot.Robot()
 
-LEFTSPEED  = 69
-RIGHTSPEED = 64
-CIRCLETIME = 2.85
-DRIVETIME  = 2.3
-EPS        = 0.041
+
+leftSpeed           = 68
+rightSpeed          = 66
+circleTime          = 2.75
+driveTime           = 2.25
+eps                 = 0.3
 
 def turn(angle):
     left = 1
@@ -17,16 +18,16 @@ def turn(angle):
     if (angle < 0):
         left, right = right, left
 
-    print(arlo.go_diff(LEFTSPEED, RIGHTSPEED,left, right))
-    sleep((abs(angle)/360)*CIRCLETIME)
+    print(arlo.go_diff(leftSpeed, rightSpeed,left, right))
+    sleep((abs(angle)/360)*circleTime)
     print(arlo.stop())
-    sleep(EPS)
+    sleep(eps)
 
 def drive(length):
-    print(arlo.go_diff(LEFTSPEED, RIGHTSPEED, 1, 1))
-    sleep(DRIVETIME*length)
+    print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
+    sleep(driveTime*length)
     print(arlo.stop())
-    sleep(EPS)
+    sleep(eps)
 
 turn(-360)
 

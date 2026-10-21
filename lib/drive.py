@@ -21,6 +21,7 @@ rightSpeed          = 66
 circleTime          = 2.75
 driveTime           = 2.25
 eps                 = 0.3
+
 SIGMA               = 0.02     # Sigma for driving distance
 SIGMA_THETA         = 0.029320 # Sigma noise for when turning (process/motion heading noise)
 ROUGHEN_SIGMA       = 4.0      # cm
