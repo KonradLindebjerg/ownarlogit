@@ -102,15 +102,19 @@ def drivetol1(particles):
     l1found = False
     objectID, angle, dist = 0,0,0
 
-    idx = 0
-    for i in range(len(objectIDs)):
-        if objectIDs[i] == landmarkIDs["LANDMARK1"]:
-            l1found = True
-            objectID, angle, dist = objectIDs[i], angles[i], dists[i]
-            break
-        else: idx += 1
-    if not l1found:
+
+    
+    if objectIDs is not None:
+        for i in range(len(objectIDs)):
+            if objectIDs[i] == landmarkIDs["LANDMARK1"]:
+                l1found = True
+                objectID, angle, dist = objectIDs[i], angles[i], dists[i]
+                break
+        if not l1found:
+            objectID, dist, angle = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
+    else: 
         objectID, dist, angle = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
+        drivetol1(particles)
 
 
 ## Drive towards L1
