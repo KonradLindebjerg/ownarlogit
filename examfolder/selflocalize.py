@@ -67,33 +67,6 @@ CMAGENTA = (255, 0, 255)
 CWHITE   = (255, 255, 255)
 CBLACK   = (0, 0, 0)
 
-# Landmarks.
-# The robot knows the position of 2 landmarks. Their coordinates are in the unit centimeters [cm].
-    #landmarkIDs = [1, 3]
-    #landmarks = {
-    #    1: (0.0, 0.0),    # Coordinates for landmark 1
-    #    2: (0.0, 0.0),    # Coordinates for landmark 1
-    #    3: (0.0, 0.0),    # Coordinates for landmark 1
-    #    4: (300.0, 0.0)  # Coordinates for landmark 2
-    #}
-    #landmark_colors = [CRED, CGREEN] # Colors used when drawing the landmarks
-
-##landmarkIDs = {
-##    "LANDMARK1": 1,
-##    "LANDMARK2": 2,
-##    "LANDMARK3": 3,
-##    "LANDMARK4": 4,
-##}
-#### Landmark Coordinates
-##landmarks = {
-##    "LANDMARK1": (0.0, 0.0),
-##    "LANDMARK2": (0.0, 300.0),
-##    "LANDMARK3": (400.0, 0.0),
-##    "LANDMARK4": (400.0, 300.0),
-##}
-##
-
-
 def wrapped_angle(angle):
     """Normalize an angle to the interval [-pi, pi)."""
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
@@ -268,10 +241,13 @@ def localize(cam, landmarkIDs, landmarks, particles):
         # We probably shouldt be driving in the exam solution
         drive_cmd_cm = 0.0
     
-        if should_search:
+        if len(landmarks_acquired) < 2:
             turn_cmd_deg = SEARCH_TURN_STEP_DEG
             drive.turn(turn_cmd_deg, particles)
             sleep(EPS)
+        else:
+            est_pose = particle.estimate_pose(particles)
+            
         # The below was used for for driing towards the middlepoint in ex5, maybe delete
         #else:
         #    turn_cmd_deg = -goal_angle
