@@ -39,7 +39,7 @@ rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] #
 
 landmarkIDs = {
     "LANDMARK1": 1,
-    "LANDMARK2": 3,
+    "LANDMARK2": 7,
     "LANDMARK3": 2,
     "LANDMARK4": 4,
 }
