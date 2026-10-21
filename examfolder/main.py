@@ -91,7 +91,7 @@ def deduplicate(objectIDs, dists, angles):
 
 
 
-def drivetol1(particles, est_pose):
+def drivetol1(particles):
     #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
     colour = cam.get_next_frame() # Capture image
     sleep(EPS)
@@ -110,7 +110,7 @@ def drivetol1(particles, est_pose):
             break
         else: idx += 1
     if not l1found:
-        objectID, dist, angle, est_pose = findNextLandmark(landmarkIDs["LANDMARK1"], est_pose, particles)
+        objectID, dist, angle = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
 
 
 ## Drive towards L1
@@ -135,7 +135,7 @@ def searchState():
     return
 
 
-def findNextLandmark(targetLandmark, est_pose, particles):
+def findNextLandmark(targetLandmark, particles):
 
     for i in range(18):
         print(i)
@@ -150,12 +150,11 @@ def findNextLandmark(targetLandmark, est_pose, particles):
             for i in range(len(objectIDs)):
                 if objectIDs[i] == targetLandmark:
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
-                    return objectIDs[i], dists[i], angles[i], est_pose
+                    return objectIDs[i], dists[i], angles[i]
         drive.turn(20, particles)
-        est_pose.setTheta(est_pose.getTheta() + np.deg2rad(20)) 
         sleep(EPS)
 
-    return None, None, None, est_pose
+    return None, None, None
 
 
 def main():
@@ -173,7 +172,7 @@ def main():
 
     est_pose, particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
 
-    drivetol1(particles, est_pose)
+    drivetol1(particles)
     #we should now have an idea of where we are?
     est_pose = particle.estimate_pose(particles)
     print("ESTIMATED POSE", est_pose.getX(), est_pose.getY(), est_pose.getTheta())
@@ -184,7 +183,8 @@ def main():
 
     # We assume that we find the next landmark here
     #rotated estimated heading by whatever we rotated
-    id, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK2"], est_pose, particles)
+    id, dists, angles= findNextLandmark(landmarkIDs["LANDMARK2"], particles)
+    est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
     print("LINE 153: Obstaclelist is: ", obstacleList)
