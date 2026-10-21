@@ -108,7 +108,14 @@ def drivetol1(particles, est_pose):
             break
         else: idx += 1
     if not l1found:
-        findNextLandmark(landmarkIDs["LANDMARK1"], est_pose, particles)
+        objectIDs, dists, angles, est_pose = findNextLandmark(landmarkIDs["LANDMARK1"], est_pose, particles)
+        for i in range(len(objectIDs)):
+            if objectIDs[i] == landmarkIDs["LANDMARK1"]:
+                l1found = True
+                break
+            else: idx += 1
+
+
 ## Drive towards L1
 
     ## Turn the amount of degrees we need
