@@ -1,19 +1,30 @@
 from time import sleep
+import sys 
+import os
 import math
-import particle 
+
+
+
 import numpy as np
 
 import robot
 
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from examfolder import particle 
+
 arlo = robot.Robot()
 
 
-leftSpeed  = 68
-rightSpeed = 66
-circleTime = 2.75
-driveTime  = 2.25
-eps        = 0.3
+leftSpeed           = 68
+rightSpeed          = 66
+circleTime          = 2.75
+driveTime           = 2.25
+eps                 = 0.3
+SIGMA               = 0.02     # Sigma for driving distance
+SIGMA_THETA         = 0.029320 # Sigma noise for when turning (process/motion heading noise)
+ROUGHEN_SIGMA       = 4.0      # cm
+ROUGHEN_SIGMA_THETA = 0.05     # rad (~2.9 deg)
 
 def turn(angle, particles):
     left  = 0
@@ -28,6 +39,9 @@ def turn(angle, particles):
     delta_theta = np.deg2rad(-angle)
     for p in particles:
         particle.move_particle(p, 0, 0, delta_theta)
+    theta_noise = max(SIGMA_THETA * abs(delta_theta) / (2 * np.pi), 0.5 * ROUGHEN_SIGMA_THETA)
+    particle.add_uncertainty(particles, 0.0, theta_noise)
+
     #maybe return particle but they get modified directly
     
     
@@ -42,7 +56,8 @@ def drive(length, particles):
                         length * np.cos(p.getTheta()),
                         length * np.sin(p.getTheta()),
                         0.0)
-    #maybe unit difference type maybe need to divide by 100.
+    sigma_noise = SIGMA*length
+    particle.add_uncertainty(particles, sigma_noise, 0.0)
     
     
     

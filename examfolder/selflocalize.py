@@ -250,18 +250,5 @@ def localize(cam, landmarkIDs, landmarks, particles):
         else:
             est_pose = particle.estimate_pose(particles)
             
-        # The below was used for for driing towards the middlepoint in ex5, maybe delete
-        #else:
-        #    turn_cmd_deg = -goal_angle
-        #    drive.turn(turn_cmd_deg)
-        #    sleep(EPS)
-        #    MAX_DRIVE_CM = 50.0
-        #    drive_cmd_cm = min(goal_distance, MAX_DRIVE_CM)
-        #    drive.drive(drive_cmd_cm)
-        #    sleep(EPS)
-    
-        # a floor so theta diversity does not decay to zero when driving straight.
-        theta_noise = max(SIGMA_THETA * abs(delta_theta) / (2 * np.pi), 0.5 * ROUGHEN_SIGMA_THETA)
-        particle.add_uncertainty(particles, SIGMA, theta_noise)
         counter += 1
     return est_pose, particles
