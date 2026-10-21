@@ -52,21 +52,21 @@ def scan_surroundings(cam, inputheading, particles):
     sleep(EPS)
 
     # 2) Turn 45 degrees left (CCW).
-    drive.turn(-45, particles)
+    drive.turn(45, particles)
     sleep(EPS)
     heading += 45
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     sleep(EPS)
 
     # 3) Turn 90 degrees right (CW) -> now 45 degrees right of start.
-    drive.turn(90, particles)
+    drive.turn(-90, particles)
     sleep(EPS)
     heading -= 90
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
     sleep(EPS)
 
     # 4) Turn 45 degrees left to return to the start orientation.
-    drive.turn(-45, particles)
+    drive.turn(45, particles)
     sleep(EPS)
     heading += 45
 
