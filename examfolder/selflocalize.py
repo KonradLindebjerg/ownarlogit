@@ -233,4 +233,4 @@ def localize(cam, landmarkIDs, landmarks, particles):
             est_pose = particle.estimate_pose(particles)
             
         counter += 1
-    return est_pose, particles
+    return particles
