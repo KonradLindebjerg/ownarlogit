@@ -212,7 +212,6 @@ def localize(cam, landmarkIDs, landmarks, particles):
                 for p in particles:
                     p.setWeight(1.0 / num_particles)
                 weight_status = "all likelihoods underflowed; reset weights uniformly"
-            print(landmarks_acquired)
             search_mode = not landmarks_acquired
     
             cam.draw_aruco_objects(colour)
@@ -241,7 +240,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
         # We probably shouldt be driving in the exam solution
         drive_cmd_cm = 0.0
     
-        if len(landmarks_acquired) < 2:
+        if len(seen_landmark_ids) < 2:
             turn_cmd_deg = SEARCH_TURN_STEP_DEG
             drive.turn(turn_cmd_deg, particles)
             sleep(EPS)
