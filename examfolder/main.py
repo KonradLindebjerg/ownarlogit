@@ -40,7 +40,7 @@ rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] #
 landmarkIDs = {
     "LANDMARK1": 1,
     "LANDMARK2": 7,
-    "LANDMARK3": 100,
+    "LANDMARK3": 3,
     "LANDMARK4": 1000,
 }
 ## Landmark Coordinates
@@ -127,6 +127,8 @@ def drivetol1(particles, est_pose):
  
 
     VisitedLandmark["LANDMARK1"] = True
+
+ 
 
 
 def searchState():
