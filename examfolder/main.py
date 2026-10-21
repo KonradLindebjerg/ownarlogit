@@ -154,8 +154,13 @@ def main():
     particles = sl.initialize_particles(1000)
     #est pose og particles, spørgsmålet om vi måske skal bruge mindst 2 før vi kan være sikker på localize
     #måske localize skal ændres til at bruge 2? eller skal vi have en seperat funktion til starten? idk 
-    est_pose, particles = sl.localize(cam, landmarkIDs, landmarks, particles)
-    
+
+
+
+    landmark_ids    = set(landmarkIDs.values()) 
+    landmark_coords = {landmarkIDs[name]: landmarks[name] for name in landmarkIDs}
+
+    est_pose, particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
 
     drivetol1(particles)
     #we should now have an idea of where we are?

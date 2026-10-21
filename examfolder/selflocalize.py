@@ -259,19 +259,6 @@ def localize(cam, landmarkIDs, landmarks, particles):
         #    drive.drive(drive_cmd_cm)
         #    sleep(EPS)
     
-        # Move the particles by exactly what we commanded the robot to do.
-        # Motor turn and particle heading use opposite sign conventions.
-        delta_theta = np.deg2rad(-turn_cmd_deg)
-        delta_d = drive_cmd_cm
-    
-        for p in particles:
-            particle.move_particle(p, 0.0, 0.0, delta_theta)
-            particle.move_particle(p,
-                                   delta_d * np.cos(p.getTheta()),
-                                   delta_d * np.sin(p.getTheta()),
-                                   0.0)
-    
-        # Heading process noise: scale a little with the commanded turn, but keep
         # a floor so theta diversity does not decay to zero when driving straight.
         theta_noise = max(SIGMA_THETA * abs(delta_theta) / (2 * np.pi), 0.5 * ROUGHEN_SIGMA_THETA)
         particle.add_uncertainty(particles, SIGMA, theta_noise)
