@@ -35,9 +35,28 @@ class Particle(object):
         self.weight = val
 
 
+CORE_FRACTION = 0.9  # share of particles kept when ignoring scattered outliers
+
+
+def core_particles(particles_list, keep=CORE_FRACTION):
+    """Return the `keep` fraction of particles closest to the median position.
+
+    The filter injects a few uniform random particles every update; this drops
+    them (and other stragglers) so they don't skew the pose or the spread."""
+    n = len(particles_list)
+    if n == 0:
+        return particles_list
+    xs = np.array([p.getX() for p in particles_list])
+    ys = np.array([p.getY() for p in particles_list])
+    d2 = (xs - np.median(xs)) ** 2 + (ys - np.median(ys)) ** 2
+    k = max(1, int(round(keep * n)))
+    return [particles_list[i] for i in np.argsort(d2)[:k]]
+
+
 def estimate_pose(particles_list):
-    """Estimate the pose from particles by computing the average position and orientation over all particles. 
-    This is not done using the particle weights, but just the sample distribution."""
+    """Estimate the pose as the average position and orientation of the main
+    particle cluster (outliers removed). Not weighted, just the sample distribution."""
+    particles_list = core_particles(particles_list)
     x_sum = 0.0
     y_sum = 0.0
     cos_sum = 0.0

@@ -25,6 +25,11 @@ ROUGHEN_SIGMA_THETA = 0.05  # rad (~2.9 deg)
 INITIAL_POSITION_RADIUS_CM = 100.0
 INITIAL_HEADING_STD_RAD = np.deg2rad(10.0)
 
+# Each update, the least confident particles are replaced by uniform random
+# ones on the board, so the filter can recover if it locks onto a wrong cluster.
+RANDOM_INJECT_FRACTION = 0.05
+BOARD_MARGIN_CM        = 100.0  # board = landmark bounding box grown by this
+
 MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 
 # Flags
@@ -91,8 +96,10 @@ def filter_confidence(particles):
     headings (in rad), computed from the resultant length of the unit heading
     vectors (R -> 1 as the particles align). Both shrink as the filter
     converges, so they are the natural signal for "the particles are close".
+    Only the main cluster is measured, so injected random particles are ignored.
     """
-    xs = np.array([p.getX() for p in particles])
+    particles = particle.core_particles(particles)
+    xs =np.array([p.getX() for p in particles])
     ys = np.array([p.getY() for p in particles])
     thetas = np.array([p.getTheta() for p in particles])
 
@@ -178,6 +185,20 @@ def observe(cam, landmarkIDs, landmarks, particles):
                  for i in idx]
     # Roughen so repeated resampling cannot collapse the cloud to a few points.
     particle.add_uncertainty(particles, ROUGHEN_SIGMA, ROUGHEN_SIGMA_THETA)
+
+    # Replace the least confident particles (lowest pre-resampling weight of
+    # their parent) with uniform random ones on the board.
+    num_random = int(RANDOM_INJECT_FRACTION * num_particles)
+    if num_random > 0:
+        xs = [c[0] for c in landmarks.values()]
+        ys = [c[1] for c in landmarks.values()]
+        x_min, x_max = min(xs) - BOARD_MARGIN_CM, max(xs) + BOARD_MARGIN_CM
+        y_min, y_max = min(ys) - BOARD_MARGIN_CM, max(ys) + BOARD_MARGIN_CM
+        for i in np.argsort(weights[idx])[:num_random]:
+            particles[i] = particle.Particle(np.random.uniform(x_min, x_max),
+                                             np.random.uniform(y_min, y_max),
+                                             np.random.uniform(0.0, 2.0 * math.pi),
+                                             1.0 / num_particles)
     return particles, objectIDs, dists, angles
 
 
