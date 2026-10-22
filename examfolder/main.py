@@ -191,7 +191,7 @@ def main():
 
     #maybe change something with the heading or modify rrt so that it also uses heading
     robotrrt = rrt.RRT(
-        start=[est_pose.getX(),est_pose.getY()],
+        start=[10, 20],
         goal=[goalx, goaly],
         rand_area=rand_area,
         obstacle_list=obstacleList,
