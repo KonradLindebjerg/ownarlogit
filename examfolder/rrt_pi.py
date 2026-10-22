@@ -245,6 +245,15 @@ class RRT:
         self.straight_tol = straight_tol
         self.position = [self.start.x, self.start.y]
 
+    def setX(self, x):
+        self.x = x
+
+    def setY(self, y):
+        self.y = y
+
+    def setGoal(self, x, y):
+        self.goal = [x,y]
+
     def planning(self, animation=True):
         """
         rrt path planning

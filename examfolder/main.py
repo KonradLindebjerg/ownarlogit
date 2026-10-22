@@ -225,8 +225,27 @@ def main():
     # SET GOAL TO L2
 
     rrt.driveToGoal(robotrrt, path, particles)
+    
+    # DRIVE TO L3
+    ## Start out by localizing itself
+    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+    est_pose = particle.estimate_pose(particles)
+    robotrrt.setX(est_pose.getX())
+    robotrrt.setY(est_pose.getY())
+    newgoal = landmarks["LANDMARK3"]
+    robotrrt.setGoal(newgoal[0], newgoal[1])
+
+    findNextLandmark(landmarkIDs["LANDMARK3"], particles)
+
+    print("Path is:")
+    print(path)
 
 
+    path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
+    print("Optimized path is:")
+    print(path)
+
+    rrt.driveToGoal(robotrrt, path, particles)
 
 ## RRt to L2
 
