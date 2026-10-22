@@ -229,7 +229,7 @@ def main():
     ## Start out by localizing itself
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
     est_pose = particle.estimate_pose(particles)
-    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
+    #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
     #update obstaclelist
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
@@ -239,7 +239,7 @@ def main():
     # Set new goal
     newgoal = landmarks["LANDMARK3"]
 
-    print("ESTIMATED POSE IS: ", scan_heading_deg)
+    print("ESTIMATED HEADING IS: ", scan_heading_deg)
 
     robotrrt = rrt.RRT(
         start=[est_pose.getX(),est_pose.getY()],
@@ -249,7 +249,7 @@ def main():
         play_area=play_area,
         robot_radius= ROBOT_RADIUS,
         # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-        robot_orientation= scan_heading_deg,
+        robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
         # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,
