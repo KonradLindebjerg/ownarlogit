@@ -241,6 +241,16 @@ def main():
     newgoal = landmarks["LANDMARK3"]
 
     print("ESTIMATED HEADING IS: ", scan_heading_deg)
+    length = len(obstacleList)
+    # Remove the landmark we're heading for from the obstaclelist
+    i = 0
+    while i < length:
+        if obstacleList[i][3] == landmarkIDs["LANDMARK3"]:
+            #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            obstacleList.pop(i)
+            i -= 1
+            length -= 1
+        i += 1
 
     robotrrt = rrt.RRT(
         start=[est_pose.getX(),est_pose.getY()],
@@ -284,6 +294,15 @@ def main():
     newgoal = landmarks["LANDMARK4"]
 
     print("ESTIMATED HEADING IS: ", scan_heading_deg)
+    # Remove the landmark we're heading for from the obstaclelist
+    i = 0
+    while i < length:
+        if obstacleList[i][3] == landmarkIDs["LANDMARK4"]:
+            #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            obstacleList.pop(i)
+            i -= 1
+            length -= 1
+        i += 1
 
     robotrrt = rrt.RRT(
         start=[est_pose.getX(),est_pose.getY()],
@@ -327,6 +346,15 @@ def main():
     newgoal = landmarks["LANDMARK1"]
 
     print("ESTIMATED HEADING IS: ", scan_heading_deg)
+    # Remove the landmark we're heading for from the obstaclelist
+    i = 0
+    while i < length:
+        if obstacleList[i][3] == landmarkIDs["LANDMARK1"]:
+            #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            obstacleList.pop(i)
+            i -= 1
+            length -= 1
+        i += 1
 
     robotrrt = rrt.RRT(
         start=[est_pose.getX(),est_pose.getY()],
