@@ -126,7 +126,7 @@ def calc_likelihood(observed_distance, predicted_distance, sigma):
 
 
 NUM_PARTICLES        = 1000
-SEARCH_TURN_STEP_DEG = 45.0  # step size when spinning in place to look around
+SEARCH_TURN_STEP_DEG = 60.0  # step size when spinning in place to look around
 SEARCH_STEPS         = int(round(360.0 / SEARCH_TURN_STEP_DEG))  # steps in a full turn
 
 
