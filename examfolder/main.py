@@ -191,7 +191,7 @@ def main():
 
     #maybe change something with the heading or modify rrt so that it also uses heading
     robotrrt = rrt.RRT(
-        start=[est_pose.getX(),est_pose.getY()],
+        start=[20, 10],
         goal=[goalx, goaly],
         rand_area=rand_area,
         obstacle_list=obstacleList,
@@ -202,7 +202,7 @@ def main():
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,
     )
-    
+
     path = robotrrt.planning(animation=True)
     print("Path is:")
     print(path)
