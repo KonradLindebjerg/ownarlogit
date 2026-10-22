@@ -123,10 +123,11 @@ def searchState():
 
 
 def findNextLandmark(targetLandmark, particles):
-    """Turn in 20 deg steps until targetLandmark is seen, updating the particle
-    filter on every frame so the turns don't silently corrupt the pose.
+    """Turn in sl.SEARCH_TURN_STEP_DEG steps (one full turn at most) until
+    targetLandmark is seen, updating the particle filter on every frame so the
+    turns don't silently corrupt the pose.
     Returns (id, dist, angle, particles); id/dist/angle are None if not found."""
-    for step in range(18):
+    for step in range(sl.SEARCH_STEPS):
         print(step)
         particles, objectIDs, dists, angles = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
         objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
@@ -136,7 +137,7 @@ def findNextLandmark(targetLandmark, particles):
                 if objectIDs[i] == targetLandmark:
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
                     return objectIDs[i], dists[i], angles[i], particles
-        drive.turn(20, particles)
+        drive.turn(sl.SEARCH_TURN_STEP_DEG, particles)
         sleep(EPS)
 
     return None, None, None, particles

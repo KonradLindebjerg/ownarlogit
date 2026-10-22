@@ -126,7 +126,8 @@ def calc_likelihood(observed_distance, predicted_distance, sigma):
 
 
 NUM_PARTICLES        = 1000
-SEARCH_TURN_STEP_DEG = 20.0
+SEARCH_TURN_STEP_DEG = 45.0  # step size when spinning in place to look around
+SEARCH_STEPS         = int(round(360.0 / SEARCH_TURN_STEP_DEG))  # steps in a full turn
 
 
 def observe(cam, landmarkIDs, landmarks, particles):
@@ -210,7 +211,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
         particles, _, _, _ = observe(cam, landmarkIDs, landmarks, particles)
 
         posconf, thetaconf = filter_confidence(particles)
-        if posconf < 20 and np.rad2deg(thetaconf) < 15 and counter >= 17:
+        if posconf < 20 and np.rad2deg(thetaconf) < 15 and counter >= SEARCH_STEPS - 1:
             break
 
         drive.turn(SEARCH_TURN_STEP_DEG, particles)
