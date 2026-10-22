@@ -229,6 +229,7 @@ def main():
     ## Start out by localizing itself
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
     est_pose = particle.estimate_pose(particles)
+    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
     # Set new goal
     newgoal = landmarks["LANDMARK3"]
