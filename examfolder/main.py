@@ -231,22 +231,11 @@ def main():
     est_pose = particle.estimate_pose(particles)
 
     # Set new goal
+    robotrrt.setX(est_pose.getX())
+    robotrrt.setY(est_pose.getY())
     newgoal = landmarks["LANDMARK3"]
+    robotrrt.setGoal(newgoal[0], newgoal[1])
 
-    robotrrt = rrt.RRT(
-        start=[est_pose.getX(),est_pose.getY()],
-        goal=[newgoal[0], newgoal[1]],
-        rand_area=rand_area,
-        obstacle_list=obstacleList,
-        play_area=play_area,
-        robot_radius= ROBOT_RADIUS,
-        # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-        robot_orientation= scan_heading_deg,
-        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
-        # meter-scaled and far too fine for a ~400-500 cm map.
-        path_resolution=5.0,
-    )
-    
     findNextLandmark(landmarkIDs["LANDMARK3"], particles)
 
     path = robotrrt.planning(animation=True)
