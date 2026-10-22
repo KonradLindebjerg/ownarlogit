@@ -22,6 +22,8 @@ SIGMA_THETA_OBS = 0.15      # rad (~8.6 deg); bearing-measurement std in the lik
 # impoverishment (repeated resampling collapsing to identical points).
 ROUGHEN_SIGMA       = 4.0   # cm
 ROUGHEN_SIGMA_THETA = 0.05  # rad (~2.9 deg)
+INITIAL_POSITION_RADIUS_CM = 100.0
+INITIAL_HEADING_STD_RAD = np.deg2rad(10.0)
 
 MAXDISTANCE = 0.5 # m How far th erobot can max drive in one step
 
@@ -67,8 +69,15 @@ def wrapped_angle(angle):
 def initialize_particles(num_particles):
     particles = []
     for i in range(num_particles):
-        # Random starting points. 
-        p = particle.Particle(600.0*np.random.ranf() - 100.0, 600.0*np.random.ranf() - 250.0, np.mod(2.0*np.pi*np.random.ranf(), 2.0*np.pi), 1.0/num_particles)
+        # Uniform-by-area position prior around L1 at (0, 0).
+        radius = INITIAL_POSITION_RADIUS_CM * math.sqrt(np.random.rand())
+        bearing = 2.0 * math.pi * np.random.rand()
+        x = radius * math.cos(bearing)
+        y = radius * math.sin(bearing)
+
+        # The robot starts facing L1, with uncertainty in that initial heading.
+        theta = math.atan2(-y, -x) + np.random.normal(0.0, INITIAL_HEADING_STD_RAD)
+        p = particle.Particle(x, y, theta, 1.0 / num_particles)
         particles.append(p)
 
     return particles
