@@ -28,20 +28,23 @@ ROUGHEN_SIGMA       = 4.0      # cm
 ROUGHEN_SIGMA_THETA = 0.05     # rad (~2.9 deg)
 TURN_NOISE_FRAC     = 0.15     # heading noise std as a fraction of the commanded turn
 
+# Convention used everywhere: positive angle = turn LEFT (counter-clockwise),
+# same as particle theta and camera bearings. On our Arlo, wheel directions
+# (left=0, right=1) physically turn it clockwise, so TURN_DIR = -1 swaps them.
+# If turn(+45) ever turns RIGHT, flip this one constant (check with signcheck.py).
+TURN_DIR = -1
+
 def turn(angle, particles):
     left  = 0
     right = 1
-    if (angle < 0):
+    if (angle * TURN_DIR < 0):
         left, right = right, left
 
     print(arlo.go_diff(leftSpeed, rightSpeed,left, right))
     sleep((abs(angle)/360)*circleTime)
     print(arlo.stop())
     sleep(eps)
-    # angle > 0 runs the left wheel backward and the right wheel forward, so the
-    # robot turns LEFT (counter-clockwise). Particle theta is also CCW-positive,
-    # and camera bearings are positive to the left, so no sign flip here.
-    delta_theta = np.deg2rad(angle)
+    delta_theta = np.deg2rad(angle)   # CCW-positive, matches the physical turn
     for p in particles:
         particle.move_particle(p, 0, 0, delta_theta)
     # Timed turns are often 10-30% off, so heading noise must grow with the turn.
@@ -77,8 +80,8 @@ def angle_to_target(position, orientation_deg, target):
     counter-clockwise (heading measured from +x toward +y). This matches the
     particles' theta (whose motion is d*cos(theta), d*sin(theta)), so the caller
     passes est_pose.getTheta() (converted to degrees) directly as orientation.
-    drive.turn() uses the opposite (CW-positive) convention, so the caller
-    negates when commanding it: drive.turn(-angle).
+    drive.turn() is also CCW-positive, so the caller passes it directly:
+    drive.turn(angle).
     """
     dx = target[0] - position[0]
     dy = target[1] - position[1]

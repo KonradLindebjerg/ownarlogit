@@ -28,6 +28,11 @@ if not piCameraFound and not piCamera2Found:
     print("Camera.py: Using OpenCV interface instead")
 
 
+# +1 or -1: chosen so detect_aruco_objects() returns POSITIVE angles for
+# markers on the robot's left. See the comment in detect_aruco_objects().
+BEARING_SIGN = 1
+
+
 def isRunningOnArlo():
     """Return True if we are running on Arlo, otherwise False."""
     # TODO: Problematic that gstreamerCameraFound is first set after
@@ -372,9 +377,11 @@ class Camera(object):
                 # We want the horizontal angle so project tobjt onto the x-z plane
                 tobj_xz = tobj
                 tobj_xz[0,1] = 0
-                # Should the sign be clockwise or counter-clockwise (left or right)?
-                # In this version it is positive to the left as seen from the camera.
-                direction = -1*np.sign(tobj_xz[0,0])  # The same as np.sign(np.dot(tobj, xaxis.T))
+                # Angle must be positive when the marker is to the robot's LEFT
+                # (CCW-positive, same as drive.turn and the particles). On our
+                # robot +x in the image points to the robot's left, so the sign
+                # is +1. If signcheck.py shows a left marker as negative, flip BEARING_SIGN.
+                direction = BEARING_SIGN * np.sign(tobj_xz[0,0])
                 angles[i] = direction * np.arccos(np.dot(tobj_xz, zaxis.T))
         else:
             dists = None
