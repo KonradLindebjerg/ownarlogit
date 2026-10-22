@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import cv2 # Import the OpenCV library
+import camera  # only for BEARING_SIGN; does not open the camera
 
 # NOTE: This module must NOT open the camera (or the robot) at import time.
 # main.py owns the single camera via camera.Camera, and the Pi only allows one
@@ -48,7 +49,9 @@ def detectLandmark(cam):
         tvec = tvecs[i][0]
         # estimatePoseSingleMarkers returns tvecs in the same unit as
         # MARKER_SIZE (meters); convert to centimeters for the map/RRT frame.
-        x = float(tvec[0]) * 100
+        # rotate_obstacles() expects x = robot's RIGHT. Use the same sign as
+        # camera.py so obstacles aren't mirrored left/right.
+        x = -camera.BEARING_SIGN * float(tvec[0]) * 100
         z = float(tvec[2]) * 100
         marker_id = int(idss[i][0])
         obstaclelist.append((x,z, radius, marker_id))
