@@ -37,7 +37,7 @@ def turn(angle, particles):
     sleep((abs(angle)/360)*circleTime)
     print(arlo.stop())
     sleep(eps)
-    delta_theta = np.deg2rad(-angle)
+    delta_theta = np.deg2rad(angle)
     for p in particles:
         particle.move_particle(p, 0, 0, delta_theta)
     theta_noise = max(SIGMA_THETA * abs(delta_theta) / (2 * np.pi), 0.5 * ROUGHEN_SIGMA_THETA)
