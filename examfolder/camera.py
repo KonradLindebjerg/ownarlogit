@@ -372,12 +372,9 @@ class Camera(object):
                 # We want the horizontal angle so project tobjt onto the x-z plane
                 tobj_xz = tobj
                 tobj_xz[0,1] = 0
-                # Should the sign be clockwise or counter-clockwise (left or right)?
-                # Positive to the left, matching the map frame (theta CCW from +x)
-                # and drive.turn (positive -> CCW/left). The camera x-axis is
-                # mirrored relative to the OpenCV default here, so this is +sign,
-                # not -sign: a landmark to the left returns a positive angle.
-                direction = np.sign(tobj_xz[0,0])
+                # Positive bearings are left/CCW in the map and drive conventions.
+                # The physical left/right test showed OpenCV positive x is right.
+                direction = -np.sign(tobj_xz[0,0])
                 angles[i] = direction * np.arccos(np.dot(tobj_xz, zaxis.T))
         else:
             dists = None
