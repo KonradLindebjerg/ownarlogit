@@ -30,9 +30,9 @@ TURN_NOISE_FRAC     = 0.15     # heading noise std as a fraction of the commande
 
 # Convention used everywhere: positive angle = turn LEFT (counter-clockwise),
 # same as particle theta and camera bearings. On our Arlo, wheel directions
-# (left=0, right=1) physically turn it clockwise, so TURN_DIR = -1 swaps them.
+# (left=0, right=1) turn it LEFT and (1, 0) turn it RIGHT.
 # If turn(+45) ever turns RIGHT, flip this one constant (check with signcheck.py).
-TURN_DIR = -1
+TURN_DIR = 1  # verified 2026-10-22 with signcheck.py: -1 turned RIGHT on turn(+45)
 
 def turn(angle, particles):
     left  = 0

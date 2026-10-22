@@ -30,7 +30,7 @@ if not piCameraFound and not piCamera2Found:
 
 # +1 or -1: chosen so detect_aruco_objects() returns POSITIVE angles for
 # markers on the robot's left. See the comment in detect_aruco_objects().
-BEARING_SIGN = 1
+BEARING_SIGN = -1  # verified 2026-10-22: +1 gave positive angles for markers on the RIGHT
 
 
 def isRunningOnArlo():

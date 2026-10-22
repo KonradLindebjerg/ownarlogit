@@ -174,6 +174,9 @@ def main():
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
+    # scan_surroundings only rotates detections; shift them to the robot's map position.
+    obstacleList = [(x + est_pose.getX(), y + est_pose.getY(), r, oid)
+                    for (x, y, r, oid) in obstacleList]
     print("LINE 153: Obstaclelist is: ", obstacleList)
     #x,y, radius, idss = obstacleList
     goalx, goaly= 0.0, 300.0
@@ -197,7 +200,8 @@ def main():
         obstacle_list=obstacleList,
         play_area=play_area,
         robot_radius= ROBOT_RADIUS,
-        robot_orientation= np.rad2deg(est_pose.getTheta()),
+        # RRT/angle_to_target measure heading from +y; particle theta is from +x.
+        robot_orientation= scan_heading_deg,
         # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,
