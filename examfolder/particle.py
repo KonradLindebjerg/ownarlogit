@@ -77,7 +77,7 @@ def estimate_pose(particles_list):
         x = x_sum
         y = y_sum
         theta = 0.0
-        
+    print(f"ESTIMATED POSE IS: {x}, {y} ")    
     return Particle(x, y, theta)
      
      
