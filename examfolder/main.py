@@ -161,7 +161,6 @@ def main():
     particles = drivetol1(particles)
     #we should now have an idea of where we are?
     est_pose = particle.estimate_pose(particles)
-    print("ESTIMATED POSE", est_pose.getX(), est_pose.getY(), est_pose.getTheta())
     
 ## Self localise
     #TODO DONT ASSUME THE BELOW
@@ -180,7 +179,7 @@ def main():
                     for (x, y, r, oid) in obstacleList]
     print("LINE 153: Obstaclelist is: ", obstacleList)
     #x,y, radius, idss = obstacleList
-    goalx, goaly= 0.0, 300.0
+    goalx, goaly= 0.0, 280.0
 
     length = len(obstacleList)
     i = 0
@@ -230,6 +229,8 @@ def main():
     ## Start out by localizing itself
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
     est_pose = particle.estimate_pose(particles)
+
+    # Set new goal
     robotrrt.setX(est_pose.getX())
     robotrrt.setY(est_pose.getY())
     newgoal = landmarks["LANDMARK3"]
@@ -237,6 +238,7 @@ def main():
 
     findNextLandmark(landmarkIDs["LANDMARK3"], particles)
 
+    path = robotrrt.planning(animation=True)
     print("Path is:")
     print(path)
 
