@@ -86,8 +86,8 @@ def scan_surroundings(cam, inputheading, particles):
     Sequence: straight ahead, 45 degrees left, then 90 degrees right (ending
     45 degrees right of start), then 45 degrees left back to the start
     orientation. Detections from each pose are rotated into the starting map
-    frame and merged. drive.turn() is CW-positive, so a left (CCW) turn is
-    negated; `heading` tracks the CCW-positive orientation relative to start.
+    frame and merged. drive.turn() is CCW-positive (positive -> left turn);
+    `heading` tracks the CCW-positive orientation relative to start.
     """
     obstacles = []
     heading = 0.0 + inputheading
@@ -129,8 +129,8 @@ def driveToGoal(robotrrt, path, particles):
         angle = angle_to_target(robotrrt.position, robotrrt.robot_orientation, path[i])
         print("Driving to angle: ", angle)
 
-        # Rotate angle on robot. `angle` is CCW-positive (math convention), but
-        # drive.turn() is CW-positive (positive -> right turn), so negate it here.
+        # Rotate angle on robot. `angle` and drive.turn() are both CCW-positive
+        # (positive -> left turn), so no negation.
         drive.turn(angle, particles)
         robotrrt.robot_orientation += angle
         # Drive distance on robot

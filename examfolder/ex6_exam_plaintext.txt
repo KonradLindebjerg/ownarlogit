@@ -1,0 +1,88 @@
+REX 2026 exam assignment 6
+DIKU RoboRally 2026
+Kim S. Pedersen, Hang Yin
+October 5, 2026
+This is the exam assignment on the REX course and the purpose is for you to demonstrate your knowl-
+edge of the different aspects of and methods for robotics that you have learnt during this course. The
+assignment is formed as a game including an informal competition among the participating groups -
+referred to below as racing teams.
+The exam consists of a group demonstration of your solution to this assignment followed by an in-
+dividual oral examination without preparation time. Your group must hand in your solution which
+includes your code and a short (one page) description of your solution. The short description and
+code must be uploaded no later than Monday $2/11$ 2026 no later than just before your demonstration.
+The group demonstration takes place on Monday $2/11$ 2026 from 13:15 to 17:00. All students are
+expected to be present during this time period.
+The individual oral exam (15 minutes including grading) will be based on your solution of the assign-
+ment and the curriculum of the course (as given by the lecture plan and indicated reading material).
+No aids are allowed during the oral exam. The individual oral exams are distributed on Tuesday $3/11$
+to Thursday $5/11$ from 9-16. The schedule of the individual examination has been posted on Absalon.
+The rules of the game
+Your task is to write a program that turns your robot into a rally racing machine. The robot should be
+able to complete a race track as fast as possible without bumping into obstacles using no more than 15
+minutes to complete the track. The race track consists of 4 known unique landmarks positioned in a
+square (see drawing in figure 1). Each landmark contains ArUco codes on the sides (with the same ID
+on each side), and the ArUco ID uniquely identifies the landmark (see table 1 for a definition of each
+landmark). Inside the race track there will be randomly positioned obstacles in the form of cardboard
+boxes with ArUco codes on the sides. The obstacle ArUco code IDs are unique and larger than 4,
+ID > 4.
+Your robot will start in the vicinity of landmark L1 and you may assume that it faces the landmark.
+You may not assume anything about the distance to or position around the landmark. Your robot must
+visit the landmarks in the order L1, L2, L3, L4 and finally back to LI. Your robot must only visit a
+landmark once, the exception to this rule being the final L1-visit. A landmark is visited, if the robot (or
+parts of it) is within 40cm distance to the landmark (measured to the closest box side). Your robot has
+completed the race track when it returns to landmark LI and the time it took is recorded. The racing
+team completing the track using the shortest amount of time, including penalty minutes, is declared
+the winner of the race.
+The obstacles will be placed at random inside the race track square. On race day the referees will place
+the obstacles on the race track. Therefore, you cannot assume anything about the location, orientation,
+and number of these obstacles, except that they will be fully or partially inside the race track square.
+You may also assume that obstacles have ArUco $ID>4$ and have unique IDs.
+Your team has in total 20 minutes to setup and race, and when the 20 minutes are over, your robot will
+be removed from the race track. As soon as your robot moves by itself the clock starts counting down
+on your 15 minutes race time. It is therefore important that your racing team is ready to go when it is
+your time to race.
+If your robot fails to complete the race track within 15 minutes, the robots current position is recorded.
+If no race team completes the track, the team that has visited most landmarks and comes closest to the
+final landmark L1 is declared the winner of the race. A verdict will be reached by the referees based
+on how many landmarks have been visited by each team.
+The race schedule will be announced just before the race start. All teams are expected to be present
+during all races. The race day will end with the announcement of the champions of DIKU RoboRally
+2026.
+Penalties: Penalties will be given by tough, but fair, referees and will be added to the time it takes
+your robot to complete the race track:
+• If your robot bump into a landmark or obstacle your racing team will receive a penalty of 3
+minutes for each collision.
+• If your robot misses a landmark (the robot does not come within 40cm distance to the landmark),
+your racing team will receive a penalty of 14 minutes for each missed landmark.
+• If your robot visits the landmarks in a different order than L1, L2, L3, L4, and finally again
+L1 or revisits a landmark, your racing team will receive a penalty of 14 minutes each time this
+occurs.
+Suggestions on how to solve the exercise
+You need to come up with a strategy for completing the race track as fast as possible while avoiding
+getting penalty minutes. You may use any part of your solutions to the previous exercises as you see
+fit. You can reuse your solution to the self localization exercise and extend it to include four land-
+marks and use this to localize your robot on the race track. To avoid obstacles you can use either or a
+combination of your obstacle avoidance solution or your local path planning solution (this could allow
+you to see obstacle from a distance and plan ahead). However, you are warned that a very advanced
+solution may not pay off and the KISS (Keep It Simple Stupid) principle may still be a very valid
+design principle.
+2
+| Landmark   | Unique ArUco code   |
+| LI   | 1   |
+| L2   | 2   |
+| L3   | 3   |
+| L4   | 4   |
+Table 1: Definition of each landmarks unique ArUco code. The codes comes from the OpenCV
+dictionary cv2.aruco.DICT_6X6_250.
+300cm
+L1
+L2
+400cm
+L3
+120cm
+L4
+Figure 1: Definition of the race track. The four landmarks are indicated with the black boxes. An
+example of obstacle positions are shown with the green boxes. Black dashed arrows indicate the
+driving direction, and finally the two bars indicate the dimensions of the race track square. The blue
+dashed box indicates the boundaries of the track which has a margin of 120cm.
+3

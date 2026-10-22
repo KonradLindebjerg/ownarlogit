@@ -26,6 +26,7 @@ SIGMA               = 0.02     # Sigma for driving distance
 SIGMA_THETA         = 0.029320 # Sigma noise for when turning (process/motion heading noise)
 ROUGHEN_SIGMA       = 4.0      # cm
 ROUGHEN_SIGMA_THETA = 0.05     # rad (~2.9 deg)
+TURN_NOISE_FRAC     = 0.15     # heading noise std as a fraction of the commanded turn
 
 def turn(angle, particles):
     left  = 0
@@ -37,10 +38,14 @@ def turn(angle, particles):
     sleep((abs(angle)/360)*circleTime)
     print(arlo.stop())
     sleep(eps)
-    delta_theta = np.deg2rad(-angle)
+    # angle > 0 runs the left wheel backward and the right wheel forward, so the
+    # robot turns LEFT (counter-clockwise). Particle theta is also CCW-positive,
+    # and camera bearings are positive to the left, so no sign flip here.
+    delta_theta = np.deg2rad(angle)
     for p in particles:
         particle.move_particle(p, 0, 0, delta_theta)
-    theta_noise = max(SIGMA_THETA * abs(delta_theta) / (2 * np.pi), 0.5 * ROUGHEN_SIGMA_THETA)
+    # Timed turns are often 10-30% off, so heading noise must grow with the turn.
+    theta_noise = max(TURN_NOISE_FRAC * abs(delta_theta), 0.5 * ROUGHEN_SIGMA_THETA)
     particle.add_uncertainty(particles, 0.0, theta_noise)
 
     #maybe return particle but they get modified directly

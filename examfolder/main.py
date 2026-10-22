@@ -55,6 +55,9 @@ landmarks = {
     "LANDMARK4": (400.0, 300.0),
 }
 
+LANDMARK_IDS    = set(landmarkIDs.values())
+LANDMARK_COORDS = {landmarkIDs[name]: landmarks[name] for name in landmarkIDs}
+
 ## What landmarks have been visited?
 VisitedLandmark = {
     "LANDMARK1": False,
@@ -95,46 +98,24 @@ def deduplicate(objectIDs, dists, angles):
 
 def drivetol1(particles):
     #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
-    colour = cam.get_next_frame() # Capture image
-    sleep(EPS)
-    objectIDs, dists, angles = cam.detect_aruco_objects(colour) # Return ID's
-    objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
-    sleep(EPS)
+    _, dist, angle, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
+    if angle is None:
+        print("L1 not found, not driving")
+        return particles
 
-    l1found = False
-    objectID, angle, dist = 0,0,0
+    ## Turn towards L1. Camera angle is positive-left, drive.turn is positive-left.
+    angle = np.rad2deg(angle)
+    print("Angle is:", angle)
+    drive.turn(angle, particles)
+    particles, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
-
-    
-    if objectIDs is not None:
-        for i in range(len(objectIDs)):
-            if objectIDs[i] == landmarkIDs["LANDMARK1"]:
-                l1found = True
-                objectID, angle, dist = objectIDs[i], angles[i], dists[i]
-                break
-        if not l1found:
-            objectID, dist, angle = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
-    else: 
-        objectID, dist, angle = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
-        drivetol1(particles)
-
-
-## Drive towards L1
-
-    ## Turn the amount of degrees we need
-    if angle is not None: 
-        angle = np.rad2deg(angle)
-        print("Angle is:", angle)
-        drive.turn(angle, particles)
-        ## Drive the distance
-        distance = dist
-        print("distance is :", distance)
-        drive.drive(distance - 10, particles)
- 
+    ## Drive the distance
+    print("distance is :", dist)
+    drive.drive(dist - 10, particles)
+    particles, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     VisitedLandmark["LANDMARK1"] = True
-
- 
+    return particles
 
 
 def searchState():
@@ -142,25 +123,23 @@ def searchState():
 
 
 def findNextLandmark(targetLandmark, particles):
-
-    for i in range(18):
-        print(i)
-
-        colour = cam.get_next_frame() # Capture image
-        sleep(EPS)
-        objectIDs, dists, angles = cam.detect_aruco_objects(colour) # Return ID's
-        sleep(EPS)
+    """Turn in 20 deg steps until targetLandmark is seen, updating the particle
+    filter on every frame so the turns don't silently corrupt the pose.
+    Returns (id, dist, angle, particles); id/dist/angle are None if not found."""
+    for step in range(18):
+        print(step)
+        particles, objectIDs, dists, angles = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
         objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
-        
+
         if objectIDs is not None:
             for i in range(len(objectIDs)):
                 if objectIDs[i] == targetLandmark:
                     print("FOUND TARGET LANDMARK: ", targetLandmark)
-                    return objectIDs[i], dists[i], angles[i]
+                    return objectIDs[i], dists[i], angles[i], particles
         drive.turn(20, particles)
         sleep(EPS)
 
-    return None, None, None
+    return None, None, None, particles
 
 
 def main():
@@ -173,12 +152,12 @@ def main():
 
 
 
-    landmark_ids    = set(landmarkIDs.values()) 
-    landmark_coords = {landmarkIDs[name]: landmarks[name] for name in landmarkIDs}
+    landmark_ids    = LANDMARK_IDS
+    landmark_coords = LANDMARK_COORDS
 
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
 
-    drivetol1(particles)
+    particles = drivetol1(particles)
     #we should now have an idea of where we are?
     est_pose = particle.estimate_pose(particles)
     print("ESTIMATED POSE", est_pose.getX(), est_pose.getY(), est_pose.getTheta())
@@ -190,7 +169,7 @@ def main():
     # We assume that we find the next landmark here
     # Reobserve our surroundings
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
-    id, dists, angles= findNextLandmark(landmarkIDs["LANDMARK2"], particles)
+    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
 
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
@@ -223,7 +202,7 @@ def main():
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,
     )
-
+    
     path = robotrrt.planning(animation=True)
     print("Path is:")
     print(path)
