@@ -228,6 +228,7 @@ def main():
     # DRIVE TO L3
     ## Start out by localizing itself
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK3"], particles)
     est_pose = particle.estimate_pose(particles)
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
@@ -255,7 +256,6 @@ def main():
         path_resolution=5.0,
     )
     
-    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK3"], particles)
 
     path = robotrrt.planning(animation=True)
     print("Path is:")
