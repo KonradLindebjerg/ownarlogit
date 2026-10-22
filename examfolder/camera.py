@@ -374,7 +374,7 @@ class Camera(object):
                 tobj_xz[0,1] = 0
                 # Should the sign be clockwise or counter-clockwise (left or right)?
                 # In this version it is positive to the left as seen from the camera.
-                direction = 1*np.sign(tobj_xz[0,0])  # The same as np.sign(np.dot(tobj, xaxis.T))
+                direction = -1*np.sign(tobj_xz[0,0])  # The same as np.sign(np.dot(tobj, xaxis.T))
                 angles[i] = direction * np.arccos(np.dot(tobj_xz, zaxis.T))
         else:
             dists = None
