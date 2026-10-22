@@ -231,8 +231,15 @@ def main():
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
+    #update obstaclelist
+    obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
+    # scan_surroundings only rotates detections; shift them to the robot's map position.
+    obstacleList = [(x + est_pose.getX(), y + est_pose.getY(), r, oid)
+                    for (x, y, r, oid) in obstacleList]
     # Set new goal
     newgoal = landmarks["LANDMARK3"]
+
+    print("ESTIMATED POSE IS: ", scan_heading_deg)
 
     robotrrt = rrt.RRT(
         start=[est_pose.getX(),est_pose.getY()],
@@ -248,7 +255,7 @@ def main():
         path_resolution=5.0,
     )
     
-    findNextLandmark(landmarkIDs["LANDMARK3"], particles)
+    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK3"], particles)
 
     path = robotrrt.planning(animation=True)
     print("Path is:")
