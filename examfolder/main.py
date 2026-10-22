@@ -42,9 +42,9 @@ play_area = [-120 + DISTANCETOWALL + ROBOT_RADIUS, 620 - DISTANCETOWALL - ROBOT_
 rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] # Sampling area for RRT
 
 landmarkIDs = {
-    "LANDMARK1": 1,
-    "LANDMARK2": 7,
-    "LANDMARK3": 3,
+    "LANDMARK1": 3,
+    "LANDMARK2": 5,
+    "LANDMARK3": 10,
     "LANDMARK4": 6,
 }
 ## Landmark Coordinates
