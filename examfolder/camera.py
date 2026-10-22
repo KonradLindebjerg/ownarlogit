@@ -372,9 +372,9 @@ class Camera(object):
                 # We want the horizontal angle so project tobjt onto the x-z plane
                 tobj_xz = tobj
                 tobj_xz[0,1] = 0
-                # Positive bearings are left/CCW in the map and drive conventions.
-                # The physical left/right test showed OpenCV positive x is right.
-                direction = -np.sign(tobj_xz[0,0])
+                # Should the sign be clockwise or counter-clockwise (left or right)?
+                # In this version it is positive to the left as seen from the camera.
+                direction = 1*np.sign(tobj_xz[0,0])  # The same as np.sign(np.dot(tobj, xaxis.T))
                 angles[i] = direction * np.arccos(np.dot(tobj_xz, zaxis.T))
         else:
             dists = None
