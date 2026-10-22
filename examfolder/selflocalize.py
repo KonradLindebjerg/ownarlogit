@@ -122,7 +122,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
     #last_goal = MIDDLEPOINT
     #GOAL_DISTANCE_TOLERANCE_CM = 40.0
     #GOAL_ANGLE_TOLERANCE_RAD = np.deg2rad(10.0)
-    SEARCH_TURN_STEP_DEG = 20.0
+    SEARCH_TURN_STEP_DEG = 0.0
     search_mode = False
     frame_count = 0
     seen_landmark_ids = set()
@@ -156,6 +156,10 @@ def localize(cam, landmarkIDs, landmarks, particles):
             
             seen_landmark_ids.update(observations)
             print("OBSERVATION", observations)
+            for landmark_id, (_, observed_angle) in observations.items():
+                bearing_deg = math.degrees(float(observed_angle))
+                sign_label = "positive/model-left" if bearing_deg > 0 else "negative/model-right"
+                print(f"CAMERA BEARING ID={landmark_id}: {bearing_deg:+.1f} deg ({sign_label})")
             print("SET", seen_landmark_ids)
             landmarks_acquired = all(landmark_id in seen_landmark_ids
                                      for landmark_id in landmarkIDs)
