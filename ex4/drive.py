@@ -28,5 +28,8 @@ def drive(length):
     sleep(driveTime*length)
     print(arlo.stop())
     sleep(eps)
+    
+
+turn(20)
 
 
