@@ -42,10 +42,10 @@ play_area = [-120 + DISTANCETOWALL + ROBOT_RADIUS, 620 - DISTANCETOWALL - ROBOT_
 rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] # Sampling area for RRT
 
 landmarkIDs = {
-    "LANDMARK1": 5,
-    "LANDMARK2": 3,
-    "LANDMARK3": 6,
-    "LANDMARK4": 10,
+    "LANDMARK1": 3,
+    "LANDMARK2": 5,
+    "LANDMARK3": 10,
+    "LANDMARK4": 6,
 }
 ## Landmark Coordinates
 landmarks = {
@@ -191,18 +191,18 @@ def main():
 
     #maybe change something with the heading or modify rrt so that it also uses heading
     robotrrt = rrt.RRT(
-        start=[20, 10],
+        start=[est_pose.getX(),est_pose.getY()],
         goal=[goalx, goaly],
         rand_area=rand_area,
         obstacle_list=obstacleList,
         play_area=play_area,
         robot_radius= ROBOT_RADIUS,
-        robot_orientation= np.rad2deg(est_pose.getTheta()),
+        robot_orientation= np.rad2deg(est_pose.getTheta()) + 90,
         # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
         # meter-scaled and far too fine for a ~400-500 cm map.
         path_resolution=5.0,
     )
-
+    
     path = robotrrt.planning(animation=True)
     print("Path is:")
     print(path)
