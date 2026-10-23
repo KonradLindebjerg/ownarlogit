@@ -15,10 +15,9 @@ from examfolder import particle
 
 arlo = robot.Robot()
 
-
 leftSpeed           = 69
 rightSpeed          = 66
-circleTime          = 2.80
+circleTime          = 2.75
 driveTime           = 2.25
 eps                 = 0.3
 
