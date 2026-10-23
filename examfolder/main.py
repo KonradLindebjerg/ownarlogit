@@ -1,5 +1,6 @@
 import cv2
 import math
+import random
 import camera
 import numpy as np
 import time
@@ -94,7 +95,7 @@ def deduplicate(objectIDs, dists, angles):
 
 
 
-def rrttopoint(particles, x, y):
+def rrttopoint(particles, x, y, attempt=0):
     est_pose = particle.estimate_pose(particles)
 
     # Face the goal before scanning, so the scan covers the direction we'll drive.
@@ -136,6 +137,17 @@ def rrttopoint(particles, x, y):
     path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
     print("Optimized path is:")
     print(path)
+
+    if path is None:
+        # Goal is probably inside an obstacle: retry at a random point 40 cm away.
+        if attempt >= 3:
+            print("No path found after retries, giving up")
+            return particles
+        a = random.uniform(0, 2 * math.pi)
+        new_x = x + 40 * math.cos(a)
+        new_y = y + 40 * math.sin(a)
+        print("No path, retrying at", new_x, new_y)
+        return rrttopoint(particles, new_x, new_y, attempt + 1)
     
     
     print("orientation is")

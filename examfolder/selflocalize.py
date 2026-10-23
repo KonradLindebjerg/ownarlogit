@@ -213,6 +213,11 @@ def localize(cam, landmarkIDs, landmarks, particles):
         posconf, thetaconf = filter_confidence(particles)
         if posconf < 20 and np.rad2deg(thetaconf) < 15 and counter >= SEARCH_STEPS - 1:
             break
+        elif counter > 2 * (SEARCH_STEPS -1):
+            print("NOT CONFIDENT BUT TURNED 3 TIMES SO CONTINUEING ANYWAYS")
+            break
+
+
 
         drive.turn(SEARCH_TURN_STEP_DEG, particles)
         sleep(EPS)
