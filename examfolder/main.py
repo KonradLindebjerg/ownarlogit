@@ -94,70 +94,107 @@ def deduplicate(objectIDs, dists, angles):
 
 
 
-def rrttopoint(particles):
+def rrttopoint(particles, x, y):
+    est_pose = particle.estimate_pose(particles)
+    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
+    obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
+    # scan_surroundings only rotates detections; shift them to the robot's map position.
 
+    est_pose = particle.estimate_pose(particles)
+
+    robotrrt = rrt.RRT(
+        start=[est_pose.getX(),est_pose.getY()],
+        goal=[x, y],
+        rand_area=rand_area,
+        obstacle_list=obstacleList,
+        play_area=play_area,
+        robot_radius= ROBOT_RADIUS,
+        # RRT/angle_to_target measure heading from +y; particle theta is from +x.
+        robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
+        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
+        # meter-scaled and far too fine for a ~400-500 cm map.
+        path_resolution=5.0,
+    )
+    
+    path = robotrrt.planning(animation=True)
+    print("Path is:")
+    print(path)
+
+    
+    path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
+    print("Optimized path is:")
+    print(path)
+    
+    
+    print("orientation is")
+    print(robotrrt.robot_orientation)
+    
+    rrt.driveToGoal(robotrrt, path, particles)
     return particles
 
 
 
-def rrttolandmark( particles, est_pose, landmarkID,landmarkcoordinates ):
-        particles = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-        id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
+def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
+    newgoal = landmarkcoordinates 
+    particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
 
-        est_pose = particle.estimate_pose(particles)
-        scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-        obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
-        # scan_surroundings only rotates detections; shift them to the robot's map position.
-        obstacleList = [(x + est_pose.getX(), y + est_pose.getY(), r, oid)
-                        for (x, y, r, oid) in obstacleList]
-        print("LINE 153: Obstaclelist is: ", obstacleList)
-        est_pose = particle.estimate_pose(particles)
-        #x,y, radius, idss = obstacleList
-        newgoal = landmarkcoordinates 
+    if observations and len(observations) < 2:
+        particles = rrttopoint(particles, newgoal[0], newgoal[1])
+
+    est_pose = particle.estimate_pose(particles)
+    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
+    obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
+    # scan_surroundings only rotates detections; shift them to the robot's map position.
+    obstacleList = [(x + est_pose.getX(), y + est_pose.getY(), r, oid)
+                    for (x, y, r, oid) in obstacleList]
+    print("LINE 153: Obstaclelist is: ", obstacleList)
+    est_pose = particle.estimate_pose(particles)
+    #x,y, radius, idss = obstacleList
     
-        length = len(obstacleList)
-        i = 0
-        while i < length:
-            if obstacleList[i][3] == landmarkID:
-                #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
-                obstacleList.pop(i)
-                i -= 1
-                length -= 1
-            i += 1
-                
+    length = len(obstacleList)
+    i = 0
+    while i < length:
+        if obstacleList[i][3] == landmarkID:
+            #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            obstacleList.pop(i)
+            i -= 1
+            length -= 1
+        i += 1
+            
     
-        #maybe change something with the heading or modify rrt so that it also uses heading
-        robotrrt = rrt.RRT(
-            start=[est_pose.getX(),est_pose.getY()],
-            goal=[newgoal[0], newgoal[1]],
-            rand_area=rand_area,
-            obstacle_list=obstacleList,
-            play_area=play_area,
-            robot_radius= ROBOT_RADIUS,
-            # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-            robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
-            # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
-            # meter-scaled and far too fine for a ~400-500 cm map.
-            path_resolution=5.0,
-        )
-        
-        path = robotrrt.planning(animation=True)
-        print("Path is:")
-        print(path)
+    #maybe change something with the heading or modify rrt so that it also uses heading
+    robotrrt = rrt.RRT(
+        start=[est_pose.getX(),est_pose.getY()],
+        goal=[newgoal[0], newgoal[1]],
+        rand_area=rand_area,
+        obstacle_list=obstacleList,
+        play_area=play_area,
+        robot_radius= ROBOT_RADIUS,
+        # RRT/angle_to_target measure heading from +y; particle theta is from +x.
+        robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
+        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
+        # meter-scaled and far too fine for a ~400-500 cm map.
+        path_resolution=5.0,
+    )
+    
+    path = robotrrt.planning(animation=True)
+    print("Path is:")
+    print(path)
 
     
-        path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
-        print("Optimized path is:")
-        print(path)
+    path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
+    print("Optimized path is:")
+    print(path)
     
-        
-        print("orientation is")
-        print(robotrrt.robot_orientation)
     
-        # SET GOAL TO L2
+    print("orientation is")
+    print(robotrrt.robot_orientation)
     
-        rrt.driveToGoal(robotrrt, path, particles)
-        return particles
+    # SET GOAL TO L2
+    
+    rrt.driveToGoal(robotrrt, path, particles)
+    return particles
 
 
 def drivetol1(particles):
@@ -172,12 +209,12 @@ def drivetol1(particles):
     angle = np.rad2deg(angle)
     print("Angle is:", angle)
     drive.turn(angle, particles)
-    particles, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    particles, _, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     ## Drive the distance
     print("distance is :", dist)
     drive.drive(dist - 10, particles)
-    particles, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    particles, _, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     VisitedLandmark["LANDMARK1"] = True
     return particles
@@ -194,7 +231,7 @@ def findNextLandmark(targetLandmark, particles):
     Returns (id, dist, angle, particles); id/dist/angle are None if not found."""
     for step in range(sl.SEARCH_STEPS):
         print(step)
-        particles, objectIDs, dists, angles = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+        particles, objectIDs, dists, angles, observations = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
         objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
 
         if objectIDs is not None:

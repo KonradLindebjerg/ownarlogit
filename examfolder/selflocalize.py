@@ -142,7 +142,7 @@ def observe(cam, landmarkIDs, landmarks, particles):
     colour = cam.get_next_frame()
     objectIDs, dists, angles = cam.detect_aruco_objects(colour)
     if objectIDs is None:
-        return particles, None, None, None
+        return particles, None, None, None, None
 
     # Keep ONE observation (the closest) per known landmark ID.
     observations = {}
@@ -156,7 +156,7 @@ def observe(cam, landmarkIDs, landmarks, particles):
 
     print("OBSERVATION", observations)
     if not observations:
-        return particles, objectIDs, dists, angles
+        return particles, objectIDs, dists, angles, observations
 
     for p in particles:
         likelihood = 1.0
@@ -175,7 +175,7 @@ def observe(cam, landmarkIDs, landmarks, particles):
         print("all likelihoods underflowed; keeping particles, reset weights")
         for p in particles:
             p.setWeight(1.0 / num_particles)
-        return particles, objectIDs, dists, angles
+        return particles, objectIDs, dists, angles, observations
 
     # Resample (vectorised; the old nested loop was ~1M Python steps per frame).
     weights = np.array([p.getWeight() for p in particles]) / total_weight
@@ -200,7 +200,7 @@ def observe(cam, landmarkIDs, landmarks, particles):
                                              np.random.uniform(y_min, y_max),
                                              np.random.uniform(0.0, 2.0 * math.pi),
                                              1.0 / num_particles)
-    return particles, objectIDs, dists, angles
+    return particles, objectIDs, dists, angles, observations
 
 
 def localize(cam, landmarkIDs, landmarks, particles):
@@ -208,7 +208,7 @@ def localize(cam, landmarkIDs, landmarks, particles):
     until the particle cloud is tight."""
     counter = 0
     while True:
-        particles, _, _, _ = observe(cam, landmarkIDs, landmarks, particles)
+        particles, _, _, _, observations = observe(cam, landmarkIDs, landmarks, particles)
 
         posconf, thetaconf = filter_confidence(particles)
         if posconf < 20 and np.rad2deg(thetaconf) < 15 and counter >= SEARCH_STEPS - 1:
@@ -217,4 +217,4 @@ def localize(cam, landmarkIDs, landmarks, particles):
         drive.turn(SEARCH_TURN_STEP_DEG, particles)
         sleep(EPS)
         counter += 1
-    return particles
+    return particles, observations
