@@ -38,8 +38,8 @@ ROBOT_RADIUS = 25.0     # Robot radius for rrt
 DISTANCETOWALL = 53 
 
 
-play_area = [-120 + DISTANCETOWALL + ROBOT_RADIUS, 620 - DISTANCETOWALL - ROBOT_RADIUS, 
-             -120 + DISTANCETOWALL + ROBOT_RADIUS, 520 - DISTANCETOWALL - ROBOT_RADIUS] # Size of the map
+play_area = [-120 + DISTANCETOWALL + ROBOT_RADIUS, 520 - DISTANCETOWALL - ROBOT_RADIUS, 
+             -120 + DISTANCETOWALL + ROBOT_RADIUS, 420 - DISTANCETOWALL - ROBOT_RADIUS] # Size of the map
 rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] # Sampling area for RRT
 
 landmarkIDs = {
