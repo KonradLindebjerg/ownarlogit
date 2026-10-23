@@ -27,10 +27,10 @@ from lib import robot
 
 
 # Constants
-EPS         = 0.075    # EPS for sleep time so arlo hsa time to catch up
-SIGMA_THETA = 0.029320 # Sigma noise for when turning
-SIGMA       = 2.0      # Sigma for driving distance
-ROBOT_RADIUS = 22.5   # Robot radius for rrt
+EPS          = 0.075    # EPS for sleep time so arlo hsa time to catch up
+SIGMA_THETA  = 0.029320 # Sigma noise for when turning
+SIGMA        = 2.0      # Sigma for driving distance
+ROBOT_RADIUS = 22.5     # Robot radius for rrt
 
 # Landmarks and maps
 
@@ -93,7 +93,19 @@ def deduplicate(objectIDs, dists, angles):
     return None, None, None
 
 
-def rrttolandmark(scan_heading_deg, particles, est_pose, landmarkID,landmarkcoordinates ):
+
+def rrttopoint(particles):
+
+    return particles
+
+
+
+def rrttolandmark( particles, est_pose, landmarkID,landmarkcoordinates ):
+        particles = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+        id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
+
+        est_pose = particle.estimate_pose(particles)
+        scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
         obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
         # scan_surroundings only rotates detections; shift them to the robot's map position.
         obstacleList = [(x + est_pose.getX(), y + est_pose.getY(), r, oid)
@@ -206,10 +218,8 @@ def main():
 
 
 
-    landmark_ids    = LANDMARK_IDS
-    landmark_coords = LANDMARK_COORDS
 
-    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+    particles = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     particles = drivetol1(particles)
     #we should now have an idea of where we are?
@@ -221,38 +231,33 @@ def main():
 
     # We assume that we find the next landmark here
     # Reobserve our surroundings
-    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
-    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
-
-    est_pose = particle.estimate_pose(particles)
-    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     #RRT to landmark 2
-    particles = rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK2"], landmarks["LANDMARK2"])
+    particles = rrttolandmark(particles, est_pose, landmarkIDs["LANDMARK2"], landmarks["LANDMARK2"])
     
     # DRIVE TO L3
     ## Start out by localizing itself
-    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+    particles = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK3"], particles)
     est_pose = particle.estimate_pose(particles)
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
-    particles = rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK3"], landmarks["LANDMARK3"])
+    particles = rrttolandmark(particles, est_pose, landmarkIDs["LANDMARK3"], landmarks["LANDMARK3"])
 
     # DRIVE TO L4
     ## Start out by localizing itself
-    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+    particles = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK4"], particles)
     est_pose = particle.estimate_pose(particles)
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-    particles = rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK4"], landmarks["LANDMARK4"])
+    particles = rrttolandmark(particles, est_pose, landmarkIDs["LANDMARK4"], landmarks["LANDMARK4"])
 
     # DRIVE BACK TO L1
     ## Start out by localizing itself
     if all(VisitedLandmark.values()):
-        particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+        particles = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
         id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
         est_pose = particle.estimate_pose(particles)
         #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-        rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK1"],landmarks["LANDMARK1"] )
+        rrttolandmark(particles, est_pose, landmarkIDs["LANDMARK1"],landmarks["LANDMARK1"] )
 
 main()
