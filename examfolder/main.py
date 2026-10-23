@@ -138,7 +138,6 @@ def rrttolandmark(scan_heading_deg, particles, est_pose, landmark):
         print("Optimized path is:")
         print(path)
     
-        print("GOAL IS", goalx, goaly)
         
         print("orientation is")
         print(robotrrt.robot_orientation)
@@ -222,7 +221,7 @@ def main():
     # We assume that we find the next landmark here
     # Reobserve our surroundings
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
-    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
+    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
 
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
