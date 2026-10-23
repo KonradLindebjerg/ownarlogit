@@ -80,32 +80,41 @@ def rotate_obstacles(obstacles, heading_deg):
     return rotated
 
 
-def scan_surroundings(cam, inputheading, particles, step_deg=60):
-    """Take a full 360 degree scan in `step_deg` increments before planning.
+def scan_surroundings(cam, inputheading, particles):
+    """Take 3 images to widen the field of view before planning.
 
-    Takes an image straight ahead, then turns left (CCW) by `step_deg` and
-    takes another image, until the full circle is covered (6 images for
-    60 degrees). A final turn brings the robot back to its start orientation.
-    Detections from each pose are rotated into the starting map frame and
-    merged. drive.turn() is CCW-positive (positive -> left turn); `heading`
-    tracks the CCW-positive orientation relative to start.
+    Sequence: straight ahead, 45 degrees left, then 90 degrees right (ending
+    45 degrees right of start), then 45 degrees left back to the start
+    orientation. Detections from each pose are rotated into the starting map
+    frame and merged. drive.turn() is CCW-positive (positive -> left turn);
+    `heading` tracks the CCW-positive orientation relative to start.
     """
     obstacles = []
     heading = 0.0 + inputheading
-    n_views = int(round(360 / step_deg))
 
-    for i in range(n_views):
-        if i > 0:
-            drive.turn(step_deg, particles)
-            sleep(EPS)
-            heading += step_deg
-        obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
-        sleep(EPS)
-
-    # Last turn completes the circle and returns to the start orientation.
-    drive.turn(step_deg, particles)
+    # 1) Straight ahead.
+    obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
+    print("LINE 51; OBSTACLES IN RRT IS ;", obstacles)
     sleep(EPS)
-    heading += step_deg
+
+    # 2) Turn 45 degrees left (CCW).
+    drive.turn(45, particles)
+    sleep(EPS)
+    heading += 45
+    obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
+    sleep(EPS)
+
+    # 3) Turn 90 degrees right (CW) -> now 45 degrees right of start.
+    drive.turn(-90, particles)
+    sleep(EPS)
+    heading -= 90
+    obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
+    sleep(EPS)
+
+    # 4) Turn 45 degrees left to return to the start orientation.
+    drive.turn(45, particles)
+    sleep(EPS)
+    heading += 45
 
     print("Scan complete, heading back at:", heading)
     print("Detected obstacles (map frame):", obstacles)
