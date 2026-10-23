@@ -183,21 +183,38 @@ def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
     est_pose = particle.estimate_pose(particles)
     #x,y, radius, idss = obstacleList
     
+    # Default to the map position (box center); use the observed marker if we see it.
+    goalx, goaly = newgoal[0], newgoal[1]
+    edge = lm.landmarkR  # distance from box center to its side
     length = len(obstacleList)
     i = 0
     while i < length:
         if obstacleList[i][3] == landmarkID:
-            #goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            # The marker sits on the box side facing us, so it already is the edge.
+            goalx, goaly = obstacleList[i][0], obstacleList[i][1]
+            edge = 0.0
             obstacleList.pop(i)
             i -= 1
             length -= 1
         i += 1
-            
-    
+
+    # A visit counts within 40 cm of the box side, so stop with the robot's
+    # front 20 cm from it (20 cm leeway), on the side facing the robot.
+    stop = edge + ROBOT_RADIUS + 20.0
+    dx = est_pose.getX() - goalx
+    dy = est_pose.getY() - goaly
+    d = math.hypot(dx, dy)
+    if d <= stop:
+        print("Already within reach of landmark", landmarkID)
+        return particles
+    goalx += dx / d * stop
+    goaly += dy / d * stop
+    print("Landmark goal set to", goalx, goaly)
+
     #maybe change something with the heading or modify rrt so that it also uses heading
     robotrrt = rrt.RRT(
         start=[est_pose.getX(),est_pose.getY()],
-        goal=[newgoal[0], newgoal[1]],
+        goal=[goalx, goaly],
         rand_area=rand_area,
         obstacle_list=obstacleList,
         play_area=play_area,
@@ -321,11 +338,11 @@ def main():
 
     # DRIVE BACK TO L1
     ## Start out by localizing itself
-    if all(VisitedLandmark.values()):
-        particles, _  = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-        id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
-        est_pose = particle.estimate_pose(particles)
-        #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-        rrttolandmark(particles, est_pose, landmarkIDs["LANDMARK1"],landmarks["LANDMARK1"] )
+    #if all(VisitedLandmark.values()):
+    particles, _  = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
+    est_pose = particle.estimate_pose(particles)
+    #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
+    rrttolandmark(particles, est_pose, landmarkIDs["LANDMARK1"],landmarks["LANDMARK1"] )
 
 main()
