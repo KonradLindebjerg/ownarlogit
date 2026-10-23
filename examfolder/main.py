@@ -99,6 +99,7 @@ def rrttolandmark(scan_heading_deg, particles, est_pose, landmark):
         obstacleList = [(x + est_pose.getX(), y + est_pose.getY(), r, oid)
                         for (x, y, r, oid) in obstacleList]
         print("LINE 153: Obstaclelist is: ", obstacleList)
+        est_pose = particle.estimate_pose(particles)
         #x,y, radius, idss = obstacleList
         goalx, goaly= 0.0, 280.0
     
@@ -122,7 +123,7 @@ def rrttolandmark(scan_heading_deg, particles, est_pose, landmark):
             play_area=play_area,
             robot_radius= ROBOT_RADIUS,
             # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-            robot_orientation= scan_heading_deg,
+            robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
             # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
             # meter-scaled and far too fine for a ~400-500 cm map.
             path_resolution=5.0,
