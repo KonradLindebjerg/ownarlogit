@@ -145,6 +145,7 @@ def rrttolandmark(scan_heading_deg, particles, est_pose, landmark):
         # SET GOAL TO L2
     
         rrt.driveToGoal(robotrrt, path, particles)
+        return particles
 
 
 def drivetol1(particles):
@@ -226,7 +227,7 @@ def main():
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     #RRT to landmark 2
-    rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK2"])
+    particles = rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK2"])
     
     # DRIVE TO L3
     ## Start out by localizing itself
@@ -235,7 +236,7 @@ def main():
     est_pose = particle.estimate_pose(particles)
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
-    rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK3"])
+    particles = rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK3"])
 
     # DRIVE TO L4
     ## Start out by localizing itself
@@ -243,7 +244,7 @@ def main():
     id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK4"], particles)
     est_pose = particle.estimate_pose(particles)
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-    rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK4"])
+    particles = rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK4"])
 
     # DRIVE BACK TO L1
     ## Start out by localizing itself
