@@ -205,10 +205,15 @@ def observe(cam, landmarkIDs, landmarks, particles):
 
 def localize(cam, landmarkIDs, landmarks, particles):
     """Spin in place (at least a full turn), updating the filter at every step,
-    until the particle cloud is tight."""
+    until the particle cloud is tight.
+
+    Returns (particles, totalobservations), where totalobservations is the set
+    of landmark IDs seen in any frame during the spin."""
+    totalobservations = set()
     counter = 0
     while True:
         particles, _, _, _, observations = observe(cam, landmarkIDs, landmarks, particles)
+        totalobservations.update(observations.keys())
 
         posconf, thetaconf = filter_confidence(particles)
         if posconf < 20 and np.rad2deg(thetaconf) < 15 and counter >= SEARCH_STEPS - 1:
@@ -223,4 +228,4 @@ def localize(cam, landmarkIDs, landmarks, particles):
         drive.turn(SEARCH_TURN_STEP_DEG, particles)
         sleep(EPS)
         counter += 1
-    return particles, observations
+    return particles, totalobservations
