@@ -101,7 +101,7 @@ def rrttolandmark(scan_heading_deg, particles, est_pose, landmark):
         print("LINE 153: Obstaclelist is: ", obstacleList)
         est_pose = particle.estimate_pose(particles)
         #x,y, radius, idss = obstacleList
-        newgoal = landmarks[f"LANDMARK[{landmark}]"] 
+        newgoal = landmarks[f"LANDMARK{landmark}"] 
     
         length = len(obstacleList)
         i = 0
