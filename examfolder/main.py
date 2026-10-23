@@ -151,7 +151,8 @@ def drivetol1(particles):
     #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
     _, dist, angle, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
     if angle is None:
-        print("L1 not found, not driving")
+        drivetol1(particles)
+        print("L1 not found, retrying")
         return particles
 
     ## Turn towards L1. Camera angle is positive-left, drive.turn is positive-left.
