@@ -139,7 +139,7 @@ def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
     particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     if observations and len(observations) < 2:
-        particles = rrttopoint(particles, newgoal[0], newgoal[1])
+        particles = rrttopoint(particles, newgoal[0] / 2, newgoal[1] / 2)
         particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
