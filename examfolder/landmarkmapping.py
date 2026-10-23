@@ -14,7 +14,7 @@ import camera  # only for BEARING_SIGN; does not open the camera
 imageSize  = (1640, 1232)
 # Radii in centimeters (the map/RRT convention used by main.py).
 arloR     = 25.0
-landmarkR = 15.0
+landmarkR = 20.0
 
 folder = "camera_images"
 os.makedirs(folder, exist_ok=True)
