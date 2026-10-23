@@ -101,7 +101,7 @@ def rrttolandmark(scan_heading_deg, particles, est_pose, landmark):
         print("LINE 153: Obstaclelist is: ", obstacleList)
         est_pose = particle.estimate_pose(particles)
         #x,y, radius, idss = obstacleList
-        goalx, goaly= 0.0, 280.0
+        newgoal = landmark
     
         length = len(obstacleList)
         i = 0
@@ -117,7 +117,7 @@ def rrttolandmark(scan_heading_deg, particles, est_pose, landmark):
         #maybe change something with the heading or modify rrt so that it also uses heading
         robotrrt = rrt.RRT(
             start=[est_pose.getX(),est_pose.getY()],
-            goal=[goalx, goaly],
+            goal=[newgoal[0], newgoal[1]],
             rand_area=rand_area,
             obstacle_list=obstacleList,
             play_area=play_area,
