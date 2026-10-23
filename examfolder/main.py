@@ -94,6 +94,79 @@ def deduplicate(objectIDs, dists, angles):
 
 
 
+def goal_blocked(x, y, obstacles, margin=5.0):
+    """True if the robot can't stand at (x, y) without hitting an obstacle."""
+    return any(math.hypot(x - ox, y - oy) <= r + ROBOT_RADIUS + margin
+               for (ox, oy, r, _) in obstacles)
+
+
+def alternative_goals(x, y, obstacles, start, rings=(30, 50, 75), n_angles=8):
+    """Free points on rings around (x, y), best first.
+
+    Prefers points close to the original goal, tie-breaking toward the robot
+    (shorter drive, and less likely to be hidden behind the blocking box).
+    """
+    cands = []
+    for rad in rings:
+        for k in range(n_angles):
+            a = 2 * math.pi * k / n_angles
+            cx, cy = x + rad * math.cos(a), y + rad * math.sin(a)
+            if not (play_area[0] <= cx <= play_area[1] and
+                    play_area[2] <= cy <= play_area[3]):
+                continue
+            if goal_blocked(cx, cy, obstacles):
+                continue
+            score = rad + 0.2 * math.hypot(cx - start[0], cy - start[1])
+            cands.append((score, cx, cy))
+    cands.sort()
+    return [(cx, cy) for _, cx, cy in cands]
+
+
+def plan_path(est_pose, x, y, obstacles, rings=(30, 50, 75),
+              max_goals=6, tries_per_goal=2):
+    """Plan an RRT path to (x, y), or to a free point near it if that fails.
+
+    Returns (robotrrt, path), or (None, None) if nothing reachable was found.
+    """
+    start = [est_pose.getX(), est_pose.getY()]
+
+    goals = []
+    if goal_blocked(x, y, obstacles):
+        print("Goal (%.0f, %.0f) is inside an obstacle, trying nearby points" % (x, y))
+    else:
+        goals.append((x, y))
+    goals += alternative_goals(x, y, obstacles, start, rings=rings)
+
+    for gx, gy in goals[:max_goals]:
+        # RRT is random, so one failure on a free goal can just be bad luck.
+        for _ in range(tries_per_goal):
+            robotrrt = rrt.RRT(
+                start=start,
+                goal=[gx, gy],
+                rand_area=rand_area,
+                obstacle_list=obstacles,
+                play_area=play_area,
+                robot_radius=ROBOT_RADIUS,
+                # RRT/angle_to_target measure heading from +y; particle theta is from +x.
+                robot_orientation=math.degrees(est_pose.getTheta()) - 90.0,
+                # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
+                # meter-scaled and far too fine for a ~400-500 cm map.
+                path_resolution=5.0,
+            )
+            path = robotrrt.planning(animation=True)
+            if path is not None:
+                print("Planned to (%.0f, %.0f), path is:" % (gx, gy))
+                print(path)
+                path = rrt.shortcut_path(robotrrt, path)
+                print("Optimized path is:")
+                print(path)
+                return robotrrt, path
+        print("No path to (%.0f, %.0f)" % (gx, gy))
+
+    print("No reachable point near (%.0f, %.0f)" % (x, y))
+    return None, None
+
+
 def rrttopoint(particles, x, y):
     est_pose = particle.estimate_pose(particles)
 
@@ -114,30 +187,11 @@ def rrttopoint(particles, x, y):
 
     est_pose = particle.estimate_pose(particles)
 
-    robotrrt = rrt.RRT(
-        start=[est_pose.getX(),est_pose.getY()],
-        goal=[x, y],
-        rand_area=rand_area,
-        obstacle_list=obstacleList,
-        play_area=play_area,
-        robot_radius= ROBOT_RADIUS,
-        # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-        robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
-        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
-        # meter-scaled and far too fine for a ~400-500 cm map.
-        path_resolution=5.0,
-    )
-    
-    path = robotrrt.planning(animation=True)
-    print("Path is:")
-    print(path)
+    robotrrt, path = plan_path(est_pose, x, y, obstacleList)
+    if path is None:
+        # Leave it to the caller to relocalize / rescan and try again.
+        return particles
 
-    
-    path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
-    print("Optimized path is:")
-    print(path)
-    
-    
     print("orientation is")
     print(robotrrt.robot_orientation)
     
@@ -183,30 +237,12 @@ def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
             
     
     #maybe change something with the heading or modify rrt so that it also uses heading
-    robotrrt = rrt.RRT(
-        start=[est_pose.getX(),est_pose.getY()],
-        goal=[newgoal[0], newgoal[1]],
-        rand_area=rand_area,
-        obstacle_list=obstacleList,
-        play_area=play_area,
-        robot_radius= ROBOT_RADIUS,
-        # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-        robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
-        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
-        # meter-scaled and far too fine for a ~400-500 cm map.
-        path_resolution=5.0,
-    )
-    
-    path = robotrrt.planning(animation=True)
-    print("Path is:")
-    print(path)
+    # Only small rings here: we must end within 40 cm of the landmark to count.
+    robotrrt, path = plan_path(est_pose, newgoal[0], newgoal[1], obstacleList,
+                               rings=(20, 30))
+    if path is None:
+        return particles
 
-    
-    path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
-    print("Optimized path is:")
-    print(path)
-    
-    
     print("orientation is")
     print(robotrrt.robot_orientation)
     
