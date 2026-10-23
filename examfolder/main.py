@@ -153,10 +153,14 @@ def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
     # Plan to the landmark if we're poorly localized OR can't see the target landmark.
     if (observations and len(observations) < 2) or landmarkID not in observations:
         print("COULDNT FIND LANDMARK OR LESS THAN TWO OBSERVED, GOING HALFWAY")
-        particles = rrttopoint(particles, newgoal[0] / 2, newgoal[1] / 2)
+        # Halfway between where we are now and the goal (not between origin and goal).
+        est_pose = particle.estimate_pose(particles)
+        mid_x = (est_pose.getX() + newgoal[0]) / 2
+        mid_y = (est_pose.getY() + newgoal[1]) / 2
+        particles = rrttopoint(particles, mid_x, mid_y)
         particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
-    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
+    id, dists, angles, particles = findNextLandmark(landmarkID, particles)
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
