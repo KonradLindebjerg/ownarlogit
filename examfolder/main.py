@@ -246,10 +246,11 @@ def main():
 
     # DRIVE BACK TO L1
     ## Start out by localizing itself
-    particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
-    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
-    est_pose = particle.estimate_pose(particles)
-    #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-    rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK1"])
+    if all(VisitedLandmark.values()):
+        particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
+        id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
+        est_pose = particle.estimate_pose(particles)
+        #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
+        rrttolandmark(scan_heading_deg, particles, est_pose, landmarkIDs["LANDMARK1"])
 
 main()
