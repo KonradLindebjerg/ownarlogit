@@ -152,7 +152,7 @@ def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
 
     # Plan to the landmark if we're poorly localized OR can't see the target landmark.
     if (observations and len(observations) < 2) or landmarkID not in observations:
-        particles = rrttopoint(particles, newgoal[0], newgoal[1])
+        particles = rrttopoint(particles, newgoal[0] / 2, newgoal[1] / 2)
         particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
