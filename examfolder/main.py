@@ -31,7 +31,7 @@ from lib import robot
 EPS          = 0.075    # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA  = 0.029320 # Sigma noise for when turning
 SIGMA        = 2.0      # Sigma for driving distance
-ROBOT_RADIUS = 22.5     # Robot radius for rrt
+ROBOT_RADIUS = 25.0     # Robot radius for rrt
 
 # Landmarks and maps
 

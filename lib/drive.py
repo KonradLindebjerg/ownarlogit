@@ -40,9 +40,9 @@ def turn(angle, particles):
     if (angle * TURN_DIR < 0):
         left, right = right, left
 
-    print(arlo.go_diff(leftSpeed, rightSpeed,left, right))
+    (arlo.go_diff(leftSpeed, rightSpeed,left, right))
     sleep((abs(angle)/360)*circleTime)
-    print(arlo.stop())
+    (arlo.stop())
     sleep(eps)
     delta_theta = np.deg2rad(angle)   # CCW-positive, matches the physical turn
     for p in particles:
@@ -56,9 +56,9 @@ def turn(angle, particles):
     
 
 def drive(length, particles):
-    print(arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
+    (arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
     sleep(driveTime*length/100)
-    print(arlo.stop())
+    (arlo.stop())
     sleep(eps)
     for p in particles:
         particle.move_particle(p,
