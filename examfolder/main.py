@@ -96,9 +96,21 @@ def deduplicate(objectIDs, dists, angles):
 
 def rrttopoint(particles, x, y):
     est_pose = particle.estimate_pose(particles)
+
+    # Face the goal before scanning, so the scan covers the direction we'll drive.
+    # Theta is CCW from +x (radians); drive.turn is CCW-positive (degrees).
+    target_theta = math.atan2(y - est_pose.getY(), x - est_pose.getX())
+    delta = target_theta - est_pose.getTheta()
+    delta = math.atan2(math.sin(delta), math.cos(delta))  # wrap to [-pi, pi]
+    drive.turn(math.degrees(delta), particles)
+    sleep(EPS)
+
+    est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
     # scan_surroundings only rotates detections; shift them to the robot's map position.
+    obstacleList = [(ox + est_pose.getX(), oy + est_pose.getY(), r, oid)
+                    for (ox, oy, r, oid) in obstacleList]
 
     est_pose = particle.estimate_pose(particles)
 
