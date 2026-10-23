@@ -142,7 +142,7 @@ def observe(cam, landmarkIDs, landmarks, particles):
     colour = cam.get_next_frame()
     objectIDs, dists, angles = cam.detect_aruco_objects(colour)
     if objectIDs is None:
-        return particles, None, None, None, None
+        return particles, None, None, None, {} 
 
     # Keep ONE observation (the closest) per known landmark ID.
     observations = {}
