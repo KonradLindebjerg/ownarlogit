@@ -164,7 +164,7 @@ def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
 
     # Plan to the landmark if we're poorly localized OR can't see the target landmark.
     if (observations and len(observations) < 2) or landmarkID not in observations:
-        print("COULDNT FIND LANDMARK OR LESS THAN TWO OBSERVED, GOING HALFWAY")
+        print("COULDNT FIND TARGET LANDMARK OR TWO OR LESS OBSERVED, GOING HALFWAY")
         # Halfway between where we are now and the goal (not between origin and goal).
         est_pose = particle.estimate_pose(particles)
         mid_x = (est_pose.getX() + newgoal[0]) / 2
@@ -249,7 +249,7 @@ def drivetol1(particles):
     #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
     _, dist, angle, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
     if angle is None:
-        drivetol1(particles)
+        particles = drivetol1(particles)
         print("L1 not found, retrying")
         return particles
 
