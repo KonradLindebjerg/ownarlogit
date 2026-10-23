@@ -220,7 +220,7 @@ def main():
     # We assume that we find the next landmark here
     # Reobserve our surroundings
     particles = sl.localize(cam, landmark_ids, landmark_coords, particles)
-    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
+    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
 
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
