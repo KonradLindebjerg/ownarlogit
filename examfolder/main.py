@@ -200,7 +200,7 @@ def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
 
     # A visit counts within 40 cm of the box side, so stop with the robot's
     # front 20 cm from it (20 cm leeway), on the side facing the robot.
-    stop = edge + ROBOT_RADIUS + 20.0
+    stop = edge + 20.0
     dx = est_pose.getX() - goalx
     dy = est_pose.getY() - goaly
     d = math.hypot(dx, dy)
