@@ -137,11 +137,11 @@ def rrttopoint(particles, x, y):
 def rrttolandmark(particles, est_pose, landmarkID,landmarkcoordinates ):
     newgoal = landmarkcoordinates 
     particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
 
     if observations and len(observations) < 2:
         particles = rrttopoint(particles, newgoal[0], newgoal[1])
 
+    id, dists, angles, particles = findNextLandmark(landmarkIDs["LANDMARK2"], particles)
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
