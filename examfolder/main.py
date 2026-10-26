@@ -119,7 +119,9 @@ def landmark_keepouts(obstacleList, target_id, start):
     """Drop scanned landmark markers from obstacleList and add every non-target
     landmark as a KEEPOUT_RADIUS obstacle at its map position.
     If the start is already inside a keep-out (e.g. the landmark we just visited),
-    shrink it so the start is just outside: RRT can then only move away from it."""
+    shrink it to just the physical box, so RRT is free to drive off in any
+    direction without bumping into it. (Shrinking it only to the robot's current
+    distance boxed the planner in: nearly every edge out of the start collided.)"""
     out = [o for o in obstacleList if o[3] not in LANDMARK_IDS]
     for lid, (lx, ly) in LANDMARK_COORDS.items():
         if lid == target_id:
@@ -127,7 +129,7 @@ def landmark_keepouts(obstacleList, target_id, start):
         r = KEEPOUT_RADIUS
         d = math.hypot(start[0] - lx, start[1] - ly)
         if d <= r + ROBOT_RADIUS:
-            r = max(0.0, d - ROBOT_RADIUS - 2.0)
+            r = max(0.0, min(lm.landmarkR, d - ROBOT_RADIUS - 2.0))
             print(f"Start is inside keep-out of landmark {lid}, shrinking it to {r:.1f} cm")
         out.append((lx, ly, r, lid))
     return out
