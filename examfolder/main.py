@@ -324,7 +324,7 @@ def main():
     particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     est_pose = particle.estimate_pose(particles)
     l1x, l1y = landmarks["LANDMARK2"]
-    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 40.0:
+    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 55.0:
         print("Not within 40 cm of L2, driving there again")
         particles = rrttolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK1"])
 
@@ -337,7 +337,7 @@ def main():
     particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     est_pose = particle.estimate_pose(particles)
     l1x, l1y = landmarks["LANDMARK3"]
-    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 40.0:
+    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 55.0:
         print("Not within 40 cm of L3, driving there again")
         particles = rrttolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK1"])
 
@@ -348,7 +348,7 @@ def main():
     particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     est_pose = particle.estimate_pose(particles)
     l1x, l1y = landmarks["LANDMARK4"]
-    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 40.0:
+    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 55.0:
         print("Not within 40 cm of L4, driving there again")
         particles = rrttolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK1"])
 
@@ -361,7 +361,7 @@ def main():
     particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     est_pose = particle.estimate_pose(particles)
     l1x, l1y = landmarks["LANDMARK1"]
-    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 40.0:
+    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 55.0:
         print("Not within 40 cm of L1, driving there again")
         particles = rrttolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
