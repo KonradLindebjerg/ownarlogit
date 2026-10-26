@@ -35,8 +35,8 @@ ROBOT_RADIUS = 25.0     # Robot radius for rrt
 ARRIVED_RADIUS = 55.0   # cm from landmark centre that counts as arrived (40 cm + PF slack)
 BACKUP_CM    = 50.0     # how far to reverse after the sonar stops us, before replanning
 MAX_REPLANS  = 5        # max replans per landmark leg
-VERIFY_RADIUS  = 60.0   # after a leg, we must be confidently within this many cm of the landmark
-VERIFY_POS_STD = 20.0   # max particle spread (cm) for the position estimate to count as confident
+VERIFY_RADIUS  = 65.0   # after a leg, we must be confidently within this many cm of the landmark
+VERIFY_POS_STD = 25.0   # max particle spread (cm) for the position estimate to count as confident
 # Non-target landmarks are keep-out zones so we never visit out of order / revisit.
 # Box half-width (20) + visit distance (40) + safety margin (15). RRT adds ROBOT_RADIUS on top.
 KEEPOUT_RADIUS = 20.0 + 40.0 + 15.0
