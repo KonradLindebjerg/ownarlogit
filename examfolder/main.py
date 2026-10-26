@@ -269,8 +269,8 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None)
     goaly += dy / d * stop
     print("Landmark goal set to", goalx, goaly)
 
-    obstacleList = landmark_keepouts(obstacleList, landmarkID,
-                                     (est_pose.getX(), est_pose.getY()))
+    obstacleList, particles = landmark_keepouts(obstacleList, landmarkID,
+                                     (est_pose.getX(), est_pose.getY()), particles)
     print("Obstacles incl. landmark keep-outs:", obstacleList)
 
     #maybe change something with the heading or modify rrt so that it also uses heading
