@@ -35,6 +35,9 @@ ROBOT_RADIUS = 25.0     # Robot radius for rrt
 ARRIVED_RADIUS = 55.0   # cm from landmark centre that counts as arrived (40 cm + PF slack)
 BACKUP_CM    = 20.0     # how far to reverse after the sonar stops us, before replanning
 MAX_REPLANS  = 5        # max replans per landmark leg
+# Non-target landmarks are keep-out zones so we never visit out of order / revisit.
+# Box half-width (20) + visit distance (40) + safety margin (15). RRT adds ROBOT_RADIUS on top.
+KEEPOUT_RADIUS = 20.0 + 40.0 + 15.0
 
 # Landmarks and maps
 
@@ -112,7 +115,25 @@ def turntowards(particles, x, y):
     return particles
 
 
-def rrttopoint(particles, x, y, attempt=0):
+def landmark_keepouts(obstacleList, target_id, start):
+    """Drop scanned landmark markers from obstacleList and add every non-target
+    landmark as a KEEPOUT_RADIUS obstacle at its map position.
+    If the start is already inside a keep-out (e.g. the landmark we just visited),
+    shrink it so the start is just outside: RRT can then only move away from it."""
+    out = [o for o in obstacleList if o[3] not in LANDMARK_IDS]
+    for lid, (lx, ly) in LANDMARK_COORDS.items():
+        if lid == target_id:
+            continue
+        r = KEEPOUT_RADIUS
+        d = math.hypot(start[0] - lx, start[1] - ly)
+        if d <= r + ROBOT_RADIUS:
+            r = max(0.0, d - ROBOT_RADIUS - 2.0)
+            print(f"Start is inside keep-out of landmark {lid}, shrinking it to {r:.1f} cm")
+        out.append((lx, ly, r, lid))
+    return out
+
+
+def rrttopoint(particles, x, y, target_id, attempt=0):
     # Face the goal before scanning, so the scan covers the direction we'll drive.
     particles = turntowards(particles, x, y)
 
@@ -124,6 +145,9 @@ def rrttopoint(particles, x, y, attempt=0):
                     for (ox, oy, r, oid) in obstacleList]
 
     est_pose = particle.estimate_pose(particles)
+    obstacleList = landmark_keepouts(obstacleList, target_id,
+                                     (est_pose.getX(), est_pose.getY()))
+    print("Obstacles incl. landmark keep-outs:", obstacleList)
 
     robotrrt = rrt.RRT(
         start=[est_pose.getX(),est_pose.getY()],
@@ -157,7 +181,7 @@ def rrttopoint(particles, x, y, attempt=0):
         new_x = x + 40 * math.cos(a)
         new_y = y + 40 * math.sin(a)
         print("No path, retrying at", new_x, new_y)
-        return rrttopoint(particles, new_x, new_y, attempt + 1)
+        return rrttopoint(particles, new_x, new_y, target_id, attempt + 1)
     
     
     print("orientation is")
@@ -195,7 +219,7 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt=0):
         est_pose = particle.estimate_pose(particles)
         mid_x = (est_pose.getX() + newgoal[0]) / 2
         mid_y = (est_pose.getY() + newgoal[1]) / 2
-        particles = rrttopoint(particles, mid_x, mid_y)
+        particles = rrttopoint(particles, mid_x, mid_y, landmarkID)
         particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
         id, dists, angles, particles = findNextLandmark(landmarkID, particles)
 
@@ -235,6 +259,10 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt=0):
     goalx += dx / d * stop
     goaly += dy / d * stop
     print("Landmark goal set to", goalx, goaly)
+
+    obstacleList = landmark_keepouts(obstacleList, landmarkID,
+                                     (est_pose.getX(), est_pose.getY()))
+    print("Obstacles incl. landmark keep-outs:", obstacleList)
 
     #maybe change something with the heading or modify rrt so that it also uses heading
     robotrrt = rrt.RRT(
