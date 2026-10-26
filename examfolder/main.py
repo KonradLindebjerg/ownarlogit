@@ -206,10 +206,7 @@ def at_landmark(particles, landmarkcoordinates):
     return d <= ARRIVED_RADIUS
 
 
-def rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt=0):
-    if attempt > MAX_REPLANS:
-        print("Too many replans, giving up on this landmark")
-        return particles
+def rrttolandmark(particles, landmarkID, landmarkcoordinates ):
     newgoal = landmarkcoordinates 
     particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     id, dists, angles, particles = findNextLandmark(landmarkID, particles)
@@ -283,7 +280,7 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt=0):
     
     path = robotrrt.planning(animation=True)
     if path is None:
-        return rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt + 1)
+        return rrttolandmark(particles, landmarkID, landmarkcoordinates)
     else:
         print("Path is:")
         print(path)
@@ -310,7 +307,7 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt=0):
         # Otherwise an obstacle is in the way: back off and plan again.
         print("Blocked before landmark", landmarkID, "- backing up and replanning")
         drive.reverse(BACKUP_CM, particles)
-        return rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt + 1)
+        return rrttolandmark(particles, landmarkID, landmarkcoordinates)
 
 
 def drivetol1(particles):
