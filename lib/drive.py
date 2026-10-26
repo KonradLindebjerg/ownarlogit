@@ -29,7 +29,11 @@ ROUGHEN_SIGMA_THETA = 0.05     # rad (~2.9 deg)
 TURN_NOISE_FRAC     = 0.15     # heading noise std as a fraction of the commanded turn
 
 # Sonar safety stop while driving (cm). Tune on the robot.
-STOP_CM             = 20.0     # stop if the sonar in the direction of travel reads closer than this
+STOP_CM             = 20.0     # stop if the front (or back, when reversing) sonar reads closer than this
+# The "left"/"right" sonars point ~40-45 deg off the front, not straight sideways.
+# They see boxes we're just driving past, so they only stop us when something is
+# much closer (at 45 deg, a 15 cm reading is ~11 cm sideways from the sensor).
+DIAG_STOP_CM        = 10.0
 SONAR_POLL_DT       = 0.02     # s between sonar reads (each read also takes serial time)
 
 # Convention used everywhere: positive angle = turn LEFT (counter-clockwise),
@@ -59,17 +63,20 @@ def turn(angle, particles):
     
     
 
-def _sonar_too_close(read, name):
+def _sonar_too_close(read, name, stop_cm=STOP_CM):
     """Read one sonar (mm -> cm). Returns a description if it is under
-    STOP_CM, or None if clear. Readings <= 0 are serial/sensor errors and are ignored."""
+    stop_cm, or None if clear. Readings <= 0 are serial/sensor errors and are ignored."""
     dist = read() / 10
-    if 0 < dist < STOP_CM:
+    if 0 < dist < stop_cm:
         return f"{name} {dist:.0f} cm"
     return None
 
 
 def obstacle_ahead():
-    return _sonar_too_close(arlo.read_front_ping_sensor, "front")
+    """Front sonar at STOP_CM, then the two front-diagonal sonars at DIAG_STOP_CM."""
+    return (_sonar_too_close(arlo.read_front_ping_sensor, "front")
+            or _sonar_too_close(arlo.read_left_ping_sensor, "front-left", DIAG_STOP_CM)
+            or _sonar_too_close(arlo.read_right_ping_sensor, "front-right", DIAG_STOP_CM))
 
 
 def obstacle_behind():
