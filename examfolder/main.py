@@ -33,7 +33,7 @@ SIGMA_THETA  = 0.029320 # Sigma noise for when turning
 SIGMA        = 2.0      # Sigma for driving distance
 ROBOT_RADIUS = 25.0     # Robot radius for rrt
 ARRIVED_RADIUS = 55.0   # cm from landmark centre that counts as arrived (40 cm + PF slack)
-BACKUP_CM    = 20.0     # how far to reverse after the sonar stops us, before replanning
+BACKUP_CM    = 50.0     # how far to reverse after the sonar stops us, before replanning
 MAX_REPLANS  = 5        # max replans per landmark leg
 # Non-target landmarks are keep-out zones so we never visit out of order / revisit.
 # Box half-width (20) + visit distance (40) + safety margin (15). RRT adds ROBOT_RADIUS on top.
