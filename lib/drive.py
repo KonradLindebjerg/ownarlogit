@@ -33,7 +33,7 @@ STOP_CM             = 20.0     # stop if the front (or back, when reversing) son
 # The "left"/"right" sonars point ~40-45 deg off the front, not straight sideways.
 # They see boxes we're just driving past, so they only stop us when something is
 # much closer (at 45 deg, a 15 cm reading is ~11 cm sideways from the sensor).
-DIAG_STOP_CM        = 10.0
+DIAG_STOP_CM        = 15.0
 SONAR_POLL_DT       = 0.02     # s between sonar reads (each read also takes serial time)
 
 # Convention used everywhere: positive angle = turn LEFT (counter-clockwise),
