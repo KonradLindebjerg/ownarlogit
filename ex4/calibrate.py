@@ -8,7 +8,7 @@ arlo = robot.Robot()
 
 leftSpeed           = 69
 rightSpeed          = 66
-circleTime          = 2.79
+circleTime          = 2.70
 driveTime           = 2.25
 eps                 = 0.3
 
