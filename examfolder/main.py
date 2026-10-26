@@ -117,7 +117,7 @@ def turntowards(particles, x, y):
     return particles
 
 
-def landmark_keepouts(obstacleList, target_id, start):
+def landmark_keepouts(obstacleList, target_id, start, particles):
     """Drop scanned landmark markers from obstacleList and add every non-target
     landmark as a KEEPOUT_RADIUS obstacle at its map position.
     If the start is already inside a keep-out (e.g. the landmark we just visited),
@@ -137,9 +137,10 @@ def landmark_keepouts(obstacleList, target_id, start):
                 # so the start would be in collision and RRT could never plan.
                 print(f"Start is right at landmark {lid}, leaving it out of the obstacles")
                 continue
+            drive.reverse(20, particles)
             print(f"Start is inside keep-out of landmark {lid}, shrinking it to {r:.1f} cm")
         out.append((lx, ly, r, lid))
-    return out
+    return out, particles
 
 
 def rrttopoint(particles, x, y, target_id, attempt=0):
@@ -154,8 +155,8 @@ def rrttopoint(particles, x, y, target_id, attempt=0):
                     for (ox, oy, r, oid) in obstacleList]
 
     est_pose = particle.estimate_pose(particles)
-    obstacleList = landmark_keepouts(obstacleList, target_id,
-                                     (est_pose.getX(), est_pose.getY()))
+    obstacleList, particles = landmark_keepouts(obstacleList, target_id,
+                                     (est_pose.getX(), est_pose.getY()), particles)
     print("Obstacles incl. landmark keep-outs:", obstacleList)
 
     robotrrt = rrt.RRT(
