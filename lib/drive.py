@@ -95,6 +95,12 @@ def calculate_drive_distance(u, v):
     return math.sqrt(lefthand + righthand)
 
 
+def readsensor(particles):
+    distance = arlo.read_front_ping_sensor()
+    print(f"FRONT SENSOR READS {distance}") 
+    return particles, distance
+
+
 
 if __name__ == "__main__":
     turn(360)
