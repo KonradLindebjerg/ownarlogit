@@ -35,6 +35,8 @@ ROBOT_RADIUS = 25.0     # Robot radius for rrt
 ARRIVED_RADIUS = 55.0   # cm from landmark centre that counts as arrived (40 cm + PF slack)
 BACKUP_CM    = 50.0     # how far to reverse after the sonar stops us, before replanning
 MAX_REPLANS  = 5        # max replans per landmark leg
+VERIFY_RADIUS  = 60.0   # after a leg, we must be confidently within this many cm of the landmark
+VERIFY_POS_STD = 20.0   # max particle spread (cm) for the position estimate to count as confident
 # Non-target landmarks are keep-out zones so we never visit out of order / revisit.
 # Box half-width (20) + visit distance (40) + safety margin (15). RRT adds ROBOT_RADIUS on top.
 KEEPOUT_RADIUS = 20.0 + 40.0 + 15.0
@@ -211,9 +213,11 @@ def at_landmark(particles, landmarkcoordinates):
     return d <= ARRIVED_RADIUS
 
 
-def rrttolandmark(particles, landmarkID, landmarkcoordinates ):
+def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None):
+    """observations: landmark IDs from a localize() we just did; pass it to skip localizing again."""
     newgoal = landmarkcoordinates 
-    particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    if observations is None:
+        particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     id, dists, angles, particles = findNextLandmark(landmarkID, particles)
 
     # Plan to the landmark if we're poorly localized OR can't see the target landmark.
@@ -315,6 +319,29 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates ):
         return rrttolandmark(particles, landmarkID, landmarkcoordinates)
 
 
+def gotolandmark(particles, landmarkID, landmarkcoordinates):
+    """RRT to the landmark, then re-localize and check we're confidently within
+    VERIFY_RADIUS of it. If not, RRT again (up to MAX_REPLANS times)."""
+    observations = None
+    for attempt in range(MAX_REPLANS + 1):
+        particles = rrttolandmark(particles, landmarkID, landmarkcoordinates, observations)
+        particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+
+        pos_std, _ = sl.filter_confidence(particles)
+        est_pose = particle.estimate_pose(particles)
+        d = math.hypot(est_pose.getX() - landmarkcoordinates[0],
+                       est_pose.getY() - landmarkcoordinates[1])
+        print(f"Verify landmark {landmarkID}: distance {d:.1f} cm, spread {pos_std:.1f} cm")
+        if d <= VERIFY_RADIUS and pos_std <= VERIFY_POS_STD:
+            print("Confidently at landmark", landmarkID)
+            return particles
+        print(f"Not confidently within {VERIFY_RADIUS} cm of landmark {landmarkID}, replanning "
+              f"(attempt {attempt + 1}/{MAX_REPLANS})")
+
+    print("Gave up verifying landmark", landmarkID, "- moving on")
+    return particles
+
+
 def drivetol1(particles):
     #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
     _, dist, angle, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
@@ -388,25 +415,25 @@ def main():
     # Reobserve our surroundings
     #RRT to landmark 2
 
-    particles = rrttolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK2"])
+    particles = gotolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK2"])
 
     
     # DRIVE TO L3
     ## Start out by localizing itself
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
-    particles = rrttolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK3"])
+    particles = gotolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK3"])
 
     # DRIVE TO L4
     ## Start out by localizing itself
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-    particles = rrttolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK4"])
+    particles = gotolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK4"])
 
     # DRIVE BACK TO L1
     ## Start out by localizing itself
     #if all(VisitedLandmark.values()):
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-    particles = rrttolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
+    particles = gotolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
 
 
