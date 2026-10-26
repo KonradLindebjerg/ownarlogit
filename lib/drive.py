@@ -30,8 +30,7 @@ TURN_NOISE_FRAC     = 0.15     # heading noise std as a fraction of the commande
 
 # Sonar safety stop while driving (cm). Tune on the robot.
 FRONT_STOP_CM       = 20.0     # stop if the front sonar reads closer than this
-SIDE_STOP_CM        = 12.0     # stop if the left/right sonar reads closer than this
-SONAR_POLL_DT       = 0.02     # s between sonar sweeps (each read also takes serial time)
+SONAR_POLL_DT       = 0.02     # s between front sonar reads (each read also takes serial time)
 
 # Convention used everywhere: positive angle = turn LEFT (counter-clockwise),
 # same as particle theta and camera bearings. On our Arlo, wheel directions
@@ -61,18 +60,12 @@ def turn(angle, particles):
     
 
 def obstacle_ahead():
-    """Read front, left and right sonars (mm -> cm). Returns a description of the
-    first sensor under its stop threshold, or None if the way is clear.
+    """Read the front sonar (mm -> cm). Returns a description if it is under
+    the stop threshold, or None if the way is clear.
     Readings <= 0 are serial/sensor errors and are ignored."""
     front = arlo.read_front_ping_sensor() / 10
     if 0 < front < FRONT_STOP_CM:
         return f"front {front:.0f} cm"
-    left = arlo.read_left_ping_sensor() / 10
-    if 0 < left < SIDE_STOP_CM:
-        return f"left {left:.0f} cm"
-    right = arlo.read_right_ping_sensor() / 10
-    if 0 < right < SIDE_STOP_CM:
-        return f"right {right:.0f} cm"
     return None
 
 
@@ -144,7 +137,7 @@ def calculate_drive_distance(u, v):
 
 def readsensor(particles):
     distance = arlo.read_front_ping_sensor()
-    distanceincm = distance / 100
+    distanceincm = distance / 10
     print(f"FRONT SENSOR READS {distanceincm}") 
     return particles, distanceincm
 
