@@ -140,7 +140,7 @@ def rrttopoint(particles, x, y, attempt=0):
 
     if path is None:
         # Goal is probably inside an obstacle: retry at a random point 40 cm away.
-        if attempt >= 3:
+        if attempt >= 5:
             print("No path found after retries, giving up")
             return particles
         a = random.uniform(0, 2 * math.pi)
