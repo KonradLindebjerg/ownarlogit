@@ -143,7 +143,7 @@ def landmark_keepouts(obstacleList, target_id, start, particles):
     return out, particles
 
 
-def rrttopoint(particles, x, y, target_id, attempt=0):
+def rrttopoint(particles, x, y, target_id, max_attempts=5):
     # Face the goal before scanning, so the scan covers the direction we'll drive.
     particles = turntowards(particles, x, y)
 
@@ -158,42 +158,45 @@ def rrttopoint(particles, x, y, target_id, attempt=0):
     obstacleList, particles = landmark_keepouts(obstacleList, target_id,
                                      (est_pose.getX(), est_pose.getY()), particles)
     print("Obstacles incl. landmark keep-outs:", obstacleList)
+    # landmark_keepouts may have reversed the robot, so re-read the pose.
+    est_pose = particle.estimate_pose(particles)
 
-    robotrrt = rrt.RRT(
-        start=[est_pose.getX(),est_pose.getY()],
-        goal=[x, y],
-        rand_area=rand_area,
-        obstacle_list=obstacleList,
-        play_area=play_area,
-        robot_radius= ROBOT_RADIUS,
-        # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-        robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
-        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
-        # meter-scaled and far too fine for a ~400-500 cm map.
-        path_resolution=5.0,
-    )
-    
-    path = robotrrt.planning(animation=True)
-    print("Path is:")
-    print(path)
+    # Scan once, then only replan: no path usually means the goal is inside an
+    # obstacle, so retry RRT at a random point 40 cm from the original goal.
+    goal_x, goal_y = x, y
+    for attempt in range(max_attempts + 1):
+        robotrrt = rrt.RRT(
+            start=[est_pose.getX(),est_pose.getY()],
+            goal=[goal_x, goal_y],
+            rand_area=rand_area,
+            obstacle_list=obstacleList,
+            play_area=play_area,
+            robot_radius= ROBOT_RADIUS,
+            # RRT/angle_to_target measure heading from +y; particle theta is from +x.
+            robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
+            # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
+            # meter-scaled and far too fine for a ~400-500 cm map.
+            path_resolution=5.0,
+        )
 
-    
-    path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
-    print("Optimized path is:")
-    print(path)
+        path = robotrrt.planning(animation=True)
+        print("Path is:")
+        print(path)
 
-    if path is None:
-        # Goal is probably inside an obstacle: retry at a random point 40 cm away.
-        if attempt >= 5:
-            print("No path found after retries, giving up")
-            return particles
+        path = rrt.shortcut_path(robotrrt, path)
+        print("Optimized path is:")
+        print(path)
+
+        if path is not None:
+            break
         a = random.uniform(0, 2 * math.pi)
-        new_x = x + 40 * math.cos(a)
-        new_y = y + 40 * math.sin(a)
-        print("No path, retrying at", new_x, new_y)
-        return rrttopoint(particles, new_x, new_y, target_id, attempt + 1)
-    
-    
+        goal_x = x + 40 * math.cos(a)
+        goal_y = y + 40 * math.sin(a)
+        print("No path, retrying at", goal_x, goal_y)
+    else:
+        print("No path found after retries, giving up")
+        return particles
+
     print("orientation is")
     print(robotrrt.robot_orientation)
     
@@ -359,7 +362,7 @@ def drivetol1(particles):
 
     ## Drive the distance
     print("distance is :", dist)
-    drive.drive(dist - 10, particles)
+    drive.drive(dist - 15, particles)
     particles, _, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     VisitedLandmark["LANDMARK1"] = True
