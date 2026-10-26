@@ -1,3 +1,4 @@
+import time
 from time import sleep
 import sys 
 import os
@@ -27,6 +28,11 @@ ROUGHEN_SIGMA       = 4.0      # cm
 ROUGHEN_SIGMA_THETA = 0.05     # rad (~2.9 deg)
 TURN_NOISE_FRAC     = 0.15     # heading noise std as a fraction of the commanded turn
 
+# Sonar safety stop while driving (cm). Tune on the robot.
+FRONT_STOP_CM       = 20.0     # stop if the front sonar reads closer than this
+SIDE_STOP_CM        = 12.0     # stop if the left/right sonar reads closer than this
+SONAR_POLL_DT       = 0.02     # s between sonar sweeps (each read also takes serial time)
+
 # Convention used everywhere: positive angle = turn LEFT (counter-clockwise),
 # same as particle theta and camera bearings. On our Arlo, wheel directions
 # (left=0, right=1) turn it LEFT and (1, 0) turn it RIGHT.
@@ -54,11 +60,51 @@ def turn(angle, particles):
     
     
 
+def obstacle_ahead():
+    """Read front, left and right sonars (mm -> cm). Returns a description of the
+    first sensor under its stop threshold, or None if the way is clear.
+    Readings <= 0 are serial/sensor errors and are ignored."""
+    front = arlo.read_front_ping_sensor() / 10
+    if 0 < front < FRONT_STOP_CM:
+        return f"front {front:.0f} cm"
+    left = arlo.read_left_ping_sensor() / 10
+    if 0 < left < SIDE_STOP_CM:
+        return f"left {left:.0f} cm"
+    right = arlo.read_right_ping_sensor() / 10
+    if 0 < right < SIDE_STOP_CM:
+        return f"right {right:.0f} cm"
+    return None
+
+
 def drive(length, particles):
-    (arlo.go_diff(leftSpeed, rightSpeed, 1, 1))
-    sleep(driveTime*length/100)
-    (arlo.stop())
+    """Drive `length` cm forward, stopping early if a sonar sees something too
+    close. Particles are moved by the distance actually driven (estimated from
+    elapsed time), which is also returned."""
+    if length <= 0:
+        return 0.0
+    total_time = driveTime * length / 100
+    reason = obstacle_ahead()
+    if reason is not None:
+        print(f"Not driving, obstacle {reason}")
+        return 0.0
+
+    start = time.monotonic()
+    arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
+    elapsed = 0.0
+    while elapsed < total_time:
+        reason = obstacle_ahead()
+        elapsed = time.monotonic() - start
+        if reason is not None:
+            break
+        sleep(SONAR_POLL_DT)
+        elapsed = time.monotonic() - start
+    arlo.stop()
     sleep(eps)
+
+    driven = length * min(elapsed, total_time) / total_time
+    if reason is not None:
+        print(f"Stopped early, obstacle {reason}; drove {driven:.1f} of {length:.1f} cm")
+    length = driven
     for p in particles:
         particle.move_particle(p,
                         length * np.cos(p.getTheta()),
@@ -66,6 +112,7 @@ def drive(length, particles):
                         0.0)
     sigma_noise = SIGMA*length
     particle.add_uncertainty(particles, sigma_noise, 0.0)
+    return driven
     
     
     
@@ -97,8 +144,9 @@ def calculate_drive_distance(u, v):
 
 def readsensor(particles):
     distance = arlo.read_front_ping_sensor()
-    print(f"FRONT SENSOR READS {distance}") 
-    return particles, distance
+    distanceincm = distance / 100
+    print(f"FRONT SENSOR READS {distanceincm}") 
+    return particles, distanceincm
 
 
 
