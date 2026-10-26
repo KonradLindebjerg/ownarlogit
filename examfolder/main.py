@@ -357,13 +357,6 @@ def main():
     #RRT to landmark 2
 
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK2"])
-    l1x, l1y = landmarks["LANDMARK2"]
-    particles = turntowards(particles, l1x, l1y)
-    sleep(EPS)
-    particles, distance = drive.readsensor(particles)
-    if  distance > 50:
-        print("Not within 40 cm of L2, driving there again")
-        particles = rrttolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK1"])
 
     
     # DRIVE TO L3
@@ -371,26 +364,11 @@ def main():
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK3"])
-    particles = turntowards(particles, l1x, l1y)
-    sleep(EPS)
-    particles, distance = drive.readsensor(particles)
-
-    if  distance > 50:
-        print("Not within 40 cm of L3, driving there again")
-        particles = rrttolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK1"])
 
     # DRIVE TO L4
     ## Start out by localizing itself
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK4"])
-    l1x, l1y = landmarks["LANDMARK4"]
-    particles = turntowards(particles, l1x, l1y)
-    sleep(EPS)
-    particles, distance = drive.readsensor(particles)
-
-    if  distance > 50:
-        print("Not within 40 cm of L4, driving there again")
-        particles = rrttolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK1"])
 
     # DRIVE BACK TO L1
     ## Start out by localizing itself
@@ -398,14 +376,7 @@ def main():
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
-    l1x, l1y = landmarks["LANDMARK1"]
-    particles = turntowards(particles, l1x, l1y)
-    sleep(EPS)
-    particles, distance = drive.readsensor(particles)
 
-    if  distance > 50:
-        print("Not within 40 cm of L1, driving there again")
-        particles = rrttolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
 
 main()
