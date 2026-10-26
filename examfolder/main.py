@@ -44,7 +44,7 @@ rand_area = [min(play_area[0], play_area[2]), max(play_area[1], play_area[3])] #
 
 landmarkIDs = {
     "LANDMARK1": 8,
-    "LANDMARK2": 3,
+    "LANDMARK2": 1,
     "LANDMARK3": 9,
     "LANDMARK4": 11,
 }
@@ -200,8 +200,7 @@ def rrttolandmark(particles, landmarkID,landmarkcoordinates ):
         i += 1
 
     # A visit counts within 40 cm of the box side, so stop with the robot's
-    # front 20 cm from it (20 cm leeway), on the side facing the robot.
-    stop = edge 
+    stop = edge + 10
     dx = est_pose.getX() - goalx
     dy = est_pose.getY() - goaly
     d = math.hypot(dx, dy)
@@ -338,6 +337,14 @@ def main():
     ## Start out by localizing itself
     #if all(VisitedLandmark.values()):
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-    rrttolandmark(particles, landmarkIDs["LANDMARK1"],landmarks["LANDMARK1"] )
+    particles = rrttolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
+
+    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    est_pose = particle.estimate_pose(particles)
+    l1x, l1y = landmarks["LANDMARK1"]
+    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 40.0:
+        print("Not within 40 cm of L1, driving there again")
+        particles = rrttolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
+
 
 main()
