@@ -220,20 +220,23 @@ def at_landmark(particles, landmarkcoordinates):
 def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None):
     """observations: landmark IDs from a localize() we just did; pass it to skip localizing again."""
     newgoal = landmarkcoordinates 
+    goalx, goaly = newgoal[0], newgoal[1]
     if observations is None:
         particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     id, dists, angles, particles = findNextLandmark(landmarkID, particles)
+    if id is None:
+        particles = turntowards(particles, goalx, goaly)
 
     # Plan to the landmark if we're poorly localized OR can't see the target landmark.
-    if len(observations) < 2 or id is None: 
-        print("COULDNT FIND TARGET LANDMARK OR TWO OR LESS OBSERVED, GOING HALFWAY")
-        # Halfway between where we are now and the goal (not between origin and goal).
-        est_pose = particle.estimate_pose(particles)
-        mid_x = (est_pose.getX() + newgoal[0]) / 2
-        mid_y = (est_pose.getY() + newgoal[1]) / 2
-        particles = rrttopoint(particles, mid_x, mid_y, landmarkID)
-        particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-        id, dists, angles, particles = findNextLandmark(landmarkID, particles)
+    #if len(observations) < 2 or id is None: 
+    #    print("COULDNT FIND TARGET LANDMARK OR TWO OR LESS OBSERVED, GOING HALFWAY")
+    #    # Halfway between where we are now and the goal (not between origin and goal).
+    #    est_pose = particle.estimate_pose(particles)
+    #    mid_x = (est_pose.getX() + newgoal[0]) / 2
+    #    mid_y = (est_pose.getY() + newgoal[1]) / 2
+    #    particles = rrttopoint(particles, mid_x, mid_y, landmarkID)
+    #    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    #    id, dists, angles, particles = findNextLandmark(landmarkID, particles)
 
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
@@ -246,7 +249,6 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None)
     #x,y, radius, idss = obstacleList
     
     # Default to the map position (box center); use the observed marker if we see it.
-    goalx, goaly = newgoal[0], newgoal[1]
     edge = lm.landmarkR  # distance from box center to its side
     length = len(obstacleList)
     i = 0
