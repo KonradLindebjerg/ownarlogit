@@ -228,22 +228,25 @@ def rrttolandmark(particles, landmarkID,landmarkcoordinates ):
     )
     
     path = robotrrt.planning(animation=True)
-    print("Path is:")
-    print(path)
+    if path is None:
+        return rrttolandmark(particles, landmarkID,landmarkcoordinates )
+    else:
+        print("Path is:")
+        print(path)
 
-    
-    path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
-    print("Optimized path is:")
-    print(path)
-    
-    
-    print("orientation is")
-    print(robotrrt.robot_orientation)
-    
-    # SET GOAL TO L2
-    
-    rrt.driveToGoal(robotrrt, path, particles)
-    return particles
+        
+        path = shortcut_path_safe = rrt.shortcut_path(robotrrt, path)
+        print("Optimized path is:")
+        print(path)
+        
+        
+        print("orientation is")
+        print(robotrrt.robot_orientation)
+        
+        # SET GOAL TO L2
+        
+        rrt.driveToGoal(robotrrt, path, particles)
+        return particles
 
 
 def drivetol1(particles):
