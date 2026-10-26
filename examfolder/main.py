@@ -321,17 +321,36 @@ def main():
     # Reobserve our surroundings
     #RRT to landmark 2
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK2"])
+    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    est_pose = particle.estimate_pose(particles)
+    l1x, l1y = landmarks["LANDMARK2"]
+    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 40.0:
+        print("Not within 40 cm of L2, driving there again")
+        particles = rrttolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK1"])
+
     
     # DRIVE TO L3
     ## Start out by localizing itself
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK3"])
+    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    est_pose = particle.estimate_pose(particles)
+    l1x, l1y = landmarks["LANDMARK3"]
+    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 40.0:
+        print("Not within 40 cm of L3, driving there again")
+        particles = rrttolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK1"])
 
     # DRIVE TO L4
     ## Start out by localizing itself
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK4"])
+    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+    est_pose = particle.estimate_pose(particles)
+    l1x, l1y = landmarks["LANDMARK4"]
+    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 40.0:
+        print("Not within 40 cm of L4, driving there again")
+        particles = rrttolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK1"])
 
     # DRIVE BACK TO L1
     ## Start out by localizing itself
