@@ -357,11 +357,11 @@ def main():
     #RRT to landmark 2
 
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK2"])
-    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-    est_pose = particle.estimate_pose(particles)
     l1x, l1y = landmarks["LANDMARK2"]
     particles = turntowards(particles, l1x, l1y)
-    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 55.0:
+    sleep(EPS)
+    particles, distance = drive.readsensor(particles)
+    if  distance > 50:
         print("Not within 40 cm of L2, driving there again")
         particles = rrttolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK1"])
 
@@ -371,12 +371,11 @@ def main():
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
 
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK3"])
-    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-    est_pose = particle.estimate_pose(particles)
-    l1x, l1y = landmarks["LANDMARK3"]
+    particles = turntowards(particles, l1x, l1y)
+    sleep(EPS)
     particles, distance = drive.readsensor(particles)
 
-    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 55.0 and distance > 50:
+    if  distance > 50:
         print("Not within 40 cm of L3, driving there again")
         particles = rrttolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK1"])
 
@@ -384,13 +383,12 @@ def main():
     ## Start out by localizing itself
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK4"])
-    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-    est_pose = particle.estimate_pose(particles)
     l1x, l1y = landmarks["LANDMARK4"]
     particles = turntowards(particles, l1x, l1y)
+    sleep(EPS)
     particles, distance = drive.readsensor(particles)
 
-    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 55.0 and distance > 50:
+    if  distance > 50:
         print("Not within 40 cm of L4, driving there again")
         particles = rrttolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK1"])
 
@@ -400,13 +398,12 @@ def main():
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     particles = rrttolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
-    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-    est_pose = particle.estimate_pose(particles)
     l1x, l1y = landmarks["LANDMARK1"]
     particles = turntowards(particles, l1x, l1y)
+    sleep(EPS)
     particles, distance = drive.readsensor(particles)
 
-    if math.hypot(est_pose.getX() - l1x, est_pose.getY() - l1y) > 55.0 and distance > 50:
+    if  distance > 50:
         print("Not within 40 cm of L1, driving there again")
         particles = rrttolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
