@@ -129,7 +129,12 @@ def landmark_keepouts(obstacleList, target_id, start):
         r = KEEPOUT_RADIUS
         d = math.hypot(start[0] - lx, start[1] - ly)
         if d <= r + ROBOT_RADIUS:
-            r = max(0.0, min(lm.landmarkR, d - ROBOT_RADIUS - 2.0))
+            r = min(lm.landmarkR, d - ROBOT_RADIUS - 2.0)
+            if r <= 0.0:
+                # Even a zero-radius obstacle blocks ROBOT_RADIUS around its centre,
+                # so the start would be in collision and RRT could never plan.
+                print(f"Start is right at landmark {lid}, leaving it out of the obstacles")
+                continue
             print(f"Start is inside keep-out of landmark {lid}, shrinking it to {r:.1f} cm")
         out.append((lx, ly, r, lid))
     return out
