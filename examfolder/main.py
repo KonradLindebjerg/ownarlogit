@@ -179,7 +179,7 @@ def rrttopoint(particles, x, y, target_id, max_attempts=5):
             path_resolution=5.0,
         )
 
-        path = robotrrt.planning(animation=True)
+        path = robotrrt.planning(animation=False)
         print("Path is:")
         print(path)
 
@@ -291,7 +291,7 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None)
         path_resolution=5.0,
     )
     
-    path = robotrrt.planning(animation=True)
+    path = robotrrt.planning(animation=False)
     if path is None:
         return rrttolandmark(particles, landmarkID, landmarkcoordinates)
     else:
