@@ -13,6 +13,8 @@ from lib import robot
 # which cannot import matplotlib. All local plotting has been removed.
 
 EPS = 0.75
+# driveToGoal treats a segment as blocked if it fell this many cm short.
+BLOCKED_TOL_CM = 5.0
 
 
 # Checks if there is a clear path between two notdes
@@ -122,6 +124,8 @@ def scan_surroundings(cam, inputheading, particles):
 
 
 def driveToGoal(robotrrt, path, particles):
+    """Follow `path`. Returns True if every segment was driven, False if the
+    front sonar stopped the robot early (caller should replan)."""
     print("Started driving to goal")
     i = len(path) - 2
     while (i >= 0):
@@ -137,9 +141,14 @@ def driveToGoal(robotrrt, path, particles):
         distance = calculate_drive_distance(robotrrt.position, path[i])
         print("Driving distance: ", distance)
         # Update robots position
-        drive.drive(distance, particles)
+        driven = drive.drive(distance, particles)
+        if driven < distance - BLOCKED_TOL_CM:
+            # The front sonar stopped us: the rest of the path is no longer valid.
+            print(f"Blocked after {driven:.1f} of {distance:.1f} cm, abandoning path")
+            return False
         robotrrt.position = path[i]
         i -= 1
+    return True
 
 
 

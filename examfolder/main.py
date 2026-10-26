@@ -32,6 +32,9 @@ EPS          = 0.075    # EPS for sleep time so arlo hsa time to catch up
 SIGMA_THETA  = 0.029320 # Sigma noise for when turning
 SIGMA        = 2.0      # Sigma for driving distance
 ROBOT_RADIUS = 25.0     # Robot radius for rrt
+ARRIVED_RADIUS = 55.0   # cm from landmark centre that counts as arrived (40 cm + PF slack)
+BACKUP_CM    = 20.0     # how far to reverse after the sonar stops us, before replanning
+MAX_REPLANS  = 5        # max replans per landmark leg
 
 # Landmarks and maps
 
@@ -160,12 +163,27 @@ def rrttopoint(particles, x, y, attempt=0):
     print("orientation is")
     print(robotrrt.robot_orientation)
     
-    rrt.driveToGoal(robotrrt, path, particles)
+    if not rrt.driveToGoal(robotrrt, path, particles):
+        # Blocked on the way to this waypoint. Back off; the caller replans anyway.
+        print("Blocked on the way to waypoint, backing up")
+        drive.reverse(BACKUP_CM, particles)
     return particles
 
 
 
-def rrttolandmark(particles, landmarkID,landmarkcoordinates ):
+def at_landmark(particles, landmarkcoordinates):
+    """True if the particle filter puts us within ARRIVED_RADIUS of the landmark."""
+    est_pose = particle.estimate_pose(particles)
+    d = math.hypot(est_pose.getX() - landmarkcoordinates[0],
+                   est_pose.getY() - landmarkcoordinates[1])
+    print(f"Estimated distance to landmark: {d:.1f} cm")
+    return d <= ARRIVED_RADIUS
+
+
+def rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt=0):
+    if attempt > MAX_REPLANS:
+        print("Too many replans, giving up on this landmark")
+        return particles
     newgoal = landmarkcoordinates 
     particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     id, dists, angles, particles = findNextLandmark(landmarkID, particles)
@@ -235,7 +253,7 @@ def rrttolandmark(particles, landmarkID,landmarkcoordinates ):
     
     path = robotrrt.planning(animation=True)
     if path is None:
-        return rrttolandmark(particles, landmarkID,landmarkcoordinates )
+        return rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt + 1)
     else:
         print("Path is:")
         print(path)
@@ -251,8 +269,18 @@ def rrttolandmark(particles, landmarkID,landmarkcoordinates ):
         
         # SET GOAL TO L2
         
-        rrt.driveToGoal(robotrrt, path, particles)
-        return particles
+        if rrt.driveToGoal(robotrrt, path, particles):
+            return particles
+
+        # The front sonar stopped us early. If that's the landmark box itself, we're done.
+        particles, _, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+        if at_landmark(particles, landmarkcoordinates):
+            print("Stopped early but already at landmark", landmarkID)
+            return particles
+        # Otherwise an obstacle is in the way: back off and plan again.
+        print("Blocked before landmark", landmarkID, "- backing up and replanning")
+        drive.reverse(BACKUP_CM, particles)
+        return rrttolandmark(particles, landmarkID, landmarkcoordinates, attempt + 1)
 
 
 def drivetol1(particles):

@@ -29,8 +29,8 @@ ROUGHEN_SIGMA_THETA = 0.05     # rad (~2.9 deg)
 TURN_NOISE_FRAC     = 0.15     # heading noise std as a fraction of the commanded turn
 
 # Sonar safety stop while driving (cm). Tune on the robot.
-FRONT_STOP_CM       = 20.0     # stop if the front sonar reads closer than this
-SONAR_POLL_DT       = 0.02     # s between front sonar reads (each read also takes serial time)
+STOP_CM             = 20.0     # stop if the sonar in the direction of travel reads closer than this
+SONAR_POLL_DT       = 0.02     # s between sonar reads (each read also takes serial time)
 
 # Convention used everywhere: positive angle = turn LEFT (counter-clockwise),
 # same as particle theta and camera bearings. On our Arlo, wheel directions
@@ -59,33 +59,44 @@ def turn(angle, particles):
     
     
 
-def obstacle_ahead():
-    """Read the front sonar (mm -> cm). Returns a description if it is under
-    the stop threshold, or None if the way is clear.
-    Readings <= 0 are serial/sensor errors and are ignored."""
-    front = arlo.read_front_ping_sensor() / 10
-    if 0 < front < FRONT_STOP_CM:
-        return f"front {front:.0f} cm"
+def _sonar_too_close(read, name):
+    """Read one sonar (mm -> cm). Returns a description if it is under
+    STOP_CM, or None if clear. Readings <= 0 are serial/sensor errors and are ignored."""
+    dist = read() / 10
+    if 0 < dist < STOP_CM:
+        return f"{name} {dist:.0f} cm"
     return None
 
 
-def drive(length, particles):
-    """Drive `length` cm forward, stopping early if a sonar sees something too
-    close. Particles are moved by the distance actually driven (estimated from
+def obstacle_ahead():
+    return _sonar_too_close(arlo.read_front_ping_sensor, "front")
+
+
+def obstacle_behind():
+    return _sonar_too_close(arlo.read_back_ping_sensor, "back")
+
+
+def _straight(length, particles, forward):
+    """Drive `length` cm straight (forward or backward), polling the sonar on
+    the side we're moving towards and stopping early if it's too close.
+    Particles are moved by the distance actually driven (estimated from
     elapsed time), which is also returned."""
     if length <= 0:
         return 0.0
+    check = obstacle_ahead if forward else obstacle_behind
+    word = "Driving" if forward else "Reversing"
     total_time = driveTime * length / 100
-    reason = obstacle_ahead()
+    reason = check()
     if reason is not None:
-        print(f"Not driving, obstacle {reason}")
+        print(f"Not {word.lower()}, obstacle {reason}")
         return 0.0
 
+    direction = 1 if forward else 0
     start = time.monotonic()
-    arlo.go_diff(leftSpeed, rightSpeed, 1, 1)
+    arlo.go_diff(leftSpeed, rightSpeed, direction, direction)
     elapsed = 0.0
     while elapsed < total_time:
-        reason = obstacle_ahead()
+        reason = check()
         elapsed = time.monotonic() - start
         if reason is not None:
             break
@@ -96,19 +107,28 @@ def drive(length, particles):
 
     driven = length * min(elapsed, total_time) / total_time
     if reason is not None:
-        print(f"Stopped early, obstacle {reason}; drove {driven:.1f} of {length:.1f} cm")
-    length = driven
+        print(f"{word} stopped early, obstacle {reason}; moved {driven:.1f} of {length:.1f} cm")
+    signed = driven if forward else -driven
     for p in particles:
         particle.move_particle(p,
-                        length * np.cos(p.getTheta()),
-                        length * np.sin(p.getTheta()),
+                        signed * np.cos(p.getTheta()),
+                        signed * np.sin(p.getTheta()),
                         0.0)
-    sigma_noise = SIGMA*length
-    particle.add_uncertainty(particles, sigma_noise, 0.0)
+    particle.add_uncertainty(particles, SIGMA * driven, 0.0)
     return driven
-    
-    
-    
+
+
+def drive(length, particles):
+    """Drive forward `length` cm, stopping early on the front sonar.
+    Returns the distance actually driven."""
+    return _straight(length, particles, forward=True)
+
+
+def reverse(length, particles):
+    """Back up `length` cm, stopping early on the back sonar.
+    Uses the forward driveTime calibration; tune if reversing is off.
+    Returns the distance actually reversed."""
+    return _straight(length, particles, forward=False)
 
 
 def angle_to_target(position, orientation_deg, target):
