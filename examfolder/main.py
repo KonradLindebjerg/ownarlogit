@@ -145,70 +145,6 @@ def landmark_keepouts(obstacleList, target_id, start, particles):
     return out, particles
 
 
-def rrttopoint(particles, x, y, target_id, max_attempts=5):
-    # Face the goal before scanning, so the scan covers the direction we'll drive.
-    particles = turntowards(particles, x, y)
-
-    est_pose = particle.estimate_pose(particles)
-    scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-    obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
-    # scan_surroundings only rotates detections; shift them to the robot's map position.
-    obstacleList = [(ox + est_pose.getX(), oy + est_pose.getY(), r, oid)
-                    for (ox, oy, r, oid) in obstacleList]
-
-    est_pose = particle.estimate_pose(particles)
-    obstacleList, particles = landmark_keepouts(obstacleList, target_id,
-                                     (est_pose.getX(), est_pose.getY()), particles)
-    print("Obstacles incl. landmark keep-outs:", obstacleList)
-    # landmark_keepouts may have reversed the robot, so re-read the pose.
-    est_pose = particle.estimate_pose(particles)
-
-    # Scan once, then only replan: no path usually means the goal is inside an
-    # obstacle, so retry RRT at a random point 40 cm from the original goal.
-    goal_x, goal_y = x, y
-    for attempt in range(max_attempts + 1):
-        robotrrt = rrt.RRT(
-            start=[est_pose.getX(),est_pose.getY()],
-            goal=[goal_x, goal_y],
-            rand_area=rand_area,
-            obstacle_list=obstacleList,
-            play_area=play_area,
-            robot_radius= ROBOT_RADIUS,
-            # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-            robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
-            # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
-            # meter-scaled and far too fine for a ~400-500 cm map.
-            path_resolution=5.0,
-        )
-
-        path = robotrrt.planning(animation=False)
-        print("Path is:")
-        print(path)
-
-        path = rrt.shortcut_path(robotrrt, path)
-        print("Optimized path is:")
-        print(path)
-
-        if path is not None:
-            break
-        a = random.uniform(0, 2 * math.pi)
-        goal_x = x + 40 * math.cos(a)
-        goal_y = y + 40 * math.sin(a)
-        print("No path, retrying at", goal_x, goal_y)
-    else:
-        print("No path found after retries, giving up")
-        return particles
-
-    print("orientation is")
-    print(robotrrt.robot_orientation)
-    
-    if not rrt.driveToGoal(robotrrt, path, particles):
-        # Blocked on the way to this waypoint. Back off; the caller replans anyway.
-        print("Blocked on the way to waypoint, backing up")
-        drive.reverse(BACKUP_CM, particles)
-    return particles
-
-
 
 def at_landmark(particles, landmarkcoordinates):
     """True if the particle filter puts us within ARRIVED_RADIUS of the landmark."""
@@ -357,33 +293,6 @@ def gotolandmark(particles, landmarkID, landmarkcoordinates):
 
     print("Gave up verifying landmark", landmarkID, "- moving on")
     return particles
-
-
-def drivetol1(particles):
-    #TODO DONT ASSUME WE CAN GO STRAIGHT TO THE LANDMARK
-    _, dist, angle, particles = findNextLandmark(landmarkIDs["LANDMARK1"], particles)
-    if angle is None:
-        particles = drivetol1(particles)
-        print("L1 not found, retrying")
-        return particles
-
-    ## Turn towards L1. Camera angle is positive-left, drive.turn is positive-left.
-    angle = np.rad2deg(angle)
-    print("Angle is:", angle)
-    drive.turn(angle, particles)
-    particles, _, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-
-    ## Drive the distance
-    print("distance is :", dist)
-    drive.drive(dist - 15, particles)
-    particles, _, _, _, _ = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-
-    VisitedLandmark["LANDMARK1"] = True
-    return particles
-
-
-def searchState():
-    return
 
 
 def findNextLandmark(targetLandmark, particles):
