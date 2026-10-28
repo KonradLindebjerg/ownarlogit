@@ -38,6 +38,7 @@ MAX_REPLANS  = 5        # max replans per landmark leg
 VERIFY_RADIUS  = 45.0   # after a leg, we must be confidently within this many cm of the landmark
 VERIFY_POS_STD = 25.0   # max particle spread (cm) for the position estimate to count as confident
 SONAR_ARRIVED_CM = 50.0 # if verify fails but any sonar reads closer than this, we're at the box
+SONAR_TRUST_CM   = 100.0 # ...but only if the estimate puts us within this distance of the landmark
 # Non-target landmarks are keep-out zones so we never visit out of order / revisit.
 # Box half-width (20) + visit distance (40) + safety margin (15). RRT adds ROBOT_RADIUS on top.
 KEEPOUT_RADIUS = 20.0 + 40.0 + 15.0
@@ -347,7 +348,8 @@ def gotolandmark(particles, landmarkID, landmarkcoordinates):
             sonars = [drive.arlo.read_front_ping_sensor(), drive.arlo.read_left_ping_sensor(),
                       drive.arlo.read_right_ping_sensor(), drive.arlo.read_back_ping_sensor()]
             print("Sonars (mm):", sonars)
-            if any(0 < s < SONAR_ARRIVED_CM * 10 for s in sonars):
+            # Only trust the sonar if the estimate says we're near the landmark anyway.
+            if d <= SONAR_TRUST_CM and any(0 < s < SONAR_ARRIVED_CM * 10 for s in sonars):
                 print("Sonar sees something close, counting landmark", landmarkID, "as reached")
                 return particles
             print(f"Not confidently within {VERIFY_RADIUS} cm of landmark {landmarkID}, replanning "
