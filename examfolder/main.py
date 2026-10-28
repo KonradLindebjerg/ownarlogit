@@ -137,7 +137,6 @@ def landmark_keepouts(obstacleList, target_id, start, particles):
                 # so the start would be in collision and RRT could never plan.
                 print(f"Start is right at landmark {lid}, leaving it out of the obstacles")
                 continue
-            drive.reverse(20, particles)
             print(f"Start is inside keep-out of landmark {lid}, shrinking it to {r:.1f} cm")
         out.append((lx, ly, r, lid))
     return out, particles
