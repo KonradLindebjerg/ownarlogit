@@ -34,7 +34,7 @@ SIGMA        = 2.0      # Sigma for driving distance
 ROBOT_RADIUS = 25.0     # Robot radius for rrt
 ARRIVED_RADIUS = 55.0   # cm from landmark centre that counts as arrived (40 cm + PF slack)
 BACKUP_CM    = 50.0     # how far to reverse after the sonar stops us, before replanning
-MAX_REPLANS  = 5        # max replans per landmark leg
+GOAL_RETRIES = 5        # when RRT finds no path, retry with goals on other sides of the box
 VERIFY_RADIUS  = 45.0   # after a leg, we must be confidently within this many cm of the landmark
 VERIFY_POS_STD = 25.0   # max particle spread (cm) for the position estimate to count as confident
 SONAR_ARRIVED_CM = 50.0 # if verify fails but any sonar reads closer than this, we're at the box
@@ -220,23 +220,36 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None,
                                      (est_pose.getX(), est_pose.getY()), particles)
     print("Obstacles incl. landmark keep-outs:", obstacleList)
 
-    #maybe change something with the heading or modify rrt so that it also uses heading
-    robotrrt = rrt.RRT(
-        start=[est_pose.getX(),est_pose.getY()],
-        goal=[goalx, goaly],
-        rand_area=rand_area,
-        obstacle_list=obstacleList,
-        play_area=play_area,
-        robot_radius= ROBOT_RADIUS,
-        # RRT/angle_to_target measure heading from +y; particle theta is from +x.
-        robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
-        # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
-        # meter-scaled and far too fine for a ~400-500 cm map.
-        path_resolution=5.0,
-    )
-    
-    path = robotrrt.planning(animation=False)
+    # No path usually means the goal side of the box is blocked. Replanning is cheap,
+    # so first try goals on other sides of the box (10 cm from its side) before moving.
+    for goal_try in range(GOAL_RETRIES + 1):
+        #maybe change something with the heading or modify rrt so that it also uses heading
+        robotrrt = rrt.RRT(
+            start=[est_pose.getX(),est_pose.getY()],
+            goal=[goalx, goaly],
+            rand_area=rand_area,
+            obstacle_list=obstacleList,
+            play_area=play_area,
+            robot_radius= ROBOT_RADIUS,
+            # RRT/angle_to_target measure heading from +y; particle theta is from +x.
+            robot_orientation= math.degrees(est_pose.getTheta()) - 90.0,
+            # Step/resolution in cm (map frame). The defaults (3.0 / 0.5) are
+            # meter-scaled and far too fine for a ~400-500 cm map.
+            path_resolution=5.0,
+        )
+        path = robotrrt.planning(animation=False)
+        if path is not None:
+            break
+        a = random.uniform(0, 2 * math.pi)
+        goalx = landmarkcoordinates[0] + (lm.landmarkR + 10) * math.cos(a)
+        goaly = landmarkcoordinates[1] + (lm.landmarkR + 10) * math.sin(a)
+        print("No path, retrying with goal", goalx, goaly)
+
     if path is None:
+        # Still boxed in: move somewhere new so the next scan and start are different.
+        print("No path to landmark", landmarkID, "- turning, backing up and rescanning")
+        drive.turn(random.uniform(-90, 90), particles)
+        drive.reverse(BACKUP_CM, particles)
         return rrttolandmark(particles, landmarkID, landmarkcoordinates, hits=hits)
     else:
         print("Path is:")
@@ -283,9 +296,12 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None,
 
 def gotolandmark(particles, landmarkID, landmarkcoordinates):
     """RRT to the landmark, then re-localize and check we're confidently within
-    VERIFY_RADIUS of it. If not, RRT again (up to MAX_REPLANS times)."""
+    VERIFY_RADIUS of it. If not, RRT again. Never gives up: skipping a landmark or
+    visiting out of order costs 14 minutes, more than retrying."""
     observations = None
-    for attempt in range(MAX_REPLANS + 1):
+    attempt = 0
+    while True:
+        attempt += 1
         particles = rrttolandmark(particles, landmarkID, landmarkcoordinates, observations)
         particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
@@ -307,10 +323,7 @@ def gotolandmark(particles, landmarkID, landmarkcoordinates):
                 print("Sonar sees something close, counting landmark", landmarkID, "as reached")
                 return particles
             print(f"Not confidently within {VERIFY_RADIUS} cm of landmark {landmarkID}, replanning "
-            f"(attempt {attempt + 1}/{MAX_REPLANS})")
-
-    print("Gave up verifying landmark", landmarkID, "- moving on")
-    return particles
+            f"(attempt {attempt})")
 
 
 def findNextLandmark(targetLandmark, particles):
