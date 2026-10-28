@@ -39,6 +39,7 @@ VERIFY_RADIUS  = 45.0   # after a leg, we must be confidently within this many c
 VERIFY_POS_STD = 25.0   # max particle spread (cm) for the position estimate to count as confident
 SONAR_ARRIVED_CM = 50.0 # if verify fails but any sonar reads closer than this, we're at the box
 SONAR_TRUST_CM   = 100.0 # ...but only if the estimate puts us within this distance of the landmark
+SONAR_HIT_CM     = 40.0  # after being blocked, sonar readings under this are added as RRT obstacles
 # Non-target landmarks are keep-out zones so we never visit out of order / revisit.
 # Box half-width (20) + visit distance (40) + safety margin (15). RRT adds ROBOT_RADIUS on top.
 KEEPOUT_RADIUS = 20.0 + 40.0 + 15.0
@@ -155,9 +156,11 @@ def at_landmark(particles, landmarkcoordinates):
     return d <= ARRIVED_RADIUS
 
 
-def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None):
-    """observations: landmark IDs from a localize() we just did; pass it to skip localizing again."""
-    newgoal = landmarkcoordinates 
+def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None, hits=None):
+    """observations: landmark IDs from a localize() we just did; pass it to skip localizing again.
+    hits: obstacles the sonar ran into earlier on this leg, kept across replans."""
+    hits = [] if hits is None else hits
+    newgoal = landmarkcoordinates
     goalx, goaly = newgoal[0], newgoal[1]
     if observations is None:
         particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
@@ -182,6 +185,7 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None)
     # scan_surroundings only rotates detections; shift them to the robot's map position.
     obstacleList = [(x + est_pose.getX(), y + est_pose.getY(), r, oid)
                     for (x, y, r, oid) in obstacleList]
+    obstacleList += hits
     print("LINE 153: Obstaclelist is: ", obstacleList)
     est_pose = particle.estimate_pose(particles)
     #x,y, radius, idss = obstacleList
@@ -233,7 +237,7 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None)
     
     path = robotrrt.planning(animation=False)
     if path is None:
-        return rrttolandmark(particles, landmarkID, landmarkcoordinates)
+        return rrttolandmark(particles, landmarkID, landmarkcoordinates, hits=hits)
     else:
         print("Path is:")
         print(path)
@@ -257,10 +261,24 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None)
         if at_landmark(particles, landmarkcoordinates):
             print("Stopped early but already at landmark", landmarkID)
             return particles
-        # Otherwise an obstacle is in the way: back off and plan again.
+        # Otherwise an obstacle is in the way. Remember where each close sonar hit it
+        # (box centre just behind the hit), unless that's the target box itself.
+        est_pose = particle.estimate_pose(particles)
+        for read, offset_deg in ((drive.arlo.read_front_ping_sensor, 0.0),
+                                 (drive.arlo.read_left_ping_sensor, 45.0),
+                                 (drive.arlo.read_right_ping_sensor, -45.0)):
+            s = read() / 10
+            if not 0 < s < SONAR_HIT_CM:
+                continue
+            a = est_pose.getTheta() + math.radians(offset_deg)
+            r = ROBOT_RADIUS + s + lm.landmarkR
+            hx, hy = est_pose.getX() + r * math.cos(a), est_pose.getY() + r * math.sin(a)
+            if math.hypot(hx - landmarkcoordinates[0], hy - landmarkcoordinates[1]) > 2 * lm.landmarkR:
+                hits.append((hx, hy, lm.landmarkR, -1))
+        print("Sonar hits so far:", hits)
         print("Blocked before landmark", landmarkID, "- backing up and replanning")
         drive.reverse(BACKUP_CM, particles)
-        return rrttolandmark(particles, landmarkID, landmarkcoordinates)
+        return rrttolandmark(particles, landmarkID, landmarkcoordinates, hits=hits)
 
 
 def gotolandmark(particles, landmarkID, landmarkcoordinates):
