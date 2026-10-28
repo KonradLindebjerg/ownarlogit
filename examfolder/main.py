@@ -124,21 +124,22 @@ def landmark_keepouts(obstacleList, target_id, start, particles):
     If the start is already inside a keep-out (e.g. the landmark we just visited),
     shrink it to just the physical box, so RRT is free to drive off in any
     direction without bumping into it. (Shrinking it only to the robot's current
-    distance boxed the planner in: nearly every edge out of the start collided.)"""
-    out = [o for o in obstacleList if o[3] not in LANDMARK_IDS]
-    for lid, (lx, ly) in LANDMARK_COORDS.items():
-        if lid == target_id:
-            continue
-        r = KEEPOUT_RADIUS
+    distance boxed the planner in: nearly every edge out of the start collided.)
+    Scanned obstacles get the same treatment: one the start is inside makes RRT fail forever."""
+    obstacles = [o for o in obstacleList if o[3] not in LANDMARK_IDS]
+    obstacles += [(lx, ly, KEEPOUT_RADIUS, lid) for lid, (lx, ly) in LANDMARK_COORDS.items()
+                  if lid != target_id]
+    out = []
+    for (lx, ly, r, lid) in obstacles:
         d = math.hypot(start[0] - lx, start[1] - ly)
         if d <= r + ROBOT_RADIUS:
             r = min(lm.landmarkR, d - ROBOT_RADIUS - 2.0)
             if r <= 0.0:
                 # Even a zero-radius obstacle blocks ROBOT_RADIUS around its centre,
                 # so the start would be in collision and RRT could never plan.
-                print(f"Start is right at landmark {lid}, leaving it out of the obstacles")
+                print(f"Start is right at obstacle {lid}, leaving it out of the obstacles")
                 continue
-            print(f"Start is inside keep-out of landmark {lid}, shrinking it to {r:.1f} cm")
+            print(f"Start is inside keep-out of obstacle {lid}, shrinking it to {r:.1f} cm")
         out.append((lx, ly, r, lid))
     return out, particles
 
