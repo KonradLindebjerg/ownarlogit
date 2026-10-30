@@ -358,7 +358,6 @@ def main():
 
 
 
-    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
 
     particles = gotolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
     #particles = drivetol1(particles)
