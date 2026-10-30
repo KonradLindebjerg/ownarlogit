@@ -308,17 +308,6 @@ def gotolandmark(particles, landmarkID, landmarkcoordinates):
         if d <= VERIFY_RADIUS and pos_std <= VERIFY_POS_STD:
             print("Confidently at landmark", landmarkID)
             return particles
-            #else:
-            #    # Right next to the box the camera can't see its marker, so ask the sonars (mm).
-            #    sonars = [drive.arlo.read_front_ping_sensor(), drive.arlo.read_left_ping_sensor(),
-            #              drive.arlo.read_right_ping_sensor(), drive.arlo.read_back_ping_sensor()]
-            #    print("Sonars (mm):", sonars)
-            #    # Only trust the sonar if the estimate says we're near the landmark anyway.
-            #    if d <= SONAR_TRUST_CM and any(0 < s < SONAR_ARRIVED_CM * 10 for s in sonars):
-            #        print("Sonar sees something close, counting landmark", landmarkID, "as reached")
-            #        return particles
-            #    print(f"Not confidently within {VERIFY_RADIUS} cm of landmark {landmarkID}, replanning "
-            #    f"(attempt {attempt})")
 
 
 def main():
