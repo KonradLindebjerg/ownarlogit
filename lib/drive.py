@@ -19,7 +19,7 @@ arlo = robot.Robot()
 leftSpeed           = 69
 rightSpeed          = 66
 circleTime          = 2.70
-driveTime           = 2.25
+driveTime           = 2.20
 eps                 = 0.3
 
 SIGMA               = 0.02     # Sigma for driving distance
