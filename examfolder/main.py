@@ -70,13 +70,6 @@ landmarks = {
 LANDMARK_IDS    = set(landmarkIDs.values())
 LANDMARK_COORDS = {landmarkIDs[name]: landmarks[name] for name in landmarkIDs}
 
-## What landmarks have been visited?
-VisitedLandmark = {
-    "LANDMARK1": False,
-    "LANDMARK2": False,
-    "LANDMARK3": False,
-    "LANDMARK4": False
-}
 
 cam = camera.Camera(0, robottype='arlo', useCaptureThread=False) # Initalise camera
 sleep(EPS)
@@ -369,8 +362,6 @@ def main():
 
     # DRIVE BACK TO L1
     ## Start out by localizing itself
-    #if all(VisitedLandmark.values()):
-    #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     particles = gotolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
 
