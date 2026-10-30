@@ -18,7 +18,7 @@ arlo = robot.Robot()
 
 leftSpeed           = 69
 rightSpeed          = 66
-circleTime          = 2.70
+circleTime          = 2.80
 driveTime           = 2.20
 eps                 = 0.3
 
@@ -128,7 +128,7 @@ def _straight(length, particles, forward):
 def drive(length, particles):
     """Drive forward `length` cm, stopping early on the front sonar.
     Returns the distance actually driven."""
-    return _straight(length / 3, particles, forward=True) + _straight(length / 3, particles, forward=True) + _straight(length / 3, particles, forward=True)
+    return _straight(length, particles, forward=True)
 
 
 def reverse(length, particles):
