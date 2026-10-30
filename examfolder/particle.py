@@ -22,6 +22,12 @@ class Particle(object):
     def getWeight(self):
         return self.weight
 
+    def setX(self, val):
+        self.x = val
+
+    def setY(self, val):
+        self.y = val
+
     def setTheta(self, val):
         self.theta = np.mod(val, 2.0*np.pi)
 
