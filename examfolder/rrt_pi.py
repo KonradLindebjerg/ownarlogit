@@ -16,6 +16,17 @@ EPS = 0.75
 # driveToGoal treats a segment as blocked if it fell this many cm short.
 BLOCKED_TOL_CM = 5.0
 
+# Sonar obstacles added during scan_surroundings.
+SONAR_SCAN_MAX_CM = 80.0   # ignore readings farther than this (wide beam, too vague far away)
+SONAR_OBST_R      = 5.0    # tight radius: we're often right next to boxes, a big one makes RRT fail
+SONAR_OFFSET_CM   = 20.0   # distance from robot centre to the sonars (front of the robot)
+SONAR_DEDUP_CM    = lm.landmarkR + 15.0  # skip sonar hits this close to a camera-detected box
+SONAR_ID          = -2     # obstacle id for sonar hits (main.py uses -1 for drive-time hits)
+# (read function name, direction relative to robot forward, CCW-positive degrees)
+SONARS = (("read_front_ping_sensor", 0.0),
+          ("read_left_ping_sensor", 45.0),
+          ("read_right_ping_sensor", -45.0))
+
 
 # Checks if there is a clear path between two notdes
 def segment_is_free(rrt, a, b):
@@ -82,6 +93,33 @@ def rotate_obstacles(obstacles, heading_deg):
     return rotated
 
 
+def sonar_obstacles():
+    """Read the front and front-diagonal sonars and return each close hit as a small
+    obstacle (x, z, radius, SONAR_ID) in the camera frame (x = right, z = forward),
+    so it can go through rotate_obstacles like the camera detections.
+    The centre sits SONAR_OBST_R behind the measured surface."""
+    obstacles = []
+    for name, offset_deg in SONARS:
+        read = getattr(drive.arlo, name)
+        # Median of 3 reads to drop single bad echoes. Readings <= 0 are errors (mm).
+        vals = sorted(read() for _ in range(3))
+        s = vals[1] / 10.0
+        if not 0 < s < SONAR_SCAN_MAX_CM:
+            continue
+        dist = SONAR_OFFSET_CM + s + SONAR_OBST_R
+        a = math.radians(offset_deg)
+        obstacles.append((-dist * math.sin(a), dist * math.cos(a), SONAR_OBST_R, SONAR_ID))
+    return obstacles
+
+
+def dedup_sonar(obstacles):
+    """Drop sonar hits that are just the side of a box the camera already saw."""
+    boxes = [o for o in obstacles if o[3] != SONAR_ID]
+    sonar = [o for o in obstacles if o[3] == SONAR_ID
+             and all(math.hypot(o[0] - b[0], o[1] - b[1]) > SONAR_DEDUP_CM for b in boxes)]
+    return boxes + sonar
+
+
 def scan_surroundings(cam, inputheading, particles):
     """Take 3 images to widen the field of view before planning.
 
@@ -96,6 +134,7 @@ def scan_surroundings(cam, inputheading, particles):
 
     # 1) Straight ahead.
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
+    obstacles += rotate_obstacles(sonar_obstacles(), heading)
     print("LINE 51; OBSTACLES IN RRT IS ;", obstacles)
     sleep(EPS)
 
@@ -104,6 +143,7 @@ def scan_surroundings(cam, inputheading, particles):
     sleep(EPS)
     heading += 45
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
+    obstacles += rotate_obstacles(sonar_obstacles(), heading)
     sleep(EPS)
 
     # 3) Turn 90 degrees right (CW) -> now 45 degrees right of start.
@@ -111,6 +151,7 @@ def scan_surroundings(cam, inputheading, particles):
     sleep(EPS)
     heading -= 90
     obstacles += rotate_obstacles(lm.detectLandmark(cam), heading)
+    obstacles += rotate_obstacles(sonar_obstacles(), heading)
     sleep(EPS)
 
     # 4) Turn 45 degrees left to return to the start orientation.
@@ -118,6 +159,7 @@ def scan_surroundings(cam, inputheading, particles):
     sleep(EPS)
     heading += 45
 
+    obstacles = dedup_sonar(obstacles)
     print("Scan complete, heading back at:", heading)
     print("Detected obstacles (map frame):", obstacles)
     return obstacles

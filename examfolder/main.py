@@ -27,22 +27,22 @@ from lib import robot
 
 
 
-# Constants
-EPS          = 0.075    # EPS for sleep time so arlo hsa time to catch up
-SIGMA_THETA  = 0.029320 # Sigma noise for when turning
-SIGMA        = 2.0      # Sigma for driving distance
-ROBOT_RADIUS = 25.0     # Robot radius for rrt
-ARRIVED_RADIUS = 55.0   # cm from landmark centre that counts as arrived (40 cm + PF slack)
-BACKUP_CM    = 50.0     # how far to reverse after the sonar stops us, before replanning
-GOAL_RETRIES = 5        # when RRT finds no path, retry with goals on other sides of the box
-VERIFY_RADIUS  = 45.0   # after a leg, we must be confidently within this many cm of the landmark
-VERIFY_POS_STD = 25.0   # max particle spread (cm) for the position estimate to count as confident
-SONAR_ARRIVED_CM = 50.0 # if verify fails but any sonar reads closer than this, we're at the box
-SONAR_TRUST_CM   = 100.0 # ...but only if the estimate puts us within this distance of the landmark
-SONAR_HIT_CM     = 40.0  # after being blocked, sonar readings under this are added as RRT obstacles
-# Non-target landmarks are keep-out zones so we never visit out of order / revisit.
-# Box half-width (20) + visit distance (40) + safety margin (15). RRT adds ROBOT_RADIUS on top.
-KEEPOUT_RADIUS = 20.0 + 40.0 + 15.0
+                            # Constants
+EPS              = 0.075    # EPS for sleep time so arlo hsa time to catch up
+SIGMA_THETA      = 0.029320 # Sigma noise for when turning
+SIGMA            = 2.0      # Sigma for driving distance
+ROBOT_RADIUS     = 25.0     # Robot radius for rrt
+ARRIVED_RADIUS   = 55.0     # cm from landmark centre that counts as arrived (40 cm + PF slack)
+BACKUP_CM        = 50.0     # how far to reverse after the sonar stops us, before replanning
+GOAL_RETRIES     = 5        # when RRT finds no path, retry with goals on other sides of the box
+VERIFY_RADIUS    = 45.0     # after a leg, we must be confidently within this many cm of the landmark
+VERIFY_POS_STD   = 25.0     # max particle spread (cm) for the position estimate to count as confident
+SONAR_ARRIVED_CM = 50.0     # if verify fails but any sonar reads closer than this, we're at the box
+SONAR_TRUST_CM   = 100.0    # ...but only if the estimate puts us within this distance of the landmark
+SONAR_HIT_CM     = 40.0     # after being blocked, sonar readings under this are added as RRT obstacles
+                            # Non-target landmarks are keep-out zones so we never visit out of order / revisit.
+                            # Box half-width (20) + visit distance (40) + safety margin (15). RRT adds ROBOT_RADIUS on top.
+KEEPOUT_RADIUS   = 20.0 + 40.0 + 15.0
 
 # Landmarks and maps
 
@@ -175,7 +175,6 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None,
     #    mid_y = (est_pose.getY() + newgoal[1]) / 2
     #    particles = rrttopoint(particles, mid_x, mid_y, landmarkID)
     #    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-    #    id, dists, angles, particles = findNextLandmark(landmarkID, particles)
 
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
@@ -201,6 +200,11 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None,
             i -= 1
             length -= 1
         i += 1
+
+    # Sonar points on the target box itself would block the goal next to it.
+    obstacleList = [o for o in obstacleList if not (
+        o[3] == rrt.SONAR_ID and
+        math.hypot(o[0] - landmarkcoordinates[0], o[1] - landmarkcoordinates[1]) <= rrt.SONAR_DEDUP_CM)]
 
     # A visit counts within 40 cm of the box side, so stop with the robot's
     stop = edge + 10
@@ -322,27 +326,6 @@ def gotolandmark(particles, landmarkID, landmarkcoordinates):
                 return particles
             print(f"Not confidently within {VERIFY_RADIUS} cm of landmark {landmarkID}, replanning "
             f"(attempt {attempt})")
-
-
-# def findNextLandmark(targetLandmark, particles):
-#     """Turn in sl.SEARCH_TURN_STEP_DEG steps (one full turn at most) until
-#     targetLandmark is seen, updating the particle filter on every frame so the
-#     turns don't silently corrupt the pose.
-#     Returns (id, dist, angle, particles); id/dist/angle are None if not found."""
-#     for step in range(sl.SEARCH_STEPS):
-#         print(step)
-#         particles, objectIDs, dists, angles, observations = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-#         objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
-# 
-#         if objectIDs is not None:
-#             for i in range(len(objectIDs)):
-#                 if objectIDs[i] == targetLandmark:
-#                     print("FOUND TARGET LANDMARK: ", targetLandmark)
-#                     return objectIDs[i], dists[i], angles[i], particles
-#         drive.turn(sl.SEARCH_TURN_STEP_DEG, particles)
-#         sleep(EPS)
-# 
-#     return None, None, None, particles
 
 
 def main():
