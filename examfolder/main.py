@@ -164,9 +164,7 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None,
     goalx, goaly = newgoal[0], newgoal[1]
     if observations is None:
         particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-    id, dists, angles, particles = findNextLandmark(landmarkID, particles)
-    if id is None:
-        particles = turntowards(particles, goalx, goaly)
+    particles = turntowards(particles, goalx, goaly)
 
     # Plan to the landmark if we're poorly localized OR can't see the target landmark.
     #if len(observations) < 2 or id is None: 
@@ -326,25 +324,25 @@ def gotolandmark(particles, landmarkID, landmarkcoordinates):
             f"(attempt {attempt})")
 
 
-def findNextLandmark(targetLandmark, particles):
-    """Turn in sl.SEARCH_TURN_STEP_DEG steps (one full turn at most) until
-    targetLandmark is seen, updating the particle filter on every frame so the
-    turns don't silently corrupt the pose.
-    Returns (id, dist, angle, particles); id/dist/angle are None if not found."""
-    for step in range(sl.SEARCH_STEPS):
-        print(step)
-        particles, objectIDs, dists, angles, observations = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-        objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
-
-        if objectIDs is not None:
-            for i in range(len(objectIDs)):
-                if objectIDs[i] == targetLandmark:
-                    print("FOUND TARGET LANDMARK: ", targetLandmark)
-                    return objectIDs[i], dists[i], angles[i], particles
-        drive.turn(sl.SEARCH_TURN_STEP_DEG, particles)
-        sleep(EPS)
-
-    return None, None, None, particles
+# def findNextLandmark(targetLandmark, particles):
+#     """Turn in sl.SEARCH_TURN_STEP_DEG steps (one full turn at most) until
+#     targetLandmark is seen, updating the particle filter on every frame so the
+#     turns don't silently corrupt the pose.
+#     Returns (id, dist, angle, particles); id/dist/angle are None if not found."""
+#     for step in range(sl.SEARCH_STEPS):
+#         print(step)
+#         particles, objectIDs, dists, angles, observations = sl.observe(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
+#         objectIDs, dists, angles = deduplicate(objectIDs, dists, angles)
+# 
+#         if objectIDs is not None:
+#             for i in range(len(objectIDs)):
+#                 if objectIDs[i] == targetLandmark:
+#                     print("FOUND TARGET LANDMARK: ", targetLandmark)
+#                     return objectIDs[i], dists[i], angles[i], particles
+#         drive.turn(sl.SEARCH_TURN_STEP_DEG, particles)
+#         sleep(EPS)
+# 
+#     return None, None, None, particles
 
 
 def main():
