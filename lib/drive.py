@@ -16,10 +16,10 @@ from examfolder import particle
 
 arlo = robot.Robot()
 
-leftSpeed           = 69
+leftSpeed           = 68
 rightSpeed          = 64
 circleTime          = 2.81
-driveTime           = 2.15
+driveTime           = 2.16
 eps                 = 0.3
 
 SIGMA               = 0.02     # Sigma for driving distance
