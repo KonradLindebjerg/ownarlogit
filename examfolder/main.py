@@ -302,7 +302,7 @@ def gotolandmark(particles, landmarkID, landmarkcoordinates):
 def main():
 # Plan
 ## Start out by localising our selves.
-    num_particles = 1000
+    num_particles = 2000
     particles = sl.initialize_particles(num_particles)
     particles = gotolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
