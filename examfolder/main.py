@@ -159,16 +159,6 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None,
         particles, observations = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
     particles = turntowards(particles, goalx, goaly)
 
-    # Plan to the landmark if we're poorly localized OR can't see the target landmark.
-    #if len(observations) < 2 or id is None: 
-    #    print("COULDNT FIND TARGET LANDMARK OR TWO OR LESS OBSERVED, GOING HALFWAY")
-    #    # Halfway between where we are now and the goal (not between origin and goal).
-    #    est_pose = particle.estimate_pose(particles)
-    #    mid_x = (est_pose.getX() + newgoal[0]) / 2
-    #    mid_y = (est_pose.getY() + newgoal[1]) / 2
-    #    particles = rrttopoint(particles, mid_x, mid_y, landmarkID)
-    #    particles, _ = sl.localize(cam, LANDMARK_IDS, LANDMARK_COORDS, particles)
-
     est_pose = particle.estimate_pose(particles)
     scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     obstacleList = rrt.scan_surroundings(cam, scan_heading_deg , particles)
@@ -218,7 +208,6 @@ def rrttolandmark(particles, landmarkID, landmarkcoordinates, observations=None,
     # No path usually means the goal side of the box is blocked. Replanning is cheap,
     # so first try goals on other sides of the box (10 cm from its side) before moving.
     for goal_try in range(GOAL_RETRIES + 1):
-        #maybe change something with the heading or modify rrt so that it also uses heading
         robotrrt = rrt.RRT(
             start=[est_pose.getX(),est_pose.getY()],
             goal=[goalx, goaly],
@@ -315,16 +304,9 @@ def main():
 ## Start out by localising our selves.
     num_particles = 1000
     particles = sl.initialize_particles(num_particles)
-    #est pose og particles, spørgsmålet om vi måske skal bruge mindst 2 før vi kan være sikker på localize
-    #måske localize skal ændres til at bruge 2? eller skal vi have en seperat funktion til starten? idk 
-
-
-
-
-
     particles = gotolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
-    #particles = drivetol1(particles)
-    #we should now have an idea of where we are?
+
+    # We should have two have better estimation of where we are now
     est_pose = particle.estimate_pose(particles)
     
 ## Self localise
@@ -334,23 +316,17 @@ def main():
     # We assume that we find the next landmark here
     # Reobserve our surroundings
     #RRT to landmark 2
-
     particles = gotolandmark(particles, landmarkIDs["LANDMARK2"], landmarks["LANDMARK2"])
-
     
-    # DRIVE TO L3
-    ## Start out by localizing itself
+    # DRIVE TO L3, start out by localizing itself
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
-
     particles = gotolandmark(particles, landmarkIDs["LANDMARK3"], landmarks["LANDMARK3"])
 
-    # DRIVE TO L4
-    ## Start out by localizing itself
+    # DRIVE TO L4, start out by localizing itself
     #scan_heading_deg = math.degrees(est_pose.getTheta()) - 90.0
     particles = gotolandmark(particles, landmarkIDs["LANDMARK4"], landmarks["LANDMARK4"])
 
-    # DRIVE BACK TO L1
-    ## Start out by localizing itself
+    # DRIVE BACK TO L1, start out by localizing itself
     particles = gotolandmark(particles, landmarkIDs["LANDMARK1"], landmarks["LANDMARK1"])
 
 
